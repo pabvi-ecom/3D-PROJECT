@@ -20,9 +20,9 @@ export interface Size {
 
 /** Tamaños de una figura individual. */
 export const sizes: Size[] = [
-  { id: "s", label: "Small",  heightCm: 8,  price: 79.99 },
-  { id: "m", label: "Medium", heightCm: 12, price: 99.99, popular: true },
-  { id: "l", label: "Large",  heightCm: 18, price: 129.99 },
+  { id: "s", label: "Standard", heightCm: 12, price: 79.99, popular: true },
+  { id: "m", label: "Large",    heightCm: 16, price: 99.99 },
+  { id: "l", label: "Grand",    heightCm: 22, price: 129.99 },
 ];
 
 export interface Pack {
@@ -35,9 +35,9 @@ export interface Pack {
 
 /** Packs (varias figuras en el mismo pedido). El gancho de rentabilidad. */
 export const packs: Pack[] = [
-  { qty: 1, label: "1 figure",  price: 99.99 },
-  { qty: 2, label: "Pack of 2", price: 169.99, badge: "Most loved",  savingsNote: "Save $30" },
-  { qty: 3, label: "Pack of 3", price: 239.99, badge: "Best value",  savingsNote: "Save $60" },
+  { qty: 1, label: "1 figure",  price: 79.99 },
+  { qty: 2, label: "Pack of 2", price: 139.99, badge: "Most loved", savingsNote: "Save $20" },
+  { qty: 3, label: "Pack of 3", price: 189.99, badge: "Best value", savingsNote: "Save $50" },
 ];
 
 export interface Extra {
