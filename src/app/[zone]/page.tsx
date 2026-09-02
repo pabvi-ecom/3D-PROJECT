@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Landing from "@/components/landing/Landing";
+import Studio from "@/components/studio/Studio";
 import { getZone, zoneSlugs } from "@/config/zones";
 
 export function generateStaticParams() {
@@ -29,5 +29,5 @@ export default async function ZonePage({
   const { zone } = await params;
   const z = getZone(zone);
   if (!z) notFound();
-  return <Landing zone={z} />;
+  return <Studio zone={z} />;
 }
