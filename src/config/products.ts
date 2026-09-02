@@ -66,3 +66,25 @@ export const finishColors = [
 ];
 
 export type FinishColor = (typeof finishColors)[number];
+
+/**
+ * Bases — la palanca de ticket medio junto con el nombre.
+ * `prompt` describe la base para que la IA la pinte de forma realista.
+ * La placa va SIEMPRE en blanco; el nombre se superpone (web + grabado en producción).
+ */
+export interface Base {
+  id: string;
+  label: string;
+  price: number;
+  prompt: string;
+}
+
+export const bases: Base[] = [
+  { id: "wood",   label: "Classic wood",   price: 0,     prompt: "standing on a realistic round wooden display base with a small blank gold nameplate on the front" },
+  { id: "grass",  label: "Grass top",      price: 0,     prompt: "standing on a round display base with a realistic grass top and a polished wooden rim, and a small blank gold nameplate on the front" },
+  { id: "marble", label: "Marble",         price: 9.99,  prompt: "standing on a realistic round white marble display base with a small blank gold nameplate on the front" },
+  { id: "black",  label: "Memorial black", price: 12.99, prompt: "standing on a realistic round glossy black memorial display base with a small blank gold nameplate on the front" },
+];
+
+/** Coste de añadir el nombre grabado en la placa. */
+export const NAMEPLATE_PRICE = 9.99;
