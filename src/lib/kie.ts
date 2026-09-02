@@ -6,6 +6,7 @@
  * Modelo por defecto: google/nano-banana-edit (foto del perro -> figurita).
  */
 const KIE_BASE = "https://api.kie.ai/api/v1/jobs";
+const KIE_UPLOAD = "https://kieai.redpandaai.co/api/file-base64-upload";
 
 function key(): string {
   const k = process.env.KIE_AI_API_KEY;
@@ -71,6 +72,26 @@ export async function runTask(
     await sleep(intervalMs);
   }
   throw new Error("Timeout esperando a Kie.ai");
+}
+
+/**
+ * Sube una imagen (data URI base64) al almacenamiento temporal de Kie y
+ * devuelve una URL pública que la generación puede leer.
+ * Kie NO acepta base64 directo en la generación; hay que subir primero.
+ */
+export async function uploadImage(dataUri: string, fileName = "upload.png"): Promise<string> {
+  const res = await fetch(KIE_UPLOAD, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key()}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ base64Data: dataUri, uploadPath: "sculptly/uploads", fileName }),
+  });
+  const json = await res.json();
+  const url = json?.data?.downloadUrl;
+  if (!url) throw new Error(`Subida a Kie falló: ${json.msg ?? res.status}`);
+  return url as string;
 }
 
 /**
