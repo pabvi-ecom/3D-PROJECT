@@ -130,6 +130,14 @@
 .progFill{height:100%; border-radius:999px; background:linear-gradient(90deg,var(--accent),#FF8A4C); transition:width .35s ease}
 .progPct{font-weight:800; font-size:.82rem; color:var(--accent-deep); letter-spacing:.02em}
 
+/* review que rota mientras carga */
+.review{display:flex; align-items:center; gap:12px; margin-top:8px; max-width:300px; width:86%; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:10px 12px; box-shadow:var(--shadow-sm); text-align:left; animation:fadeIn .5s ease}
+.review img{width:52px; height:52px; flex:none; border-radius:10px; object-fit:cover; background:var(--surface-2)}
+.reviewBody{min-width:0}
+.reviewStars{color:var(--gold); font-size:.8rem; letter-spacing:1px; line-height:1}
+.reviewText{font-size:.82rem; color:var(--ink); font-weight:600; margin:3px 0; line-height:1.35}
+.reviewName{font-size:.72rem; color:var(--ink-faint); font-weight:700}
+
 /* before / after */
 .work{display:grid; grid-template-columns:clamp(92px,24vw,132px) 1fr; gap:14px; align-items:start}
 @media(max-width:440px){.work{grid-template-columns:78px 1fr; gap:10px}}

@@ -68,7 +68,27 @@ export const finishColors = [
 export type FinishColor = (typeof finishColors)[number];
 
 /**
- * Bases — la palanca de ticket medio junto con el nombre.
+ * POSTURAS — el PRIMER paso de personalización.
+ * `prompt` describe SOLO la postura de la figura (sin base).
+ * Algunas gratis (sentado, a cuatro patas) y otras de pago (tumbado, a dos patas).
+ */
+export interface Pose {
+  id: string;
+  label: string;
+  price: number;
+  prompt: string; // describe la postura para la IA
+}
+
+export const poses: Pose[] = [
+  { id: "sitting",  label: "Sitting",      price: 0,    prompt: "sitting upright on its hindquarters, facing forward" },
+  { id: "standing", label: "Standing",     price: 0,    prompt: "standing naturally on all four legs, facing forward" },
+  { id: "lying",    label: "Lying down",   price: 9.99, prompt: "lying down relaxed with its front paws stretched forward" },
+  { id: "begging",  label: "On hind legs", price: 9.99, prompt: "sitting up and begging on its hind legs with front paws lifted" },
+];
+
+/**
+ * BASES — ahora son un EXTRA opcional (se vende sin base de serie).
+ * `id: "none"` es la opción por defecto y gratuita (figura sin base).
  * `prompt` describe la base para que la IA la pinte de forma realista.
  * La placa va SIEMPRE en blanco; el nombre se superpone (web + grabado en producción).
  */
@@ -76,15 +96,21 @@ export interface Base {
   id: string;
   label: string;
   price: number;
-  prompt: string;
+  prompt: string; // "" para la opción sin base
 }
 
+export const NO_BASE_ID = "none";
+
 export const bases: Base[] = [
-  { id: "wood",   label: "Classic wood",   price: 0,     prompt: "standing on a realistic round wooden display base with a small blank gold nameplate on the front" },
-  { id: "grass",  label: "Grass top",      price: 0,     prompt: "standing on a round display base with a realistic grass top and a polished wooden rim, and a small blank gold nameplate on the front" },
-  { id: "marble", label: "Marble",         price: 9.99,  prompt: "standing on a realistic round white marble display base with a small blank gold nameplate on the front" },
-  { id: "black",  label: "Memorial black", price: 12.99, prompt: "standing on a realistic round glossy black memorial display base with a small blank gold nameplate on the front" },
+  { id: "none",   label: "No base",        price: 0,     prompt: "" },
+  { id: "wood",   label: "Classic wood",   price: 9.99,  prompt: "on a realistic round wooden display base with a small blank gold nameplate on the front" },
+  { id: "grass",  label: "Grass top",      price: 9.99,  prompt: "on a round display base with a realistic grass top and a polished wooden rim, and a small blank gold nameplate on the front" },
+  { id: "marble", label: "Marble",         price: 14.99, prompt: "on a realistic round white marble display base with a small blank gold nameplate on the front" },
+  { id: "black",  label: "Memorial black", price: 14.99, prompt: "on a realistic round glossy black memorial display base with a small blank gold nameplate on the front" },
 ];
 
-/** Coste de añadir el nombre grabado en la placa. */
+/** Bases de pago (para el selector, sin la opción "none"). */
+export const paidBases = bases.filter((b) => b.id !== NO_BASE_ID);
+
+/** Coste de añadir el nombre grabado en la placa (requiere base). */
 export const NAMEPLATE_PRICE = 9.99;

@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import styles from "./Studio.module.css";
 import { brand } from "@/config/brand";
-import { bases as allBases, packs, NAMEPLATE_PRICE, type Pack } from "@/config/products";
+import { poses, paidBases, bases, NO_BASE_ID, NAMEPLATE_PRICE, packs, type Pack } from "@/config/products";
 import type { Zone } from "@/config/zones";
 
 const FIGURE_PRICE = 79.99;
@@ -20,59 +19,83 @@ const GALLERY = [
   "/examples/basset-marble.jpg", "/examples/golden-white.jpg", "/examples/basset-wood.jpg",
 ];
 
+// Reseñas que rotan mientras se genera la figura.
+// TODO: nombres/textos de EJEMPLO — sustituir por reseñas reales antes de lanzar
+// anuncios (la FTC prohíbe reseñas inventadas presentadas como reales).
+const REVIEWS = [
+  { src: "/examples/labrador-wood.jpg", name: "Cooper", breed: "Labrador", text: "It looks exactly like him. I teared up." },
+  { src: "/examples/golden-white.jpg", name: "Bella", breed: "Golden Retriever", text: "The detail on her fur is unreal." },
+  { src: "/examples/setter-marble.jpg", name: "Max", breed: "Setter", text: "Best gift I've ever given my mom." },
+  { src: "/examples/basset-black.jpg", name: "Daisy", breed: "Basset Hound", text: "Now she's on our shelf forever." },
+  { src: "/examples/basset-marble.jpg", name: "Rocky", breed: "Basset Hound", text: "Even got his little spots right." },
+  { src: "/examples/basset-wood.jpg", name: "Luna", breed: "Basset Hound", text: "So much better than a photo." },
+];
+
+const key = (poseId: string, baseId: string) => `${poseId}|${baseId}`;
+
 export default function Studio({ zone }: { zone: Zone }) {
   const [photo, setPhoto] = useState<string | null>(null);
   const [figures, setFigures] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [phase, setPhase] = useState<"poses" | "base">("poses");
   const [error, setError] = useState<string | null>(null);
-  const [baseId, setBaseId] = useState(allBases[0].id);
+  const [poseId, setPoseId] = useState(poses[0].id);
+  const [baseId, setBaseId] = useState(NO_BASE_ID);
   const [addName, setAddName] = useState(false);
   const [name, setName] = useState("");
-  const [progress, setProgress] = useState(0); // 0–100 (barra)
-  const [done, setDone] = useState(0);          // bases ya generadas (0–4)
+  const [progress, setProgress] = useState(0);
+  const [done, setDone] = useState(0);
+  const [genTotal, setGenTotal] = useState(poses.length);
   const [phraseIdx, setPhraseIdx] = useState(0);
+  const [reviewIdx, setReviewIdx] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const animal = zone.animal;
-  const PHRASES = [
+  const pose = poses.find((p) => p.id === poseId) ?? poses[0];
+  const base = bases.find((b) => b.id === baseId) ?? bases[0];
+  const wantsBase = baseId !== NO_BASE_ID;
+  const figure = figures[key(poseId, baseId)] ?? null;
+  const total = FIGURE_PRICE + pose.price + base.price + (wantsBase && addName ? NAMEPLATE_PRICE : 0);
+  const money = (n: number) => `${brand.currencySymbol}${n.toFixed(2)}`;
+
+  const POSE_PHRASES = [
     `Sculpting your ${animal}…`,
+    "Trying every pose…",
     "Capturing every marking and color…",
-    "Mixing the full-color resin…",
-    "Getting the pose just right…",
-    "Placing them on the display base…",
-    "Adding those little details…",
+    "Getting the proportions just right…",
     "The best keepsake, almost ready…",
   ];
-  const N_BASES = allBases.length;
+  const BASE_PHRASES = [
+    "Loading base textures…",
+    "Polishing the wood…",
+    "Laying the grass…",
+    "Cutting the marble…",
+    "Setting the nameplate…",
+  ];
+  const phrases = phase === "base" ? BASE_PHRASES : POSE_PHRASES;
 
-  // Frases rotativas mientras carga.
+  // Frases + reseñas rotando mientras carga.
   useEffect(() => {
     if (!loading) return;
     setPhraseIdx(0);
-    const id = setInterval(() => setPhraseIdx((i) => (i + 1) % PHRASES.length), 2600);
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading]);
+    setReviewIdx(0);
+    const t = setInterval(() => {
+      setPhraseIdx((i) => i + 1);
+      setReviewIdx((i) => (i + 1) % REVIEWS.length);
+    }, 2600);
+    return () => clearInterval(t);
+  }, [loading, phase]);
 
-  // Barra de progreso: avanza suave hacia el objetivo marcado por cuántas
-  // bases llevamos generadas (así refleja el progreso real y siempre se mueve).
+  // Barra de progreso: avanza hacia el objetivo según cuántas imágenes llevamos.
   useEffect(() => {
     if (!loading) return;
-    const target = Math.min(96, ((done + 0.85) / N_BASES) * 100);
-    const id = setInterval(() => {
+    const target = Math.min(96, ((done + 0.85) / genTotal) * 100);
+    const t = setInterval(() => {
       setProgress((p) => (p < target ? p + (target - p) * 0.12 : p));
     }, 320);
-    return () => clearInterval(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loading, done]);
+    return () => clearInterval(t);
+  }, [loading, done, genTotal]);
 
-  const firstBaseId = allBases[0].id;
-  const base = allBases.find((b) => b.id === baseId) ?? allBases[0];
-  const figure = figures[baseId] ?? null;
-  const total = FIGURE_PRICE + base.price + (addName ? NAMEPLATE_PRICE : 0);
-  const money = (n: number) => `${brand.currencySymbol}${n.toFixed(2)}`;
-
-  // Llama al endpoint una vez y devuelve la URL de la figura generada.
   async function postGenerate(body: Record<string, unknown>): Promise<string> {
     const res = await fetch("/api/generate", {
       method: "POST",
@@ -84,30 +107,34 @@ export default function Studio({ zone }: { zone: Zone }) {
     return json.url as string;
   }
 
-  // Al subir la foto: genera PRIMERO la base por defecto desde la foto y,
-  // usando esa figura como referencia, genera las otras 3 cambiando SOLO la
-  // base (el perro queda idéntico). No mostramos nada hasta tener las 4.
-  async function generateAll(dataUri: string) {
+  // Al subir: genera la 1ª postura desde la foto y, usándola de referencia,
+  // las otras 3 cambiando SOLO la postura (sin base). No mostramos nada hasta
+  // tener las 4 listas.
+  async function generateAllPoses(dataUri: string) {
     setLoading(true);
     setError(null);
     setFigures({});
-    setBaseId(firstBaseId);
-    setProgress(0);
+    setPhase("poses");
+    setGenTotal(poses.length);
     setDone(0);
+    setProgress(0);
+    setPoseId(poses[0].id);
+    setBaseId(NO_BASE_ID);
+    setAddName(false);
     try {
-      const first = await postGenerate({ imageBase64: dataUri, baseId: firstBaseId });
+      const first = await postGenerate({ imageBase64: dataUri, poseId: poses[0].id, baseId: NO_BASE_ID });
       setDone(1);
-      const rest = allBases.filter((b) => b.id !== firstBaseId);
+      const rest = poses.slice(1);
       const others = await Promise.all(
-        rest.map((b) =>
-          postGenerate({ referenceUrl: first, baseId: b.id }).then((url) => {
+        rest.map((p) =>
+          postGenerate({ referenceUrl: first, change: "pose", poseId: p.id }).then((url) => {
             setDone((d) => d + 1);
-            return [b.id, url] as const;
+            return [key(p.id, NO_BASE_ID), url] as const;
           }),
         ),
       );
-      const map: Record<string, string> = { [firstBaseId]: first };
-      for (const [id, url] of others) map[id] = url;
+      const map: Record<string, string> = { [key(poses[0].id, NO_BASE_ID)]: first };
+      for (const [k, u] of others) map[k] = u;
       setProgress(100);
       setFigures(map);
     } catch (e) {
@@ -124,27 +151,90 @@ export default function Studio({ zone }: { zone: Zone }) {
     reader.onload = () => {
       const dataUri = reader.result as string;
       setPhoto(dataUri);
-      generateAll(dataUri);
+      generateAllPoses(dataUri);
     };
     reader.readAsDataURL(f);
   }
 
-  // Cambiar de base es INSTANTÁNEO: ya está en memoria (figures[id]).
-  // Solo regeneramos on-demand si por lo que sea faltara esa base.
-  async function pickBase(id: string) {
-    setBaseId(id);
-    // Ya está en memoria → cambio instantáneo, sin regenerar.
-    if (figures[id] || loading) return;
-    const ref = figures[firstBaseId];
+  // Cambiar de postura: instantáneo si ya está en memoria. Si hay base activa
+  // y falta esa combinación, la generamos sobre la marcha.
+  async function pickPose(id: string) {
+    setPoseId(id);
+    if (figures[key(id, baseId)] || loading) return;
+    const ref = figures[key(id, NO_BASE_ID)];
     if (!ref) return;
     setLoading(true);
     setError(null);
+    setPhase("base");
+    setGenTotal(1);
+    setDone(0);
     setProgress(0);
-    setDone(N_BASES - 1); // solo falta esta base → barra casi llena
     try {
-      const url = await postGenerate({ referenceUrl: ref, baseId: id });
+      const url = await postGenerate({ referenceUrl: ref, change: "base", baseId });
       setProgress(100);
-      setFigures((prev) => ({ ...prev, [id]: url }));
+      setFigures((prev) => ({ ...prev, [key(id, baseId)]: url }));
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Activar base: genera todas las bases de pago para la postura actual
+  // ("Loading base textures…"). Las que ya estén en memoria no se regeneran.
+  async function enableBase() {
+    const firstPaid = paidBases[0].id;
+    setBaseId(firstPaid);
+    const poseNone = figures[key(poseId, NO_BASE_ID)];
+    if (!poseNone) return;
+    const missing = paidBases.filter((b) => !figures[key(poseId, b.id)]);
+    if (missing.length === 0) return; // ya en memoria → instantáneo
+    setLoading(true);
+    setError(null);
+    setPhase("base");
+    setGenTotal(missing.length);
+    setDone(0);
+    setProgress(0);
+    try {
+      const results = await Promise.all(
+        missing.map((b) =>
+          postGenerate({ referenceUrl: poseNone, change: "base", baseId: b.id }).then((url) => {
+            setDone((d) => d + 1);
+            return [key(poseId, b.id), url] as const;
+          }),
+        ),
+      );
+      const add: Record<string, string> = {};
+      for (const [k, u] of results) add[k] = u;
+      setProgress(100);
+      setFigures((prev) => ({ ...prev, ...add }));
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function disableBase() {
+    setBaseId(NO_BASE_ID); // instantáneo: la figura sin base ya está en memoria
+  }
+
+  // Cambiar entre bases de pago: instantáneo si está, si no se genera.
+  async function pickBase(id: string) {
+    setBaseId(id);
+    if (figures[key(poseId, id)] || loading) return;
+    const poseNone = figures[key(poseId, NO_BASE_ID)];
+    if (!poseNone) return;
+    setLoading(true);
+    setError(null);
+    setPhase("base");
+    setGenTotal(1);
+    setDone(0);
+    setProgress(0);
+    try {
+      const url = await postGenerate({ referenceUrl: poseNone, change: "base", baseId: id });
+      setProgress(100);
+      setFigures((prev) => ({ ...prev, [key(poseId, id)]: url }));
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -155,7 +245,10 @@ export default function Studio({ zone }: { zone: Zone }) {
   function reset() {
     setPhoto(null);
     setFigures({});
-    setBaseId(firstBaseId);
+    setPoseId(poses[0].id);
+    setBaseId(NO_BASE_ID);
+    setAddName(false);
+    setName("");
     setError(null);
     setProgress(0);
     setDone(0);
@@ -190,6 +283,7 @@ export default function Studio({ zone }: { zone: Zone }) {
 
   // ---- CONFIGURATOR STATE ----
   if (photo) {
+    const rv = REVIEWS[reviewIdx];
     return (
       <div className={styles.page}>
         {Nav}
@@ -198,8 +292,9 @@ export default function Studio({ zone }: { zone: Zone }) {
           <div className={styles.studio}>
             <div className={styles.studioHead}>
               <h1>Your figure</h1>
-              <p>Pick a base and add their name.</p>
+              <p>Pick the pose, then decide if you want a display base.</p>
             </div>
+
             <div className={styles.work}>
               <figure className={styles.baBefore}>
                 <img src={photo} alt="your photo" />
@@ -210,15 +305,23 @@ export default function Studio({ zone }: { zone: Zone }) {
                 <span className={styles.afterTag}>After · your figure</span>
                 <div className={styles.stage}>
                   {figure && <img src={figure} alt={`${animal} figure`} />}
-                  {figure && addName && name && <div className={styles.plate}>{name}</div>}
+                  {figure && wantsBase && addName && name && <div className={styles.plate}>{name}</div>}
                   {loading && (
                     <div className={styles.loading}>
                       <div className={styles.spinner} />
-                      <p className={styles.progPhrase}>{PHRASES[phraseIdx]}</p>
+                      <p className={styles.progPhrase}>{phrases[phraseIdx % phrases.length]}</p>
                       <div className={styles.progTrack}>
                         <div className={styles.progFill} style={{ width: `${progress}%` }} />
                       </div>
                       <span className={styles.progPct}>{Math.round(progress)}%</span>
+                      <div className={styles.review}>
+                        <img src={rv.src} alt="" />
+                        <div className={styles.reviewBody}>
+                          <div className={styles.reviewStars}>★★★★★</div>
+                          <div className={styles.reviewText}>“{rv.text}”</div>
+                          <div className={styles.reviewName}>{rv.name} · {rv.breed}</div>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -226,32 +329,58 @@ export default function Studio({ zone }: { zone: Zone }) {
             </div>
             {error && <div className={styles.err}>{error} — try another photo.</div>}
 
+            {/* STEP 1 — POSE */}
             <div className={styles.cfgSection}>
-              <div className={styles.cfgLabel}>Choose the base</div>
+              <div className={styles.cfgLabel}>1 · Choose the pose</div>
               <div className={styles.baseRow}>
-                {allBases.map((b) => (
-                  <button key={b.id} className={styles.baseBtn} aria-pressed={baseId === b.id} disabled={loading} onClick={() => pickBase(b.id)}>
-                    {b.label}
-                    <small>{b.price ? `+${money(b.price)}` : "Included"}</small>
+                {poses.map((p) => (
+                  <button key={p.id} className={styles.baseBtn} aria-pressed={poseId === p.id} disabled={loading} onClick={() => pickPose(p.id)}>
+                    {p.label}
+                    <small>{p.price ? `+${money(p.price)}` : "Free"}</small>
                   </button>
                 ))}
               </div>
             </div>
 
+            {/* STEP 2 — BASE (opcional) */}
             <div className={styles.cfgSection}>
+              <div className={styles.cfgLabel}>2 · Add a display base?</div>
               <label className={styles.toggle}>
-                <input type="checkbox" checked={addName} onChange={(e) => setAddName(e.target.checked)} />
-                Add their name on the base (+{money(NAMEPLATE_PRICE)})
+                <input
+                  type="checkbox"
+                  checked={wantsBase}
+                  disabled={loading}
+                  onChange={(e) => (e.target.checked ? enableBase() : disableBase())}
+                />
+                Show it on a display base (from +{money(paidBases[0].price)})
               </label>
-              {addName && (
-                <input className={styles.nameInput} maxLength={14} placeholder={`Your ${animal}'s name`} value={name} onChange={(e) => setName(e.target.value)} />
+
+              {wantsBase && (
+                <>
+                  <div className={styles.baseRow} style={{ marginTop: 12 }}>
+                    {paidBases.map((b) => (
+                      <button key={b.id} className={styles.baseBtn} aria-pressed={baseId === b.id} disabled={loading} onClick={() => pickBase(b.id)}>
+                        {b.label}
+                        <small>+{money(b.price)}</small>
+                      </button>
+                    ))}
+                  </div>
+                  <label className={styles.toggle} style={{ marginTop: 16 }}>
+                    <input type="checkbox" checked={addName} onChange={(e) => setAddName(e.target.checked)} />
+                    Add their name on the base (+{money(NAMEPLATE_PRICE)})
+                  </label>
+                  {addName && (
+                    <input className={styles.nameInput} maxLength={14} placeholder={`Your ${animal}'s name`} value={name} onChange={(e) => setName(e.target.value)} />
+                  )}
+                </>
               )}
             </div>
 
             <div className={styles.summary}>
               <div className={styles.row}><span>Figure · full-color resin</span><b>{money(FIGURE_PRICE)}</b></div>
-              <div className={styles.row}><span>Base — {base.label}</span><span>{base.price ? `+${money(base.price)}` : "Included"}</span></div>
-              {addName && <div className={styles.row}><span>Nameplate{name && ` — “${name.toUpperCase()}”`}</span><span>+{money(NAMEPLATE_PRICE)}</span></div>}
+              <div className={styles.row}><span>Pose — {pose.label}</span><span>{pose.price ? `+${money(pose.price)}` : "Free"}</span></div>
+              <div className={styles.row}><span>Base — {base.label}</span><span>{base.price ? `+${money(base.price)}` : "—"}</span></div>
+              {wantsBase && addName && <div className={styles.row}><span>Nameplate{name && ` — “${name.toUpperCase()}”`}</span><span>+{money(NAMEPLATE_PRICE)}</span></div>}
               <div className={styles.tot}><span>Total</span><b>{money(total)}</b></div>
               <button className={styles.buy} disabled={!figure || loading}>Add to cart →</button>
             </div>
@@ -311,7 +440,7 @@ export default function Studio({ zone }: { zone: Zone }) {
           <div className={styles.shead}><span className={styles.eyebrow}>How it works</span><h2>From photo to <em>forever</em>, in 3 steps</h2></div>
           <div className={styles.how}>
             <div className={styles.howc}><div className={styles.n}>1</div><h3>Upload a photo</h3><p>Any normal snapshot of your {animal}. You&apos;ll see your figure in seconds.</p><span className={styles.free}>Free · no card</span></div>
-            <div className={styles.howc}><div className={styles.n}>2</div><h3>Make it yours</h3><p>Choose the base and add their name. You only pay when you love it.</p></div>
+            <div className={styles.howc}><div className={styles.n}>2</div><h3>Make it yours</h3><p>Pick the pose and, if you like, a display base with their name. You only pay when you love it.</p></div>
             <div className={styles.howc}><div className={styles.n}>3</div><h3>We print &amp; ship</h3><p>Printed in full-color resin, hand-finished, and shipped to your door in 2–4 days.</p></div>
           </div>
         </section>
