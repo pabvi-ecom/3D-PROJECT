@@ -1,0 +1,53 @@
+.page { min-height: 100vh; background: #FCFBF8; color: #221F1C;
+  font-family: var(--font-nunito), system-ui, sans-serif; padding: 20px 16px 60px; }
+.inner { max-width: 620px; margin: 0 auto; }
+.brand { font-family: var(--font-fraunces), Georgia, serif; font-weight: 900; font-size: 1.3rem; letter-spacing: -.02em; text-align: center; }
+.brand span { color: #FF5A3C; }
+.h1 { font-family: var(--font-fraunces), Georgia, serif; font-weight: 900; font-size: 1.7rem; text-align: center; margin: 14px 0 6px; text-wrap: balance; }
+.sub { text-align: center; color: #6B645B; margin: 0 auto 22px; max-width: 34ch; }
+
+.drop { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center;
+  border: 2px dashed #E0AE9F; border-radius: 18px; padding: 34px 20px;
+  background: #fff; cursor: pointer; }
+.drop:hover { border-color: #FF5A3C; background: #FFF7F4; }
+.drop .ic { width: 56px; height: 56px; border-radius: 15px; background: #FFE7DF; color: #DE3F20; display: grid; place-items: center; }
+.drop b { font-family: var(--font-fraunces), serif; font-size: 1.15rem; }
+.drop small { color: #A79E93; font-size: .85rem; }
+
+.stage { position: relative; background: linear-gradient(180deg,#fff,#F4F1EB); border: 1px solid #ECE7DE; border-radius: 18px; overflow: hidden; aspect-ratio: 1/1; display: grid; place-items: center; box-shadow: 0 20px 44px -26px rgba(34,31,28,.3); }
+.stage img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.loading { position: absolute; inset: 0; display: grid; place-items: center; gap: 12px; background: rgba(255,255,255,.7); backdrop-filter: blur(2px); }
+.spinner { width: 44px; height: 44px; border-radius: 50%; border: 4px solid #FFE7DF; border-top-color: #FF5A3C; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading span { font-weight: 700; color: #6B645B; font-size: .9rem; }
+
+/* nameplate overlay on the result */
+.plate { position: absolute; left: 50%; bottom: 7%; transform: translateX(-50%);
+  min-width: 120px; padding: 7px 16px; border-radius: 5px; text-align: center;
+  background: linear-gradient(#F3D77E,#C79A3B 55%,#9A7526); box-shadow: 0 2px 6px rgba(0,0,0,.35), inset 0 1px 1px rgba(255,255,255,.5);
+  font-family: Georgia, "Times New Roman", serif; font-weight: 700; color: #4a3410; letter-spacing: .08em; text-transform: uppercase; font-size: .95rem; }
+
+.err { background: #FDECEA; border: 1px solid #F3B4AB; color: #B3261E; border-radius: 12px; padding: 12px 14px; margin-top: 14px; font-size: .9rem; }
+
+.section { margin-top: 22px; }
+.label { font-weight: 800; font-size: .82rem; text-transform: uppercase; letter-spacing: .05em; color: #6B645B; margin-bottom: 10px; }
+
+.bases { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; }
+.baseBtn { flex: 0 0 auto; border: 1.5px solid #E0D9CD; border-radius: 12px; background: #fff; padding: 10px 14px; cursor: pointer; font-weight: 700; font-size: .88rem; white-space: nowrap; }
+.baseBtn[aria-pressed="true"] { border-color: #FF5A3C; background: #FFE7DF; color: #DE3F20; }
+.baseBtn small { display: block; font-weight: 600; color: #A79E93; font-size: .72rem; }
+
+.nameRow { display: flex; gap: 10px; align-items: center; }
+.nameRow input { flex: 1; font-size: 1rem; font-weight: 600; padding: 12px 14px; border: 1px solid #E0D9CD; border-radius: 12px; background: #fff; text-transform: uppercase; letter-spacing: .04em; }
+.nameRow input:focus { outline: 2px solid #FF5A3C; border-color: #FF5A3C; }
+.toggle { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: .9rem; cursor: pointer; }
+
+.summary { margin-top: 22px; background: #221F1C; color: #fff; border-radius: 16px; padding: 18px; }
+.summary .row { display: flex; justify-content: space-between; padding: 6px 0; font-size: .9rem; color: rgba(255,255,255,.75); }
+.summary .row b { color: #fff; }
+.summary .tot { display: flex; justify-content: space-between; align-items: baseline; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.12); }
+.summary .tot b { font-family: var(--font-fraunces), serif; font-weight: 900; font-size: 1.6rem; }
+.buy { margin-top: 14px; width: 100%; border: none; border-radius: 999px; padding: 15px; font-weight: 800; font-size: 1rem; background: #FF5A3C; color: #fff; cursor: pointer; }
+.buy:disabled { opacity: .5; cursor: not-allowed; }
+
+.reset { display: block; margin: 18px auto 0; background: none; border: none; color: #A79E93; font-weight: 600; text-decoration: underline; cursor: pointer; }
