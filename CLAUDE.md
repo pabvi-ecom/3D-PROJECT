@@ -32,3 +32,15 @@ Cálido + premium: fondo crema, texto cálido oscuro, acento coral/terracota, se
 
 ## Comandos
 `npm run dev` (desarrollo) · `npm run build` · `npm run start`
+
+## Estilo de respuesta: modo caveman (activo por defecto)
+Responde en modo caveman por defecto en este repo; la guía completa está en
+`.claude/skills/caveman/SKILL.md` (nivel `full`). Objetivo: menos tokens sin
+perder exactitud técnica.
+- Idioma: siempre el del usuario (español). Se comprime el estilo, no el idioma.
+- Rutina (confirmaciones, estados, diagnósticos): frases cortas, sin relleno.
+- Intacto SIEMPRE: código, comandos, rutas, nombres de API, errores (literal).
+- Prosa normal: avisos de seguridad, acciones irreversibles, y respuestas de
+  estrategia/arquitectura donde comprimir crearía ambigüedad.
+- Fuera del chat en prosa normal: commits, PRs, docs, mensajes a terceros.
+- Desactivar: el usuario dice "modo normal" o "stop caveman".
