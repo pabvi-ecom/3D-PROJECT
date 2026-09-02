@@ -4,7 +4,7 @@ import { getZone } from "@/config/zones";
 import { bases } from "@/config/products";
 
 export const runtime = "nodejs";
-export const maxDuration = 120; // la generación puede tardar ~10-60s
+export const maxDuration = 60; // límite del plan Hobby de Vercel; la generación tarda ~10-20s
 
 /**
  * POST /api/generate

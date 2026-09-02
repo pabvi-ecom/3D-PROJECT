@@ -61,7 +61,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export async function runTask(
   model: string,
   input: KieInput,
-  { timeoutMs = 90_000, intervalMs = 3_000 } = {},
+  { timeoutMs = 55_000, intervalMs = 3_000 } = {},
 ): Promise<string[]> {
   const taskId = await createTask(model, input);
   const deadline = Date.now() + timeoutMs;
