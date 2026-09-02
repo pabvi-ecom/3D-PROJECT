@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import styles from "./Studio.module.css";
 import { brand } from "@/config/brand";
@@ -28,9 +28,44 @@ export default function Studio({ zone }: { zone: Zone }) {
   const [baseId, setBaseId] = useState(allBases[0].id);
   const [addName, setAddName] = useState(false);
   const [name, setName] = useState("");
+  const [progress, setProgress] = useState(0); // 0–100 (barra)
+  const [done, setDone] = useState(0);          // bases ya generadas (0–4)
+  const [phraseIdx, setPhraseIdx] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const animal = zone.animal;
+  const PHRASES = [
+    `Sculpting your ${animal}…`,
+    "Capturing every marking and color…",
+    "Mixing the full-color resin…",
+    "Getting the pose just right…",
+    "Placing them on the display base…",
+    "Adding those little details…",
+    "The best keepsake, almost ready…",
+  ];
+  const N_BASES = allBases.length;
+
+  // Frases rotativas mientras carga.
+  useEffect(() => {
+    if (!loading) return;
+    setPhraseIdx(0);
+    const id = setInterval(() => setPhraseIdx((i) => (i + 1) % PHRASES.length), 2600);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading]);
+
+  // Barra de progreso: avanza suave hacia el objetivo marcado por cuántas
+  // bases llevamos generadas (así refleja el progreso real y siempre se mueve).
+  useEffect(() => {
+    if (!loading) return;
+    const target = Math.min(96, ((done + 0.85) / N_BASES) * 100);
+    const id = setInterval(() => {
+      setProgress((p) => (p < target ? p + (target - p) * 0.12 : p));
+    }, 320);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, done]);
+
   const firstBaseId = allBases[0].id;
   const base = allBases.find((b) => b.id === baseId) ?? allBases[0];
   const figure = figures[baseId] ?? null;
@@ -57,14 +92,23 @@ export default function Studio({ zone }: { zone: Zone }) {
     setError(null);
     setFigures({});
     setBaseId(firstBaseId);
+    setProgress(0);
+    setDone(0);
     try {
       const first = await postGenerate({ imageBase64: dataUri, baseId: firstBaseId });
+      setDone(1);
       const rest = allBases.filter((b) => b.id !== firstBaseId);
       const others = await Promise.all(
-        rest.map(async (b) => [b.id, await postGenerate({ referenceUrl: first, baseId: b.id })] as const),
+        rest.map((b) =>
+          postGenerate({ referenceUrl: first, baseId: b.id }).then((url) => {
+            setDone((d) => d + 1);
+            return [b.id, url] as const;
+          }),
+        ),
       );
       const map: Record<string, string> = { [firstBaseId]: first };
       for (const [id, url] of others) map[id] = url;
+      setProgress(100);
       setFigures(map);
     } catch (e) {
       setError((e as Error).message);
@@ -89,13 +133,17 @@ export default function Studio({ zone }: { zone: Zone }) {
   // Solo regeneramos on-demand si por lo que sea faltara esa base.
   async function pickBase(id: string) {
     setBaseId(id);
+    // Ya está en memoria → cambio instantáneo, sin regenerar.
     if (figures[id] || loading) return;
     const ref = figures[firstBaseId];
     if (!ref) return;
     setLoading(true);
     setError(null);
+    setProgress(0);
+    setDone(N_BASES - 1); // solo falta esta base → barra casi llena
     try {
       const url = await postGenerate({ referenceUrl: ref, baseId: id });
+      setProgress(100);
       setFigures((prev) => ({ ...prev, [id]: url }));
     } catch (e) {
       setError((e as Error).message);
@@ -109,6 +157,8 @@ export default function Studio({ zone }: { zone: Zone }) {
     setFigures({});
     setBaseId(firstBaseId);
     setError(null);
+    setProgress(0);
+    setDone(0);
     if (fileRef.current) fileRef.current.value = "";
   }
   const openPicker = () => fileRef.current?.click();
@@ -150,15 +200,29 @@ export default function Studio({ zone }: { zone: Zone }) {
               <h1>Your figure</h1>
               <p>Pick a base and add their name.</p>
             </div>
-            <div className={styles.stage}>
-              {figure && <img src={figure} alt={`${animal} figure`} />}
-              {figure && addName && name && <div className={styles.plate}>{name}</div>}
-              {loading && (
-                <div className={styles.loading}>
-                  <div className={styles.spinner} />
-                  <span>Sculpting your {animal}…</span>
+            <div className={styles.work}>
+              <figure className={styles.baBefore}>
+                <img src={photo} alt="your photo" />
+                <figcaption>Before</figcaption>
+              </figure>
+
+              <div className={styles.afterCol}>
+                <span className={styles.afterTag}>After · your figure</span>
+                <div className={styles.stage}>
+                  {figure && <img src={figure} alt={`${animal} figure`} />}
+                  {figure && addName && name && <div className={styles.plate}>{name}</div>}
+                  {loading && (
+                    <div className={styles.loading}>
+                      <div className={styles.spinner} />
+                      <p className={styles.progPhrase}>{PHRASES[phraseIdx]}</p>
+                      <div className={styles.progTrack}>
+                        <div className={styles.progFill} style={{ width: `${progress}%` }} />
+                      </div>
+                      <span className={styles.progPct}>{Math.round(progress)}%</span>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
             {error && <div className={styles.err}>{error} — try another photo.</div>}
 

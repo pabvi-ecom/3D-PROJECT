@@ -121,10 +121,23 @@
 .studioHead p{color:var(--ink-soft); margin-top:8px}
 .stage{position:relative; background:linear-gradient(180deg,#fff,var(--surface-2)); border:1px solid var(--line); border-radius:var(--r); overflow:hidden; aspect-ratio:1/1; display:grid; place-items:center; box-shadow:var(--shadow)}
 .stage img{width:100%; height:100%; object-fit:cover; display:block}
-.loading{position:absolute; inset:0; display:grid; place-items:center; gap:12px; background:rgba(255,255,255,.72); backdrop-filter:blur(2px)}
-.spinner{width:44px; height:44px; border-radius:50%; border:4px solid var(--accent-soft); border-top-color:var(--accent); animation:spin 1s linear infinite}
+.loading{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:24px; text-align:center; background:color-mix(in srgb,var(--surface) 82%,transparent); backdrop-filter:blur(3px)}
+.spinner{width:40px; height:40px; border-radius:50%; border:4px solid var(--accent-soft); border-top-color:var(--accent); animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading span{font-weight:700; color:var(--ink-soft); font-size:.9rem}
+.progPhrase{font-family:var(--disp); font-weight:700; color:var(--ink); font-size:1rem; margin:0; min-height:2.6em; display:flex; align-items:center; max-width:22ch; animation:fadeIn .5s ease}
+@keyframes fadeIn{from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:none}}
+.progTrack{width:min(78%,260px); height:9px; border-radius:999px; background:var(--accent-soft); overflow:hidden; box-shadow:inset 0 1px 2px rgba(34,31,28,.08)}
+.progFill{height:100%; border-radius:999px; background:linear-gradient(90deg,var(--accent),#FF8A4C); transition:width .35s ease}
+.progPct{font-weight:800; font-size:.82rem; color:var(--accent-deep); letter-spacing:.02em}
+
+/* before / after */
+.work{display:grid; grid-template-columns:clamp(92px,24vw,132px) 1fr; gap:14px; align-items:start}
+@media(max-width:440px){.work{grid-template-columns:78px 1fr; gap:10px}}
+.baBefore{margin:0; position:relative}
+.baBefore img{width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:14px; border:1px solid var(--line); box-shadow:var(--shadow-sm); display:block; background:var(--surface-2)}
+.baBefore figcaption{position:absolute; top:8px; left:8px; font-size:.62rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); background:color-mix(in srgb,var(--surface) 90%,transparent); padding:3px 8px; border-radius:999px; box-shadow:var(--shadow-sm)}
+.afterCol{position:relative}
+.afterTag{display:inline-block; margin-bottom:8px; font-size:.66rem; font-weight:800; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-deep); background:var(--accent-soft); padding:4px 10px; border-radius:999px}
 .plate{position:absolute; left:50%; bottom:7%; transform:translateX(-50%); min-width:120px; padding:7px 16px; border-radius:5px; text-align:center; background:linear-gradient(#F3D77E,#C79A3B 55%,#9A7526); box-shadow:0 2px 6px rgba(0,0,0,.35), inset 0 1px 1px rgba(255,255,255,.5); font-family:Georgia, serif; font-weight:700; color:#4a3410; letter-spacing:.08em; text-transform:uppercase; font-size:.95rem}
 .err{background:#FDECEA; border:1px solid #F3B4AB; color:#B3261E; border-radius:12px; padding:12px 14px; margin-top:14px; font-size:.9rem}
 .cfgSection{margin-top:22px}
