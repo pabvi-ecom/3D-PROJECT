@@ -30,6 +30,10 @@ export async function POST(req: NextRequest) {
     const pose = poses.find((p) => p.id === poseId) ?? poses[0];
     const base = bases.find((b) => b.id === baseId) ?? bases[0];
     const basePhrase = base.prompt || NO_BASE;
+    const baseRefUrls = base.refImage ? [new URL(base.refImage, req.nextUrl.origin).toString()] : [];
+    const baseRefNote = base.refImage
+      ? " The LAST reference image shows the exact base to replicate — match its material, color and shape precisely, but keep the nameplate on it blank."
+      : "";
 
     let src: string | undefined;
     let prompt: string;
@@ -48,7 +52,7 @@ export async function POST(req: NextRequest) {
         prompt =
           `This is a full-color 3D printed figurine of a ${animal}. ` +
           `Keep the ${animal} figurine EXACTLY the same — identical sculpt, pose, proportions, ` +
-          `fur colors and markings. Change ONLY the display base: the figurine is now ${basePhrase}. ${STUDIO}`;
+          `fur colors and markings. Change ONLY the display base: the figurine is now ${basePhrase}.${baseRefNote} ${STUDIO}`;
       }
     } else {
       src = typeof imageUrl === "string" ? imageUrl : undefined;
@@ -58,10 +62,10 @@ export async function POST(req: NextRequest) {
       }
       prompt =
         `Turn this ${animal} into a cute, full-color collectible 3D printed figurine of the same ${animal}, ` +
-        `keeping its exact breed, fur colors and markings. The figurine is ${pose.prompt}, ${basePhrase}. ${STUDIO}`;
+        `keeping its exact breed, fur colors and markings. The figurine is ${pose.prompt}, ${basePhrase}.${baseRefNote} ${STUDIO}`;
     }
 
-    const url = await generateFigurine(src, prompt);
+    const url = await generateFigurine(src, prompt, baseRefUrls);
     return NextResponse.json({ url });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });

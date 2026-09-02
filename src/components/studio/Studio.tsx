@@ -45,7 +45,7 @@ export default function Studio({ zone }: { zone: Zone }) {
   const [name, setName] = useState("");
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(0);
-  const [genTotal, setGenTotal] = useState(poses.length);
+  const [genTotal, setGenTotal] = useState(poses.length + poses.length * paidBases.length);
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [reviewIdx, setReviewIdx] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -107,15 +107,18 @@ export default function Studio({ zone }: { zone: Zone }) {
     return json.url as string;
   }
 
-  // Al subir: genera la 1ª postura desde la foto y, usándola de referencia,
-  // las otras 3 cambiando SOLO la postura (sin base). No mostramos nada hasta
-  // tener las 4 listas.
+  // Al subir: genera TODAS las combinaciones de golpe (postura x base), para que
+  // luego cambiar de postura o de base sea instantáneo (nada se regenera).
+  // 1) 1ª postura desde la foto; las otras posturas por referencia (sin base).
+  // 2) Con las 3 posturas ya listas, las 2 bases de pago para CADA postura.
+  // Total: posturas + posturas x bases de pago (3 + 3x2 = 9 imágenes, ~2¢ cada una).
   async function generateAllPoses(dataUri: string) {
     setLoading(true);
     setError(null);
     setFigures({});
     setPhase("poses");
-    setGenTotal(poses.length);
+    const total = poses.length + poses.length * paidBases.length;
+    setGenTotal(total);
     setDone(0);
     setProgress(0);
     setPoseId(poses[0].id);
@@ -124,17 +127,32 @@ export default function Studio({ zone }: { zone: Zone }) {
     try {
       const first = await postGenerate({ imageBase64: dataUri, poseId: poses[0].id, baseId: NO_BASE_ID });
       setDone(1);
-      const rest = poses.slice(1);
-      const others = await Promise.all(
-        rest.map((p) =>
+      const restPoses = poses.slice(1);
+      const restResults = await Promise.all(
+        restPoses.map((p) =>
           postGenerate({ referenceUrl: first, change: "pose", poseId: p.id }).then((url) => {
             setDone((d) => d + 1);
-            return [key(p.id, NO_BASE_ID), url] as const;
+            return [p.id, url] as const;
           }),
         ),
       );
-      const map: Record<string, string> = { [key(poses[0].id, NO_BASE_ID)]: first };
-      for (const [k, u] of others) map[k] = u;
+      const noneByPose: Record<string, string> = { [poses[0].id]: first };
+      for (const [pid, url] of restResults) noneByPose[pid] = url;
+
+      setPhase("base");
+      const baseResults = await Promise.all(
+        poses.flatMap((p) =>
+          paidBases.map((b) =>
+            postGenerate({ referenceUrl: noneByPose[p.id], change: "base", baseId: b.id }).then((url) => {
+              setDone((d) => d + 1);
+              return [key(p.id, b.id), url] as const;
+            }),
+          ),
+        ),
+      );
+      const map: Record<string, string> = {};
+      for (const pid of Object.keys(noneByPose)) map[key(pid, NO_BASE_ID)] = noneByPose[pid];
+      for (const [k, u] of baseResults) map[k] = u;
       setProgress(100);
       setFigures(map);
     } catch (e) {
@@ -156,90 +174,25 @@ export default function Studio({ zone }: { zone: Zone }) {
     reader.readAsDataURL(f);
   }
 
-  // Cambiar de postura: instantáneo si ya está en memoria. Si hay base activa
-  // y falta esa combinación, la generamos sobre la marcha.
-  async function pickPose(id: string) {
+  // Todas las combinaciones (postura x base) ya están generadas de golpe al
+  // subir la foto — cambiar de postura o de base es solo un cambio de estado,
+  // instantáneo, sin llamar a la IA de nuevo.
+  function pickPose(id: string) {
+    if (loading) return;
     setPoseId(id);
-    if (figures[key(id, baseId)] || loading) return;
-    const ref = figures[key(id, NO_BASE_ID)];
-    if (!ref) return;
-    setLoading(true);
-    setError(null);
-    setPhase("base");
-    setGenTotal(1);
-    setDone(0);
-    setProgress(0);
-    try {
-      const url = await postGenerate({ referenceUrl: ref, change: "base", baseId });
-      setProgress(100);
-      setFigures((prev) => ({ ...prev, [key(id, baseId)]: url }));
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setLoading(false);
-    }
   }
 
-  // Activar base: genera todas las bases de pago para la postura actual
-  // ("Loading base textures…"). Las que ya estén en memoria no se regeneran.
-  async function enableBase() {
-    const firstPaid = paidBases[0].id;
-    setBaseId(firstPaid);
-    const poseNone = figures[key(poseId, NO_BASE_ID)];
-    if (!poseNone) return;
-    const missing = paidBases.filter((b) => !figures[key(poseId, b.id)]);
-    if (missing.length === 0) return; // ya en memoria → instantáneo
-    setLoading(true);
-    setError(null);
-    setPhase("base");
-    setGenTotal(missing.length);
-    setDone(0);
-    setProgress(0);
-    try {
-      const results = await Promise.all(
-        missing.map((b) =>
-          postGenerate({ referenceUrl: poseNone, change: "base", baseId: b.id }).then((url) => {
-            setDone((d) => d + 1);
-            return [key(poseId, b.id), url] as const;
-          }),
-        ),
-      );
-      const add: Record<string, string> = {};
-      for (const [k, u] of results) add[k] = u;
-      setProgress(100);
-      setFigures((prev) => ({ ...prev, ...add }));
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setLoading(false);
-    }
+  function enableBase() {
+    setBaseId(paidBases[0].id);
   }
 
   function disableBase() {
-    setBaseId(NO_BASE_ID); // instantáneo: la figura sin base ya está en memoria
+    setBaseId(NO_BASE_ID);
   }
 
-  // Cambiar entre bases de pago: instantáneo si está, si no se genera.
-  async function pickBase(id: string) {
+  function pickBase(id: string) {
+    if (loading) return;
     setBaseId(id);
-    if (figures[key(poseId, id)] || loading) return;
-    const poseNone = figures[key(poseId, NO_BASE_ID)];
-    if (!poseNone) return;
-    setLoading(true);
-    setError(null);
-    setPhase("base");
-    setGenTotal(1);
-    setDone(0);
-    setProgress(0);
-    try {
-      const url = await postGenerate({ referenceUrl: poseNone, change: "base", baseId: id });
-      setProgress(100);
-      setFigures((prev) => ({ ...prev, [key(poseId, id)]: url }));
-    } catch (e) {
-      setError((e as Error).message);
-    } finally {
-      setLoading(false);
-    }
   }
 
   function reset() {

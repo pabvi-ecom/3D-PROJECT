@@ -80,10 +80,9 @@ export interface Pose {
 }
 
 export const poses: Pose[] = [
-  { id: "sitting",  label: "Sitting",      price: 0,    prompt: "sitting upright on its hindquarters, facing forward" },
-  { id: "standing", label: "Standing",     price: 0,    prompt: "standing naturally on all four legs, facing forward" },
-  { id: "lying",    label: "Lying down",   price: 9.99, prompt: "lying down relaxed with its front paws stretched forward" },
-  { id: "begging",  label: "On hind legs", price: 9.99, prompt: "sitting up and begging on its hind legs with front paws lifted" },
+  { id: "sitting",  label: "Sitting",    price: 0,    prompt: "sitting upright on its hindquarters, facing forward" },
+  { id: "lying",    label: "Lying down", price: 9.99, prompt: "lying down relaxed with its front paws stretched forward" },
+  { id: "standing", label: "Standing",   price: 0,    prompt: "standing naturally on all four legs, facing forward" },
 ];
 
 /**
@@ -97,16 +96,29 @@ export interface Base {
   label: string;
   price: number;
   prompt: string; // "" para la opción sin base
+  refImage?: string; // imagen de referencia real (public/) que se manda a la IA junto al prompt
 }
 
 export const NO_BASE_ID = "none";
 
 export const bases: Base[] = [
-  { id: "none",   label: "No base",        price: 0,     prompt: "" },
-  { id: "wood",   label: "Classic wood",   price: 9.99,  prompt: "on a realistic round wooden display base with a small blank gold nameplate on the front" },
-  { id: "grass",  label: "Grass top",      price: 9.99,  prompt: "on a round display base with a realistic grass top and a polished wooden rim, and a small blank gold nameplate on the front" },
-  { id: "marble", label: "Marble",         price: 14.99, prompt: "on a realistic round white marble display base with a small blank gold nameplate on the front" },
-  { id: "black",  label: "Memorial black", price: 14.99, prompt: "on a realistic round glossy black memorial display base with a small blank gold nameplate on the front" },
+  { id: "none", label: "No base", price: 0, prompt: "" },
+  {
+    id: "grass",
+    label: "Grass top",
+    price: 9.99,
+    prompt:
+      "on a round wooden display base with a lush, realistic short green grass top filling the whole surface and a polished dark wood rim, with a small blank brushed-gold nameplate on the front edge",
+    refImage: "/bases/grass-ref.png",
+  },
+  {
+    id: "cushion",
+    label: "Cozy bed",
+    price: 9.99,
+    prompt:
+      "on a round dark wood display base shaped like a cozy pet bed, with a plush soft brown faux-fur rim and a cream sherpa cushion in the center, and a small blank brushed-gold nameplate on the front edge",
+    refImage: "/bases/cushion-ref.png",
+  },
 ];
 
 /** Bases de pago (para el selector, sin la opción "none"). */

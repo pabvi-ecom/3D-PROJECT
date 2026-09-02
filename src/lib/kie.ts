@@ -99,10 +99,10 @@ export async function uploadImage(dataUri: string, fileName = "upload.png"): Pro
  * @param imageUrl  URL pública de la foto subida por el cliente.
  * @param prompt    Instrucción (incluye el estilo de la zona + la base elegida).
  */
-export async function generateFigurine(imageUrl: string, prompt: string): Promise<string> {
+export async function generateFigurine(imageUrl: string, prompt: string, extraRefUrls: string[] = []): Promise<string> {
   const urls = await runTask("google/nano-banana-edit", {
     prompt,
-    image_urls: [imageUrl],
+    image_urls: [imageUrl, ...extraRefUrls],
     output_format: "png",
     image_size: "1:1",
   });
