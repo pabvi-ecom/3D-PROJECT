@@ -22,7 +22,7 @@ const GALLERY = [
 
 export default function Studio({ zone }: { zone: Zone }) {
   const [photo, setPhoto] = useState<string | null>(null);
-  const [figure, setFigure] = useState<string | null>(null);
+  const [figures, setFigures] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [baseId, setBaseId] = useState(allBases[0].id);
@@ -31,22 +31,41 @@ export default function Studio({ zone }: { zone: Zone }) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   const animal = zone.animal;
+  const firstBaseId = allBases[0].id;
   const base = allBases.find((b) => b.id === baseId) ?? allBases[0];
+  const figure = figures[baseId] ?? null;
   const total = FIGURE_PRICE + base.price + (addName ? NAMEPLATE_PRICE : 0);
   const money = (n: number) => `${brand.currencySymbol}${n.toFixed(2)}`;
 
-  async function generate(dataUri: string, bId: string) {
+  // Llama al endpoint una vez y devuelve la URL de la figura generada.
+  async function postGenerate(body: Record<string, unknown>): Promise<string> {
+    const res = await fetch("/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ zone: zone.slug, ...body }),
+    });
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.error ?? "Couldn't generate");
+    return json.url as string;
+  }
+
+  // Al subir la foto: genera PRIMERO la base por defecto desde la foto y,
+  // usando esa figura como referencia, genera las otras 3 cambiando SOLO la
+  // base (el perro queda idéntico). No mostramos nada hasta tener las 4.
+  async function generateAll(dataUri: string) {
     setLoading(true);
     setError(null);
+    setFigures({});
+    setBaseId(firstBaseId);
     try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageBase64: dataUri, zone: zone.slug, baseId: bId }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error ?? "Couldn't generate");
-      setFigure(json.url);
+      const first = await postGenerate({ imageBase64: dataUri, baseId: firstBaseId });
+      const rest = allBases.filter((b) => b.id !== firstBaseId);
+      const others = await Promise.all(
+        rest.map(async (b) => [b.id, await postGenerate({ referenceUrl: first, baseId: b.id })] as const),
+      );
+      const map: Record<string, string> = { [firstBaseId]: first };
+      for (const [id, url] of others) map[id] = url;
+      setFigures(map);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -61,18 +80,34 @@ export default function Studio({ zone }: { zone: Zone }) {
     reader.onload = () => {
       const dataUri = reader.result as string;
       setPhoto(dataUri);
-      setFigure(null);
-      generate(dataUri, baseId);
+      generateAll(dataUri);
     };
     reader.readAsDataURL(f);
   }
-  function pickBase(id: string) {
+
+  // Cambiar de base es INSTANTÁNEO: ya está en memoria (figures[id]).
+  // Solo regeneramos on-demand si por lo que sea faltara esa base.
+  async function pickBase(id: string) {
     setBaseId(id);
-    if (photo) generate(photo, id);
+    if (figures[id] || loading) return;
+    const ref = figures[firstBaseId];
+    if (!ref) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const url = await postGenerate({ referenceUrl: ref, baseId: id });
+      setFigures((prev) => ({ ...prev, [id]: url }));
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setLoading(false);
+    }
   }
+
   function reset() {
     setPhoto(null);
-    setFigure(null);
+    setFigures({});
+    setBaseId(firstBaseId);
     setError(null);
     if (fileRef.current) fileRef.current.value = "";
   }
@@ -117,7 +152,6 @@ export default function Studio({ zone }: { zone: Zone }) {
             </div>
             <div className={styles.stage}>
               {figure && <img src={figure} alt={`${animal} figure`} />}
-              {!figure && !loading && <img src={photo} alt="your photo" />}
               {figure && addName && name && <div className={styles.plate}>{name}</div>}
               {loading && (
                 <div className={styles.loading}>
