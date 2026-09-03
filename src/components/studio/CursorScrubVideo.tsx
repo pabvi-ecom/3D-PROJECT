@@ -49,12 +49,16 @@ export default function CursorScrubVideo({
     let raf = 0;
     let cancelled = false;
 
+    function onLoadedMetadata() {
+      video.currentTime = 0;
+      // Empuja un frame visible de inmediato (buffer silencioso, muted).
+      video
+        .play()
+        .then(() => video.pause())
+        .catch(() => {});
+    }
+    video.addEventListener("loadedmetadata", onLoadedMetadata);
     video.load();
-    video
-      .play()
-      .then(() => video.pause())
-      .catch(() => {});
-    video.currentTime = 0;
 
     function onSeeking() {
       seeking = true;
@@ -125,6 +129,7 @@ export default function CursorScrubVideo({
     return () => {
       cancelled = true;
       cancelAnimationFrame(raf);
+      video.removeEventListener("loadedmetadata", onLoadedMetadata);
       video.removeEventListener("seeking", onSeeking);
       video.removeEventListener("seeked", onSeeked);
       video.removeEventListener("canplaythrough", onCanPlayThrough);
