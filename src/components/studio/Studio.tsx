@@ -11,6 +11,8 @@ const FIGURE_PRICE = 79.99;
 const GALLERY = [
   "/examples/labrador-wood.jpg", "/examples/setter-marble.jpg", "/examples/basset-black.jpg",
   "/examples/basset-marble.jpg", "/examples/golden-white.jpg", "/examples/basset-wood.jpg",
+  "/examples/lifestyle-cooper.jpg", "/examples/lifestyle-daisy.jpg",
+  "/examples/lifestyle-buddy.jpg", "/examples/lifestyle-bailey.jpg",
 ];
 
 // Reseñas que rotan mientras se genera la figura.
