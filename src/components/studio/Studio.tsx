@@ -52,8 +52,6 @@ export default function Studio({ zone }: { zone: Zone }) {
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [reviewIdx, setReviewIdx] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
-  const gazeRef = useRef<HTMLElement>(null);
-  const [gazeDir, setGazeDir] = useState<"center" | "up" | "down" | "left" | "right">("center");
 
   const animal = zone.animal;
   const pose = poses.find((p) => p.id === poseId) ?? poses[0];
@@ -82,38 +80,6 @@ export default function Studio({ zone }: { zone: Zone }) {
     "Setting the nameplate…",
   ];
   const phrases = phase === "base" ? BASE_PHRASES : POSE_PHRASES;
-
-  // El golden del hero "mira" hacia el ratón (desktop) o hacia donde se
-  // arrastra el dedo (móvil), en toda la página — cambia entre 5 fotos
-  // (centro/arriba/abajo/izq/dcha) del mismo perro con fundido suave.
-  useEffect(() => {
-    const THRESHOLD = 50;
-    function look(clientX: number, clientY: number) {
-      const el = gazeRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const dx = clientX - (rect.left + rect.width / 2);
-      const dy = clientY - (rect.top + rect.height / 2);
-      if (Math.abs(dx) < THRESHOLD && Math.abs(dy) < THRESHOLD) {
-        setGazeDir("center");
-      } else if (Math.abs(dx) > Math.abs(dy)) {
-        setGazeDir(dx > 0 ? "right" : "left");
-      } else {
-        setGazeDir(dy > 0 ? "down" : "up");
-      }
-    }
-    const onMouse = (e: MouseEvent) => look(e.clientX, e.clientY);
-    const onTouch = (e: TouchEvent) => {
-      const t = e.touches[0];
-      if (t) look(t.clientX, t.clientY);
-    };
-    window.addEventListener("mousemove", onMouse);
-    window.addEventListener("touchmove", onTouch, { passive: true });
-    return () => {
-      window.removeEventListener("mousemove", onMouse);
-      window.removeEventListener("touchmove", onTouch);
-    };
-  }, []);
 
   // Frases + reseñas rotando mientras carga.
   useEffect(() => {
@@ -518,35 +484,37 @@ export default function Studio({ zone }: { zone: Zone }) {
       {ReadingOverlay}
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
 
-      <section className={styles.heroFull} ref={gazeRef}>
-        <div className={styles.heroBg}>
-          {(["center", "up", "down", "left", "right"] as const).map((d) => (
-            <img
-              key={d}
-              src={`/pet/${d}.png`}
-              alt={d === "center" ? "a golden retriever watching you" : ""}
-              className={styles.heroBgImg}
-              style={{ opacity: gazeDir === d ? 1 : 0 }}
-            />
-          ))}
-        </div>
+      <section className={styles.heroFull}>
+        <video
+          className={styles.heroVideo}
+          src="/pet/hero.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          aria-hidden
+        />
         <div className={styles.heroScrim} />
         <div className={`${styles.wrap} ${styles.heroContent}`}>
-          <span className={styles.eyebrow}>🐾 Free preview · no card needed</span>
-          <h1 style={{ marginTop: 16 }}>See your {animal} as a <em>figure</em> — in seconds.</h1>
-          <p className={styles.heroSub}>Upload one photo and see your {animal} as a collectible figure, free. Love it? We 3D-print it in full color and ship it to you.</p>
-          <button className={styles.drop} onClick={openPicker}>
-            <span className={styles.dropIcon}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
-            </span>
-            <span>
-              <span className={styles.dropTitle}>Upload a photo of your {animal}</span>
-              <span className={styles.dropHint}>See your figure in seconds — free</span>
-            </span>
-          </button>
-          <div className={styles.trust}>
-            <span><span className={styles.stars}>★★★★★</span> 4.9 · loved by pet parents</span>
-            <span>🚚 Ships in 2–4 days</span>
+          <div className={styles.heroLeft}>
+            <span className={styles.eyebrow}>🐾 Free preview · no card needed</span>
+            <h1 style={{ marginTop: 16 }}>See your {animal} as a <em>figure</em> — in seconds.</h1>
+            <p className={styles.heroSub}>Upload one photo and see your {animal} as a collectible figure, free. Love it? We 3D-print it in full color and ship it to you.</p>
+            <button className={styles.drop} onClick={openPicker}>
+              <span className={styles.dropIcon}>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+              </span>
+              <span>
+                <span className={styles.dropTitle}>Upload a photo of your {animal}</span>
+                <span className={styles.dropHint}>See your figure in seconds — free</span>
+              </span>
+            </button>
+          </div>
+          <div className={styles.heroRight}>
+            <div className={styles.heroStat}><b>4.9<span className={styles.stars}> ★★★★★</span></b><span>loved by pet parents</span></div>
+            <div className={styles.heroStat}><b>2–4 days</b><span>🚚 fast shipping</span></div>
+            <div className={styles.heroStat}><b>Full-color</b><span>hand-finished resin</span></div>
           </div>
         </div>
       </section>
