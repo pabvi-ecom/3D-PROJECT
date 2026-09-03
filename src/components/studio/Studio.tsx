@@ -277,7 +277,7 @@ export default function Studio({ zone }: { zone: Zone }) {
     if (!n) return;
     setPetName(n);
     setAskName(false);
-    setTimeout(() => fileRef.current?.click(), 0);
+    fileRef.current?.click();
   }
 
   const Nav = (
