@@ -8,6 +8,9 @@ import type { Zone } from "@/config/zones";
 
 const FIGURE_PRICE = 79.99;
 
+type GazeDir = "right" | "downright" | "down" | "downleft" | "left" | "upleft" | "up" | "upright";
+const GAZE_DIRS: GazeDir[] = ["right", "downright", "down", "downleft", "left", "upleft", "up", "upright"];
+
 const GALLERY = [
   "/examples/labrador-wood.jpg", "/examples/setter-marble.jpg", "/examples/basset-black.jpg",
   "/examples/basset-marble.jpg", "/examples/golden-white.jpg", "/examples/basset-wood.jpg",
@@ -52,6 +55,9 @@ export default function Studio({ zone }: { zone: Zone }) {
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [reviewIdx, setReviewIdx] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
+  const gazeRef = useRef<HTMLElement>(null);
+  const [gazeMode, setGazeMode] = useState<"idle" | "tracking">("idle");
+  const [gazeDir, setGazeDir] = useState<GazeDir>("right");
 
   const animal = zone.animal;
   const pose = poses.find((p) => p.id === poseId) ?? poses[0];
@@ -80,6 +86,44 @@ export default function Studio({ zone }: { zone: Zone }) {
     "Setting the nameplate…",
   ];
   const phrases = phase === "base" ? BASE_PHRASES : POSE_PHRASES;
+
+  // El golden del hero: vídeo de fondo (respira/parpadea) cuando nadie
+  // toca nada; en cuanto el ratón se mueve (o se arrastra el dedo), cambia
+  // al instante a una foto suya mirando hacia esa dirección (8 posibles).
+  // Tras ~1.2s sin movimiento, vuelve al vídeo.
+  useEffect(() => {
+    const THRESHOLD = 60;
+    let idleTimer: ReturnType<typeof setTimeout> | null = null;
+    function look(clientX: number, clientY: number) {
+      const el = gazeRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const dx = clientX - (rect.left + rect.width / 2);
+      const dy = clientY - (rect.top + rect.height / 2);
+      if (Math.hypot(dx, dy) < THRESHOLD) {
+        setGazeMode("idle");
+      } else {
+        const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+        const idx = Math.round(((angle < 0 ? angle + 360 : angle) / 45)) % 8;
+        setGazeDir(GAZE_DIRS[idx]);
+        setGazeMode("tracking");
+      }
+      if (idleTimer) clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => setGazeMode("idle"), 1200);
+    }
+    const onMouse = (e: MouseEvent) => look(e.clientX, e.clientY);
+    const onTouch = (e: TouchEvent) => {
+      const t = e.touches[0];
+      if (t) look(t.clientX, t.clientY);
+    };
+    window.addEventListener("mousemove", onMouse);
+    window.addEventListener("touchmove", onTouch, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", onMouse);
+      window.removeEventListener("touchmove", onTouch);
+      if (idleTimer) clearTimeout(idleTimer);
+    };
+  }, []);
 
   // Frases + reseñas rotando mientras carga.
   useEffect(() => {
@@ -484,9 +528,10 @@ export default function Studio({ zone }: { zone: Zone }) {
       {ReadingOverlay}
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
 
-      <section className={styles.heroFull}>
+      <section className={styles.heroFull} ref={gazeRef}>
         <video
           className={styles.heroVideo}
+          style={{ opacity: gazeMode === "idle" ? 1 : 0 }}
           src="/pet/hero.mp4"
           autoPlay
           muted
@@ -495,6 +540,16 @@ export default function Studio({ zone }: { zone: Zone }) {
           preload="auto"
           aria-hidden
         />
+        {GAZE_DIRS.map((d) => (
+          <img
+            key={d}
+            src={`/pet/${d}.png`}
+            alt=""
+            aria-hidden
+            className={styles.heroVideo}
+            style={{ opacity: gazeMode === "tracking" && gazeDir === d ? 1 : 0 }}
+          />
+        ))}
         <div className={styles.heroScrim} />
         <div className={`${styles.wrap} ${styles.heroContent}`}>
           <div className={styles.heroLeft}>
