@@ -50,12 +50,10 @@ export default function CursorScrubVideo({
     let cancelled = false;
 
     function onLoadedMetadata() {
-      video.currentTime = 0;
-      // Empuja un frame visible de inmediato (buffer silencioso, muted).
-      video
-        .play()
-        .then(() => video.pause())
-        .catch(() => {});
+      // OJO: currentTime ya está en 0 por defecto — asignarle 0 de nuevo NO
+      // dispara seeking/seeked y el navegador nunca decodifica un frame
+      // (pantalla negra). Forzamos un seek real a un valor no-cero.
+      video.currentTime = 0.001;
     }
     video.addEventListener("loadedmetadata", onLoadedMetadata);
     video.load();
