@@ -138,7 +138,7 @@ export default function CursorScrubVideo({
   }, [videoFile, axis, reverse, trackingArea, smoothing]);
 
   return (
-    <div ref={rootRef} className={className} style={{ position: "relative", width: "100%", height: "100%" }}>
+    <div ref={rootRef} className={className} style={{ width: "100%", height: "100%" }}>
       <video
         ref={videoRef}
         src={videoFile}
