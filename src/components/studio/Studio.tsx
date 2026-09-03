@@ -52,9 +52,8 @@ export default function Studio({ zone }: { zone: Zone }) {
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [reviewIdx, setReviewIdx] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
-  const tiltRef = useRef<HTMLDivElement>(null);
-  const heroVideoRef = useRef<HTMLVideoElement>(null);
-  const reactRafRef = useRef(0);
+  const maskAreaRef = useRef<HTMLDivElement>(null);
+  const maskTopRef = useRef<HTMLDivElement>(null);
 
   const animal = zone.animal;
   const pose = poses.find((p) => p.id === poseId) ?? poses[0];
@@ -84,46 +83,54 @@ export default function Studio({ zone }: { zone: Zone }) {
   ];
   const phrases = phase === "base" ? BASE_PHRASES : POSE_PHRASES;
 
-  // El perro del hero "sigue" al ratón/dedo en CUALQUIER dirección (arriba,
-  // abajo, izq, dcha, diagonales, círculos) en tiempo real: inclinamos el
-  // plano del vídeo (rotateX/rotateY, tipo tarjeta que se ladea hacia el
-  // cursor) según su posición en TODA la página, con suavizado. El vídeo en
-  // sí se reproduce normal en bucle (movimiento natural real, no fotos).
+  // Hero: foto real arriba, figura de resina debajo — un círculo alrededor
+  // del cursor "agujerea" la foto de arriba y deja ver la figura de abajo
+  // justo ahí (mask-image con radial-gradient), suavizado con lerp.
   useEffect(() => {
-    const el = tiltRef.current;
-    if (!el) return;
-    const MAX_DEG = 3;
-    let targetRX = 0;
-    let targetRY = 0;
-    let curRX = 0;
-    let curRY = 0;
+    const area = maskAreaRef.current;
+    const top = maskTopRef.current;
+    if (!area || !top) return;
+    const RADIUS = 160;
+    let targetX = 0;
+    let targetY = 0;
+    let curX = 0;
+    let curY = 0;
     let raf = 0;
+    let inited = false;
 
     function onMove(clientX: number, clientY: number) {
-      const nx = clientX / window.innerWidth; // 0..1
-      const ny = clientY / window.innerHeight; // 0..1
-      targetRY = (nx - 0.5) * 2 * MAX_DEG; // izq/dcha
-      targetRX = -(ny - 0.5) * 2 * MAX_DEG; // arriba/abajo
+      const rect = area!.getBoundingClientRect();
+      targetX = clientX - rect.left;
+      targetY = clientY - rect.top;
+      if (!inited) {
+        curX = targetX;
+        curY = targetY;
+        inited = true;
+      }
     }
     const onMouse = (e: MouseEvent) => onMove(e.clientX, e.clientY);
     const onTouch = (e: TouchEvent) => {
       const t = e.touches[0];
       if (t) onMove(t.clientX, t.clientY);
     };
-    window.addEventListener("mousemove", onMouse);
-    window.addEventListener("touchmove", onTouch, { passive: true });
+    area.addEventListener("mousemove", onMouse);
+    area.addEventListener("touchmove", onTouch, { passive: true });
 
     function tick() {
-      curRX += (targetRX - curRX) * 0.08;
-      curRY += (targetRY - curRY) * 0.08;
-      el!.style.transform = `perspective(1200px) rotateX(${curRX}deg) rotateY(${curRY}deg) scale(1.04)`;
+      curX += (targetX - curX) * 0.18;
+      curY += (targetY - curY) * 0.18;
+      const mask = inited
+        ? `radial-gradient(circle ${RADIUS}px at ${curX}px ${curY}px, transparent 0px, transparent ${RADIUS - 1}px, black ${RADIUS}px)`
+        : "none";
+      top!.style.maskImage = mask;
+      top!.style.webkitMaskImage = mask;
       raf = requestAnimationFrame(tick);
     }
     raf = requestAnimationFrame(tick);
 
     return () => {
-      window.removeEventListener("mousemove", onMouse);
-      window.removeEventListener("touchmove", onTouch);
+      area.removeEventListener("mousemove", onMouse);
+      area.removeEventListener("touchmove", onTouch);
       cancelAnimationFrame(raf);
     };
   }, []);
@@ -326,34 +333,6 @@ export default function Studio({ zone }: { zone: Zone }) {
   // usuario), sin pasos intermedios — así nunca lo bloquea el navegador.
   const openPicker = () => fileRef.current?.click();
 
-  // Reacción "de verdad" al botón (igual que el reel del panda): no es
-  // persecución continua del cursor, es un vídeo que reacciona a un evento
-  // concreto — al pasar el ratón por el botón, reproduce el tramo del vídeo
-  // donde mira hacia abajo (hacia el botón); al salir, vuelve al reposo.
-  function onCtaEnter() {
-    const v = heroVideoRef.current;
-    if (!v || !v.duration) return;
-    cancelAnimationFrame(reactRafRef.current);
-    v.pause();
-    const LOOK_START = 1.9;
-    const LOOK_END = 3.2;
-    v.currentTime = LOOK_START;
-    let last = performance.now();
-    const step = (now: number) => {
-      const dt = (now - last) / 1000;
-      last = now;
-      let t = v.currentTime + dt;
-      if (t > LOOK_END) t = LOOK_START;
-      v.currentTime = t;
-      reactRafRef.current = requestAnimationFrame(step);
-    };
-    reactRafRef.current = requestAnimationFrame(step);
-  }
-  function onCtaLeave() {
-    cancelAnimationFrame(reactRafRef.current);
-    const v = heroVideoRef.current;
-    if (v) v.play().catch(() => {});
-  }
 
   function confirmName(e: React.FormEvent) {
     e.preventDefault();
@@ -560,19 +539,10 @@ export default function Studio({ zone }: { zone: Zone }) {
       {ReadingOverlay}
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
 
-      <section className={styles.heroFull}>
-        <div ref={tiltRef} className={styles.heroTilt}>
-          <video
-            ref={heroVideoRef}
-            className={styles.heroVideoWrap}
-            src="/pet/hero.mp4"
-            autoPlay
-            muted
-            loop
-            playsInline
-            preload="auto"
-            aria-hidden
-          />
+      <section className={styles.heroFull} ref={maskAreaRef}>
+        <img className={styles.heroVideoWrap} src="/pet/dog-figure.jpg" alt="the dog as a resin figure" aria-hidden />
+        <div ref={maskTopRef} className={styles.heroVideoWrap} style={{ zIndex: 1 }}>
+          <img className={styles.heroVideoWrap} src="/pet/dog-real.jpg" alt="a real dog" aria-hidden />
         </div>
         <div className={styles.heroScrim} />
         <div className={`${styles.wrap} ${styles.heroContent}`}>
@@ -580,7 +550,7 @@ export default function Studio({ zone }: { zone: Zone }) {
             <span className={styles.eyebrow}>🐾 Free preview · no card needed</span>
             <h1 style={{ marginTop: 16 }}>See your {animal} as a <em>figure</em> — in seconds.</h1>
             <p className={styles.heroSub}>Upload one photo and see your {animal} as a collectible figure, free. Love it? We 3D-print it in full color and ship it to you.</p>
-            <button className={styles.drop} onClick={openPicker} onMouseEnter={onCtaEnter} onMouseLeave={onCtaLeave}>
+            <button className={styles.drop} onClick={openPicker}>
               <span className={styles.dropIcon}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
               </span>
