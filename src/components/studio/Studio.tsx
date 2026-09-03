@@ -8,12 +8,6 @@ import type { Zone } from "@/config/zones";
 
 const FIGURE_PRICE = 79.99;
 
-const HERO_EXAMPLES = [
-  { src: "/examples/labrador-wood.jpg", label: "Labrador" },
-  { src: "/examples/setter-marble.jpg", label: "Setter" },
-  { src: "/examples/basset-black.jpg", label: "Basset" },
-  { src: "/examples/basset-wood.jpg", label: "Basset" },
-];
 const GALLERY = [
   "/examples/labrador-wood.jpg", "/examples/setter-marble.jpg", "/examples/basset-black.jpg",
   "/examples/basset-marble.jpg", "/examples/golden-white.jpg", "/examples/basset-wood.jpg",
@@ -510,10 +504,12 @@ export default function Studio({ zone }: { zone: Zone }) {
           </div>
           <div style={{ position: "relative" }}>
             <div className={styles.exBadge}>✨ Real photo → figure</div>
-            <div className={styles.exGrid}>
-              {HERO_EXAMPLES.map((ex, i) => (
-                <div className={styles.exTile} key={i}><img src={ex.src} alt={`${ex.label} figure`} loading="lazy" /></div>
-              ))}
+            <div className={styles.heroWipe}>
+              <img className={styles.heroWipeBefore} src="/examples/hero-before.png" alt="a real dog" />
+              <div className={styles.heroWipeAfterMask}>
+                <img className={styles.heroWipeAfter} src="/examples/golden-white.jpg" alt="the dog as a figure" />
+              </div>
+              <div className={styles.heroWipeBar} />
             </div>
           </div>
         </header>

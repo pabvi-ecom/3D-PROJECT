@@ -53,6 +53,14 @@
 .exTile img{width:100%; height:100%; object-fit:cover; display:block}
 .exBadge{position:absolute; top:-10px; right:-6px; z-index:2; background:var(--surface); border-radius:999px; box-shadow:var(--shadow); padding:8px 13px; font-size:.8rem; font-weight:700; display:flex; gap:7px; align-items:center}
 
+.heroWipe{position:relative; width:100%; aspect-ratio:1/1; border-radius:20px; overflow:hidden; background:var(--surface-2); border:1px solid var(--line); box-shadow:var(--shadow)}
+.heroWipeBefore,.heroWipeAfter{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block}
+.heroWipeAfterMask{position:absolute; inset:0; clip-path:inset(0 100% 0 0); animation:heroWipeReveal 4.5s cubic-bezier(.65,0,.35,1) infinite alternate}
+.heroWipeBar{position:absolute; top:0; bottom:0; left:0; width:4px; background:linear-gradient(180deg,var(--accent),var(--gold)); box-shadow:0 0 18px 3px color-mix(in srgb,var(--accent) 70%,transparent); animation:heroWipeBarMove 4.5s cubic-bezier(.65,0,.35,1) infinite alternate; z-index:3}
+@keyframes heroWipeReveal{from{clip-path:inset(0 100% 0 0)} to{clip-path:inset(0 0% 0 0)}}
+@keyframes heroWipeBarMove{from{left:0%} to{left:100%}}
+@media (prefers-reduced-motion: reduce){.heroWipeAfterMask,.heroWipeBar{animation:none}.heroWipeAfterMask{clip-path:inset(0 0 0 0)}.heroWipeBar{display:none}}
+
 /* strip */
 .strip{border-block:1px solid var(--line); margin-top:16px; padding:18px 0; display:flex; gap:12px 30px; flex-wrap:wrap; align-items:center; justify-content:center; color:var(--ink-faint); font-weight:600; font-size:.88rem}
 .strip b{color:var(--ink)}
