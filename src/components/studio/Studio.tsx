@@ -36,6 +36,8 @@ const key = (poseId: string, baseId: string, view: "front" | "side" = "front") =
 export default function Studio({ zone }: { zone: Zone }) {
   const [photo, setPhoto] = useState<string | null>(null);
   const [figures, setFigures] = useState<Record<string, string>>({});
+  const [namedFigures, setNamedFigures] = useState<Record<string, string>>({});
+  const [nameLoading, setNameLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [phase, setPhase] = useState<"poses" | "base">("poses");
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,9 @@ export default function Studio({ zone }: { zone: Zone }) {
   const [baseId, setBaseId] = useState(NO_BASE_ID);
   const [view, setView] = useState<"front" | "side">("front");
   const [addName, setAddName] = useState(false);
-  const [name, setName] = useState("");
+  const [petName, setPetName] = useState("");
+  const [askName, setAskName] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(0);
   const [genTotal, setGenTotal] = useState(poses.length + poses.length * paidBases.length * 2);
@@ -56,7 +60,10 @@ export default function Studio({ zone }: { zone: Zone }) {
   const base = bases.find((b) => b.id === baseId) ?? bases[0];
   const wantsBase = baseId !== NO_BASE_ID;
   const currentView = wantsBase ? view : "front";
-  const figure = figures[key(poseId, baseId, currentView)] ?? null;
+  const comboKey = key(poseId, baseId, currentView);
+  const plainFigure = figures[comboKey] ?? null;
+  const showEngraved = wantsBase && addName;
+  const figure = showEngraved ? (namedFigures[comboKey] ?? null) : plainFigure;
   const total = FIGURE_PRICE + pose.price + base.price + (wantsBase && addName ? NAMEPLATE_PRICE : 0);
   const money = (n: number) => `${brand.currencySymbol}${n.toFixed(2)}`;
 
@@ -108,6 +115,24 @@ export default function Studio({ zone }: { zone: Zone }) {
     if (!res.ok) throw new Error(json.error ?? "Couldn't generate");
     return json.url as string;
   }
+
+  // Graba el nombre en la placa bajo demanda: solo se pide a la IA cuando el
+  // cliente activa "Add their name" para la combinación (postura/base/vista) actual.
+  useEffect(() => {
+    if (!showEngraved || !plainFigure || namedFigures[comboKey] || nameLoading) return;
+    let cancelled = false;
+    setNameLoading(true);
+    postGenerate({ referenceUrl: plainFigure, change: "name", baseId, petName })
+      .then((url) => {
+        if (!cancelled) setNamedFigures((m) => ({ ...m, [comboKey]: url }));
+      })
+      .catch((e) => !cancelled && setError((e as Error).message))
+      .finally(() => !cancelled && setNameLoading(false));
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showEngraved, plainFigure, comboKey, petName]);
 
   // Al subir: genera TODAS las combinaciones de golpe (postura x base x vista), para que
   // luego cambiar de postura, base o vista sea instantáneo (nada se regenera).
@@ -224,17 +249,36 @@ export default function Studio({ zone }: { zone: Zone }) {
   function reset() {
     setPhoto(null);
     setFigures({});
+    setNamedFigures({});
     setPoseId(poses[0].id);
     setBaseId(NO_BASE_ID);
     setView("front");
     setAddName(false);
-    setName("");
     setError(null);
     setProgress(0);
     setDone(0);
     if (fileRef.current) fileRef.current.value = "";
   }
-  const openPicker = () => fileRef.current?.click();
+
+  // Antes de subir foto pedimos el nombre de la mascota (obligatorio): hace
+  // falta para grabarlo en la placa de la base cuando el cliente la elige.
+  function openPicker() {
+    if (!petName) {
+      setNameDraft("");
+      setAskName(true);
+      return;
+    }
+    fileRef.current?.click();
+  }
+
+  function confirmName(e: React.FormEvent) {
+    e.preventDefault();
+    const n = nameDraft.trim();
+    if (!n) return;
+    setPetName(n);
+    setAskName(false);
+    setTimeout(() => fileRef.current?.click(), 0);
+  }
 
   const Nav = (
     <nav className={styles.nav}>
@@ -261,12 +305,34 @@ export default function Studio({ zone }: { zone: Zone }) {
     </nav>
   );
 
+  const NameModal = askName && (
+    <div className={styles.modalOverlay} role="dialog" aria-modal="true">
+      <form className={styles.modalCard} onSubmit={confirmName}>
+        <h2>What&apos;s your {animal}&apos;s name?</h2>
+        <p>We&apos;ll use it to engrave the nameplate if you add a display base.</p>
+        <input
+          autoFocus
+          className={styles.nameInput}
+          maxLength={14}
+          placeholder={`Your ${animal}'s name`}
+          value={nameDraft}
+          onChange={(e) => setNameDraft(e.target.value)}
+        />
+        <div className={styles.modalActions}>
+          <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={() => setAskName(false)}>Cancel</button>
+          <button type="submit" className={styles.btn} disabled={!nameDraft.trim()}>Continue →</button>
+        </div>
+      </form>
+    </div>
+  );
+
   // ---- CONFIGURATOR STATE ----
   if (photo) {
     const rv = REVIEWS[reviewIdx];
     return (
       <div className={styles.page}>
         {Nav}
+        {NameModal}
         <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
         <div className={styles.wrap}>
           <div className={styles.studio}>
@@ -285,7 +351,12 @@ export default function Studio({ zone }: { zone: Zone }) {
                 <span className={styles.afterTag}>After · your figure</span>
                 <div className={styles.stage}>
                   {figure && <img src={figure} alt={`${animal} figure`} />}
-                  {figure && wantsBase && addName && name && <div className={styles.plate}>{name}</div>}
+                  {!figure && nameLoading && !loading && (
+                    <div className={styles.loading}>
+                      <div className={styles.spinner} />
+                      <p className={styles.progPhrase}>Engraving {petName}&apos;s name…</p>
+                    </div>
+                  )}
                   {loading && (
                     <div className={styles.loading}>
                       <div className={styles.spinner} />
@@ -351,11 +422,8 @@ export default function Studio({ zone }: { zone: Zone }) {
                   </div>
                   <label className={styles.toggle} style={{ marginTop: 16 }}>
                     <input type="checkbox" checked={addName} onChange={(e) => setAddName(e.target.checked)} />
-                    Add their name on the base (+{money(NAMEPLATE_PRICE)})
+                    Engrave &quot;{petName.toUpperCase()}&quot; on the base (+{money(NAMEPLATE_PRICE)})
                   </label>
-                  {addName && (
-                    <input className={styles.nameInput} maxLength={14} placeholder={`Your ${animal}'s name`} value={name} onChange={(e) => setName(e.target.value)} />
-                  )}
                 </>
               )}
             </div>
@@ -364,9 +432,9 @@ export default function Studio({ zone }: { zone: Zone }) {
               <div className={styles.row}><span>Figure · full-color resin</span><b>{money(FIGURE_PRICE)}</b></div>
               <div className={styles.row}><span>Pose — {pose.label}</span><span>{pose.price ? `+${money(pose.price)}` : "Free"}</span></div>
               <div className={styles.row}><span>Base — {base.label}</span><span>{base.price ? `+${money(base.price)}` : "—"}</span></div>
-              {wantsBase && addName && <div className={styles.row}><span>Nameplate{name && ` — “${name.toUpperCase()}”`}</span><span>+{money(NAMEPLATE_PRICE)}</span></div>}
+              {wantsBase && addName && <div className={styles.row}><span>Nameplate — “{petName.toUpperCase()}”</span><span>+{money(NAMEPLATE_PRICE)}</span></div>}
               <div className={styles.tot}><span>Total</span><b>{money(total)}</b></div>
-              <button className={styles.buy} disabled={!figure || loading}>Add to cart →</button>
+              <button className={styles.buy} disabled={!figure || loading || nameLoading}>Add to cart →</button>
             </div>
 
             <button className={styles.startOver} onClick={reset}>← Try another photo</button>

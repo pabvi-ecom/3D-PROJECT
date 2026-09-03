@@ -158,6 +158,11 @@
 .toggle{display:flex; align-items:center; gap:8px; font-weight:700; font-size:.92rem; cursor:pointer}
 .nameInput{width:100%; margin-top:10px; font-size:1rem; font-weight:600; padding:12px 14px; border:1px solid var(--line-2); border-radius:12px; background:var(--surface); text-transform:uppercase; letter-spacing:.04em}
 .nameInput:focus{outline:2px solid var(--accent); border-color:var(--accent)}
+.modalOverlay{position:fixed; inset:0; background:rgba(20,15,10,.55); display:flex; align-items:center; justify-content:center; padding:20px; z-index:50}
+.modalCard{background:var(--surface); border-radius:20px; padding:28px; max-width:380px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.modalCard h2{margin:0 0 6px; font-size:1.3rem}
+.modalCard p{margin:0 0 16px; color:var(--ink-faint); font-size:.92rem}
+.modalActions{display:flex; justify-content:flex-end; gap:10px; margin-top:18px}
 .summary{margin-top:22px; background:var(--ink); color:#fff; border-radius:16px; padding:18px}
 .summary .row{display:flex; justify-content:space-between; padding:6px 0; font-size:.9rem; color:rgba(255,255,255,.75)}
 .summary .row b{color:#fff}
