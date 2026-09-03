@@ -80,9 +80,8 @@ export interface Pose {
 }
 
 export const poses: Pose[] = [
-  { id: "sitting",  label: "Sitting",    price: 0,    prompt: "sitting upright on its hindquarters, facing forward" },
-  { id: "lying",    label: "Lying down", price: 9.99, prompt: "lying down relaxed with its front paws stretched forward" },
-  { id: "standing", label: "Standing",   price: 0,    prompt: "standing naturally on all four legs, facing forward" },
+  { id: "sitting",  label: "Sitting",    price: 0, prompt: "sitting upright on its hindquarters, facing forward" },
+  { id: "standing", label: "Standing",   price: 0, prompt: "standing naturally on all four legs, facing forward" },
 ];
 
 /**
@@ -108,7 +107,7 @@ export const bases: Base[] = [
     label: "Grass top",
     price: 9.99,
     prompt:
-      "on a round wooden display base with a lush, realistic short green grass top filling the whole surface and a polished dark wood rim, with a small blank brushed-gold nameplate on the front edge",
+      "on a round dark wood display base with a lush, realistic short green grass top filling the whole surface, a polished dark wood rim, and a small blank brushed-gold nameplate on the front edge",
     refImage: "/bases/grass-ref.png",
   },
   {
@@ -116,7 +115,7 @@ export const bases: Base[] = [
     label: "Cozy bed",
     price: 9.99,
     prompt:
-      "on a round dark wood display base shaped like a cozy pet bed, with a plush soft brown faux-fur rim and a cream sherpa cushion in the center, and a small blank brushed-gold nameplate on the front edge",
+      "on a round dark wood display base shaped like a cozy pet bed, with a plush cream faux-fur cushion filling the center, a polished dark wood rim, and a small blank brushed-gold nameplate on the front edge",
     refImage: "/bases/cushion-ref.png",
   },
 ];
