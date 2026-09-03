@@ -49,6 +49,7 @@ export default function Studio({ zone }: { zone: Zone }) {
   const [askName, setAskName] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
   const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
+  const [readingFile, setReadingFile] = useState(false);
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(0);
   const [genTotal, setGenTotal] = useState(poses.length + poses.length * paidBases.length * 2);
@@ -213,9 +214,12 @@ export default function Studio({ zone }: { zone: Zone }) {
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
+    setError(null);
+    setReadingFile(true);
     const reader = new FileReader();
     reader.onload = () => {
       const dataUri = reader.result as string;
+      setReadingFile(false);
       if (!petName) {
         setPendingPhoto(dataUri);
         setNameDraft("");
@@ -224,6 +228,10 @@ export default function Studio({ zone }: { zone: Zone }) {
         setPhoto(dataUri);
         generateAllPoses(dataUri);
       }
+    };
+    reader.onerror = () => {
+      setReadingFile(false);
+      setError("Couldn't read that photo");
     };
     reader.readAsDataURL(f);
   }
@@ -313,6 +321,15 @@ export default function Studio({ zone }: { zone: Zone }) {
     </nav>
   );
 
+  const ReadingOverlay = readingFile && (
+    <div className={styles.modalOverlay} role="status" aria-live="polite">
+      <div className={styles.modalCard} style={{ textAlign: "center" }}>
+        <div className={styles.spinner} style={{ margin: "0 auto 14px" }} />
+        <p style={{ margin: 0, fontWeight: 700 }}>Loading your photo…</p>
+      </div>
+    </div>
+  );
+
   const NameModal = askName && (
     <div className={styles.modalOverlay} role="dialog" aria-modal="true">
       <form className={styles.modalCard} onSubmit={confirmName}>
@@ -351,6 +368,7 @@ export default function Studio({ zone }: { zone: Zone }) {
       <div className={styles.page}>
         {Nav}
         {NameModal}
+        {ReadingOverlay}
         <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
         <div className={styles.wrap}>
           <div className={styles.studio}>
@@ -466,6 +484,8 @@ export default function Studio({ zone }: { zone: Zone }) {
   return (
     <div className={styles.page}>
       {Nav}
+      {NameModal}
+      {ReadingOverlay}
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
 
       <div className={styles.wrap}>
