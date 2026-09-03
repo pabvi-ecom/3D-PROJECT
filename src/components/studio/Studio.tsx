@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import styles from "./Studio.module.css";
+import CursorScrubVideo from "./CursorScrubVideo";
 import { brand } from "@/config/brand";
 import { poses, paidBases, bases, NO_BASE_ID, NAMEPLATE_PRICE, packs, type Pack } from "@/config/products";
 import type { Zone } from "@/config/zones";
@@ -52,8 +53,6 @@ export default function Studio({ zone }: { zone: Zone }) {
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [reviewIdx, setReviewIdx] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
-  const gazeRef = useRef<HTMLElement>(null);
-  const gazeVideoRef = useRef<HTMLVideoElement>(null);
 
   const animal = zone.animal;
   const pose = poses.find((p) => p.id === poseId) ?? poses[0];
@@ -82,59 +81,6 @@ export default function Studio({ zone }: { zone: Zone }) {
     "Setting the nameplate…",
   ];
   const phrases = phase === "base" ? BASE_PHRASES : POSE_PHRASES;
-
-  // El golden/bulldog del hero: el vídeo (hero.mp4) contiene UN barrido
-  // continuo de la mirada (centro→izq→centro→dcha→centro→arriba→centro→
-  // abajo→centro). En reposo se reproduce normal en bucle. En cuanto el
-  // ratón se mueve (o se arrastra el dedo), dejamos de reproducirlo y
-  // saltamos ("scrub") al fotograma exacto según la posición del cursor —
-  // así el vídeo responde en tiempo real, con movimiento 100% real (no
-  // fotos). Tras ~1s sin movimiento, vuelve a reproducirse solo.
-  useEffect(() => {
-    const v = gazeVideoRef.current;
-    if (!v) return;
-    let targetTime = 0;
-    let raf = 0;
-    let idleTimer: ReturnType<typeof setTimeout> | null = null;
-
-    function tick() {
-      if (v && !v.paused) return;
-      if (v && Math.abs(v.currentTime - targetTime) > 0.01) {
-        v.currentTime += (targetTime - v.currentTime) * 0.25;
-      }
-      raf = requestAnimationFrame(tick);
-    }
-
-    function track(clientX: number, clientY: number) {
-      const el = gazeRef.current;
-      if (!el || !v || !v.duration) return;
-      const rect = el.getBoundingClientRect();
-      const nx = Math.min(1, Math.max(0, (clientX - rect.left) / rect.width));
-      const ny = Math.min(1, Math.max(0, (clientY - rect.top) / rect.height));
-      // Mezclamos X e Y del cursor en un único punto del timeline del vídeo
-      // (el barrido recorre izq/dcha/arriba/abajo) para que responda a
-      // cualquier dirección en la que se mueva el ratón.
-      targetTime = ((nx + ny) / 2) * v.duration;
-      if (!v.paused) v.pause();
-      if (idleTimer) clearTimeout(idleTimer);
-      idleTimer = setTimeout(() => v.play().catch(() => {}), 1000);
-    }
-
-    const onMouse = (e: MouseEvent) => track(e.clientX, e.clientY);
-    const onTouch = (e: TouchEvent) => {
-      const t = e.touches[0];
-      if (t) track(t.clientX, t.clientY);
-    };
-    window.addEventListener("mousemove", onMouse);
-    window.addEventListener("touchmove", onTouch, { passive: true });
-    raf = requestAnimationFrame(tick);
-    return () => {
-      window.removeEventListener("mousemove", onMouse);
-      window.removeEventListener("touchmove", onTouch);
-      if (idleTimer) clearTimeout(idleTimer);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
 
   // Frases + reseñas rotando mientras carga.
   useEffect(() => {
@@ -539,17 +485,14 @@ export default function Studio({ zone }: { zone: Zone }) {
       {ReadingOverlay}
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
 
-      <section className={styles.heroFull} ref={gazeRef}>
-        <video
-          ref={gazeVideoRef}
-          className={styles.heroVideo}
-          src="/pet/hero.mp4"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          aria-hidden
+      <section className={styles.heroFull}>
+        <CursorScrubVideo
+          videoFile="/pet/hero.mp4"
+          axis="horizontal"
+          trackingArea="window"
+          smoothing={0.22}
+          objectFit="cover"
+          className={styles.heroVideoWrap}
         />
         <div className={styles.heroScrim} />
         <div className={`${styles.wrap} ${styles.heroContent}`}>
