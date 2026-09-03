@@ -48,6 +48,7 @@ export default function Studio({ zone }: { zone: Zone }) {
   const [petName, setPetName] = useState("");
   const [askName, setAskName] = useState(false);
   const [nameDraft, setNameDraft] = useState("");
+  const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(0);
   const [genTotal, setGenTotal] = useState(poses.length + poses.length * paidBases.length * 2);
@@ -206,14 +207,23 @@ export default function Studio({ zone }: { zone: Zone }) {
     }
   }
 
+  // Tras elegir la foto pedimos el nombre de la mascota (hace falta para
+  // grabarlo en la placa de la base más adelante) y luego arrancamos la
+  // generación — así el selector de archivo nunca depende de un paso previo.
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
     const reader = new FileReader();
     reader.onload = () => {
       const dataUri = reader.result as string;
-      setPhoto(dataUri);
-      generateAllPoses(dataUri);
+      if (!petName) {
+        setPendingPhoto(dataUri);
+        setNameDraft("");
+        setAskName(true);
+      } else {
+        setPhoto(dataUri);
+        generateAllPoses(dataUri);
+      }
     };
     reader.readAsDataURL(f);
   }
@@ -248,6 +258,7 @@ export default function Studio({ zone }: { zone: Zone }) {
 
   function reset() {
     setPhoto(null);
+    setPendingPhoto(null);
     setFigures({});
     setNamedFigures({});
     setPoseId(poses[0].id);
@@ -260,16 +271,9 @@ export default function Studio({ zone }: { zone: Zone }) {
     if (fileRef.current) fileRef.current.value = "";
   }
 
-  // Antes de subir foto pedimos el nombre de la mascota (obligatorio): hace
-  // falta para grabarlo en la placa de la base cuando el cliente la elige.
-  function openPicker() {
-    if (!petName) {
-      setNameDraft("");
-      setAskName(true);
-      return;
-    }
-    fileRef.current?.click();
-  }
+  // El selector de archivo se abre SIEMPRE con un click directo (gesto de
+  // usuario), sin pasos intermedios — así nunca lo bloquea el navegador.
+  const openPicker = () => fileRef.current?.click();
 
   function confirmName(e: React.FormEvent) {
     e.preventDefault();
@@ -277,7 +281,11 @@ export default function Studio({ zone }: { zone: Zone }) {
     if (!n) return;
     setPetName(n);
     setAskName(false);
-    fileRef.current?.click();
+    if (pendingPhoto) {
+      setPhoto(pendingPhoto);
+      generateAllPoses(pendingPhoto);
+      setPendingPhoto(null);
+    }
   }
 
   const Nav = (
@@ -319,7 +327,17 @@ export default function Studio({ zone }: { zone: Zone }) {
           onChange={(e) => setNameDraft(e.target.value)}
         />
         <div className={styles.modalActions}>
-          <button type="button" className={`${styles.btn} ${styles.btnGhost}`} onClick={() => setAskName(false)}>Cancel</button>
+          <button
+            type="button"
+            className={`${styles.btn} ${styles.btnGhost}`}
+            onClick={() => {
+              setAskName(false);
+              setPendingPhoto(null);
+              if (fileRef.current) fileRef.current.value = "";
+            }}
+          >
+            Cancel
+          </button>
           <button type="submit" className={styles.btn} disabled={!nameDraft.trim()}>Continue →</button>
         </div>
       </form>
