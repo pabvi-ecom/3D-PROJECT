@@ -18,10 +18,7 @@ export async function GET(req: Request) {
     "Change ONLY where the head is turned and where the eyes are looking: ";
 
   const dirs: Record<string, string> = {
-    up: "the head is tilted slightly up and the eyes look upward, as if watching something above.",
-    down: "the head is tilted slightly down and the eyes look downward, as if watching something below.",
-    left: "the head is turned slightly to its left and the eyes look to that side.",
-    right: "the head is turned slightly to its right and the eyes look to that side.",
+    center: "the head is straight and centered, looking directly at the camera.",
   };
 
   const entries = await Promise.all(
