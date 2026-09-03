@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import styles from "./Studio.module.css";
-import CursorScrubVideo from "./CursorScrubVideo";
 import { brand } from "@/config/brand";
 import { poses, paidBases, bases, NO_BASE_ID, NAMEPLATE_PRICE, packs, type Pack } from "@/config/products";
 import type { Zone } from "@/config/zones";
@@ -53,6 +52,7 @@ export default function Studio({ zone }: { zone: Zone }) {
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [reviewIdx, setReviewIdx] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
+  const tiltRef = useRef<HTMLDivElement>(null);
 
   const animal = zone.animal;
   const pose = poses.find((p) => p.id === poseId) ?? poses[0];
@@ -81,6 +81,50 @@ export default function Studio({ zone }: { zone: Zone }) {
     "Setting the nameplate…",
   ];
   const phrases = phase === "base" ? BASE_PHRASES : POSE_PHRASES;
+
+  // El perro del hero "sigue" al ratón/dedo en CUALQUIER dirección (arriba,
+  // abajo, izq, dcha, diagonales, círculos) en tiempo real: inclinamos el
+  // plano del vídeo (rotateX/rotateY, tipo tarjeta que se ladea hacia el
+  // cursor) según su posición en TODA la página, con suavizado. El vídeo en
+  // sí se reproduce normal en bucle (movimiento natural real, no fotos).
+  useEffect(() => {
+    const el = tiltRef.current;
+    if (!el) return;
+    const MAX_DEG = 9;
+    let targetRX = 0;
+    let targetRY = 0;
+    let curRX = 0;
+    let curRY = 0;
+    let raf = 0;
+
+    function onMove(clientX: number, clientY: number) {
+      const nx = clientX / window.innerWidth; // 0..1
+      const ny = clientY / window.innerHeight; // 0..1
+      targetRY = (nx - 0.5) * 2 * MAX_DEG; // izq/dcha
+      targetRX = -(ny - 0.5) * 2 * MAX_DEG; // arriba/abajo
+    }
+    const onMouse = (e: MouseEvent) => onMove(e.clientX, e.clientY);
+    const onTouch = (e: TouchEvent) => {
+      const t = e.touches[0];
+      if (t) onMove(t.clientX, t.clientY);
+    };
+    window.addEventListener("mousemove", onMouse);
+    window.addEventListener("touchmove", onTouch, { passive: true });
+
+    function tick() {
+      curRX += (targetRX - curRX) * 0.08;
+      curRY += (targetRY - curRY) * 0.08;
+      el!.style.transform = `perspective(1200px) rotateX(${curRX}deg) rotateY(${curRY}deg) scale(1.04)`;
+      raf = requestAnimationFrame(tick);
+    }
+    raf = requestAnimationFrame(tick);
+
+    return () => {
+      window.removeEventListener("mousemove", onMouse);
+      window.removeEventListener("touchmove", onTouch);
+      cancelAnimationFrame(raf);
+    };
+  }, []);
 
   // Frases + reseñas rotando mientras carga.
   useEffect(() => {
@@ -486,14 +530,18 @@ export default function Studio({ zone }: { zone: Zone }) {
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
 
       <section className={styles.heroFull}>
-        <CursorScrubVideo
-          videoFile="/pet/hero.mp4"
-          axis="horizontal"
-          trackingArea="window"
-          smoothing={0.22}
-          objectFit="cover"
-          className={styles.heroVideoWrap}
-        />
+        <div ref={tiltRef} className={styles.heroTilt}>
+          <video
+            className={styles.heroVideoWrap}
+            src="/pet/hero.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            aria-hidden
+          />
+        </div>
         <div className={styles.heroScrim} />
         <div className={`${styles.wrap} ${styles.heroContent}`}>
           <div className={styles.heroLeft}>
