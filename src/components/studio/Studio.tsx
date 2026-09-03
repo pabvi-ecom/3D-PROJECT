@@ -53,7 +53,7 @@ export default function Studio({ zone }: { zone: Zone }) {
   const [reviewIdx, setReviewIdx] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
   const maskAreaRef = useRef<HTMLDivElement>(null);
-  const maskTopRef = useRef<HTMLDivElement>(null);
+  const maskCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const animal = zone.animal;
   const pose = poses.find((p) => p.id === poseId) ?? poses[0];
@@ -83,54 +83,158 @@ export default function Studio({ zone }: { zone: Zone }) {
   ];
   const phrases = phase === "base" ? BASE_PHRASES : POSE_PHRASES;
 
-  // Hero: foto real arriba, figura de resina debajo — un círculo alrededor
-  // del cursor "agujerea" la foto de arriba y deja ver la figura de abajo
-  // justo ahí (mask-image con radial-gradient), suavizado con lerp.
+  // Hero: foto real arriba, figura de resina debajo — el ratón deja un
+  // RASTRO orgánico (mancha, no círculo perfecto) que revela la figura por
+  // debajo y se va desvaneciendo solo, como pintura que se seca. Se dibuja
+  // todo con canvas: un buffer acumula manchurrones (círculos borrosos con
+  // jitter) que decaen cada frame, y ese buffer se usa para "agujerear" la
+  // foto de arriba con destination-out.
   useEffect(() => {
     const area = maskAreaRef.current;
-    const top = maskTopRef.current;
-    if (!area || !top) return;
-    const RADIUS = 160;
-    let targetX = 0;
-    let targetY = 0;
-    let curX = 0;
-    let curY = 0;
+    const canvasEl = maskCanvasRef.current;
+    if (!area || !canvasEl) return;
+    const canvas: HTMLCanvasElement = canvasEl;
+    const ctxEl = canvas.getContext("2d");
+    if (!ctxEl) return;
+    const ctx: CanvasRenderingContext2D = ctxEl;
+
+    const real = new Image();
+    const figure = new Image();
+    real.src = "/pet/dog-real.jpg";
+    figure.src = "/pet/dog-figure.jpg";
+
+    let trail: HTMLCanvasElement | null = null;
+    let trailCtx: CanvasRenderingContext2D | null = null;
+    let topBuf: HTMLCanvasElement | null = null;
+    let topBufCtx: CanvasRenderingContext2D | null = null;
+    let dpr = 1;
+    let w = 0;
+    let h = 0;
+    let targetX = -9999;
+    let targetY = -9999;
+    let curX = -9999;
+    let curY = -9999;
     let raf = 0;
-    let inited = false;
+    let ready = false;
+
+    function drawCover(c: CanvasRenderingContext2D, img: HTMLImageElement, cw: number, ch: number) {
+      const ir = img.naturalWidth / img.naturalHeight;
+      const cr = cw / ch;
+      let sw = img.naturalWidth;
+      let sh = img.naturalHeight;
+      let sx = 0;
+      let sy = 0;
+      if (ir > cr) {
+        sw = img.naturalHeight * cr;
+        sx = (img.naturalWidth - sw) / 2;
+      } else {
+        sh = img.naturalWidth / cr;
+        sy = (img.naturalHeight - sh) / 2;
+      }
+      c.drawImage(img, sx, sy, sw, sh, 0, 0, cw, ch);
+    }
+
+    function resize() {
+      const rect = area!.getBoundingClientRect();
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      w = rect.width;
+      h = rect.height;
+      canvas!.width = w * dpr;
+      canvas!.height = h * dpr;
+      canvas!.style.width = `${w}px`;
+      canvas!.style.height = `${h}px`;
+      trail = document.createElement("canvas");
+      trail.width = w * dpr;
+      trail.height = h * dpr;
+      trailCtx = trail.getContext("2d");
+      topBuf = document.createElement("canvas");
+      topBuf.width = w * dpr;
+      topBuf.height = h * dpr;
+      topBufCtx = topBuf.getContext("2d");
+    }
+    resize();
+    window.addEventListener("resize", resize);
 
     function onMove(clientX: number, clientY: number) {
       const rect = area!.getBoundingClientRect();
-      targetX = clientX - rect.left;
-      targetY = clientY - rect.top;
-      if (!inited) {
-        curX = targetX;
-        curY = targetY;
-        inited = true;
-      }
+      targetX = (clientX - rect.left) * dpr;
+      targetY = (clientY - rect.top) * dpr;
     }
     const onMouse = (e: MouseEvent) => onMove(e.clientX, e.clientY);
     const onTouch = (e: TouchEvent) => {
       const t = e.touches[0];
       if (t) onMove(t.clientX, t.clientY);
     };
+    const onLeave = () => {
+      targetX = -9999;
+      targetY = -9999;
+    };
     area.addEventListener("mousemove", onMouse);
     area.addEventListener("touchmove", onTouch, { passive: true });
+    area.addEventListener("mouseleave", onLeave);
+
+    let bothLoaded = 0;
+    function onImgLoad() {
+      bothLoaded++;
+      if (bothLoaded === 2) ready = true;
+    }
+    real.onload = onImgLoad;
+    figure.onload = onImgLoad;
+
+    const BASE_R = 70;
 
     function tick() {
-      curX += (targetX - curX) * 0.18;
-      curY += (targetY - curY) * 0.18;
-      const mask = inited
-        ? `radial-gradient(circle ${RADIUS}px at ${curX}px ${curY}px, transparent 0px, transparent ${RADIUS - 1}px, black ${RADIUS}px)`
-        : "none";
-      top!.style.maskImage = mask;
-      top!.style.webkitMaskImage = mask;
       raf = requestAnimationFrame(tick);
+      if (!ready || !trailCtx || !trail) return;
+      curX += (targetX - curX) * 0.22;
+      curY += (targetY - curY) * 0.22;
+
+      // El rastro se desvanece solo (decae cada frame).
+      trailCtx.save();
+      trailCtx.globalCompositeOperation = "destination-out";
+      trailCtx.fillStyle = "rgba(0,0,0,0.045)";
+      trailCtx.fillRect(0, 0, trail.width, trail.height);
+      trailCtx.restore();
+
+      // Manchurrón orgánico: varios círculos borrosos con jitter alrededor
+      // del cursor, en vez de un único círculo perfecto.
+      if (curX > -1000) {
+        trailCtx.globalCompositeOperation = "source-over";
+        for (let i = 0; i < 4; i++) {
+          const jr = BASE_R * dpr * (0.55 + Math.random() * 0.55);
+          const jx = curX + (Math.random() - 0.5) * BASE_R * dpr * 0.7;
+          const jy = curY + (Math.random() - 0.5) * BASE_R * dpr * 0.7;
+          const grad = trailCtx.createRadialGradient(jx, jy, 0, jx, jy, jr);
+          grad.addColorStop(0, "rgba(255,255,255,0.95)");
+          grad.addColorStop(0.6, "rgba(255,255,255,0.6)");
+          grad.addColorStop(1, "rgba(255,255,255,0)");
+          trailCtx.fillStyle = grad;
+          trailCtx.beginPath();
+          trailCtx.arc(jx, jy, jr, 0, Math.PI * 2);
+          trailCtx.fill();
+        }
+      }
+
+      if (!topBufCtx || !topBuf) return;
+      // La foto real vive en su PROPIO canvas — así al "agujerearla" con
+      // destination-out solo se borra ella, no la figura de debajo.
+      topBufCtx.globalCompositeOperation = "source-over";
+      topBufCtx.clearRect(0, 0, topBuf.width, topBuf.height);
+      drawCover(topBufCtx, real, topBuf.width, topBuf.height);
+      topBufCtx.globalCompositeOperation = "destination-out";
+      topBufCtx.drawImage(trail, 0, 0);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawCover(ctx, figure, canvas.width, canvas.height);
+      ctx.drawImage(topBuf, 0, 0);
     }
     raf = requestAnimationFrame(tick);
 
     return () => {
+      window.removeEventListener("resize", resize);
       area.removeEventListener("mousemove", onMouse);
       area.removeEventListener("touchmove", onTouch);
+      area.removeEventListener("mouseleave", onLeave);
       cancelAnimationFrame(raf);
     };
   }, []);
@@ -540,10 +644,7 @@ export default function Studio({ zone }: { zone: Zone }) {
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
 
       <section className={styles.heroFull} ref={maskAreaRef}>
-        <img className={styles.heroVideoWrap} src="/pet/dog-figure.jpg" alt="the dog as a resin figure" aria-hidden />
-        <div ref={maskTopRef} className={styles.heroVideoWrap} style={{ zIndex: 1 }}>
-          <img className={styles.heroVideoWrap} src="/pet/dog-real.jpg" alt="a real dog" aria-hidden />
-        </div>
+        <canvas ref={maskCanvasRef} className={styles.heroVideoWrap} aria-hidden />
         <div className={styles.heroScrim} />
         <div className={`${styles.wrap} ${styles.heroContent}`}>
           <div className={styles.heroLeft}>
