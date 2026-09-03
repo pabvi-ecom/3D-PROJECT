@@ -53,6 +53,8 @@ export default function Studio({ zone }: { zone: Zone }) {
   const [reviewIdx, setReviewIdx] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
   const tiltRef = useRef<HTMLDivElement>(null);
+  const heroVideoRef = useRef<HTMLVideoElement>(null);
+  const reactRafRef = useRef(0);
 
   const animal = zone.animal;
   const pose = poses.find((p) => p.id === poseId) ?? poses[0];
@@ -90,7 +92,7 @@ export default function Studio({ zone }: { zone: Zone }) {
   useEffect(() => {
     const el = tiltRef.current;
     if (!el) return;
-    const MAX_DEG = 9;
+    const MAX_DEG = 3;
     let targetRX = 0;
     let targetRY = 0;
     let curRX = 0;
@@ -324,6 +326,35 @@ export default function Studio({ zone }: { zone: Zone }) {
   // usuario), sin pasos intermedios — así nunca lo bloquea el navegador.
   const openPicker = () => fileRef.current?.click();
 
+  // Reacción "de verdad" al botón (igual que el reel del panda): no es
+  // persecución continua del cursor, es un vídeo que reacciona a un evento
+  // concreto — al pasar el ratón por el botón, reproduce el tramo del vídeo
+  // donde mira hacia abajo (hacia el botón); al salir, vuelve al reposo.
+  function onCtaEnter() {
+    const v = heroVideoRef.current;
+    if (!v || !v.duration) return;
+    cancelAnimationFrame(reactRafRef.current);
+    v.pause();
+    const LOOK_START = 1.9;
+    const LOOK_END = 3.2;
+    v.currentTime = LOOK_START;
+    let last = performance.now();
+    const step = (now: number) => {
+      const dt = (now - last) / 1000;
+      last = now;
+      let t = v.currentTime + dt;
+      if (t > LOOK_END) t = LOOK_START;
+      v.currentTime = t;
+      reactRafRef.current = requestAnimationFrame(step);
+    };
+    reactRafRef.current = requestAnimationFrame(step);
+  }
+  function onCtaLeave() {
+    cancelAnimationFrame(reactRafRef.current);
+    const v = heroVideoRef.current;
+    if (v) v.play().catch(() => {});
+  }
+
   function confirmName(e: React.FormEvent) {
     e.preventDefault();
     const n = nameDraft.trim();
@@ -532,6 +563,7 @@ export default function Studio({ zone }: { zone: Zone }) {
       <section className={styles.heroFull}>
         <div ref={tiltRef} className={styles.heroTilt}>
           <video
+            ref={heroVideoRef}
             className={styles.heroVideoWrap}
             src="/pet/hero.mp4"
             autoPlay
@@ -548,7 +580,7 @@ export default function Studio({ zone }: { zone: Zone }) {
             <span className={styles.eyebrow}>🐾 Free preview · no card needed</span>
             <h1 style={{ marginTop: 16 }}>See your {animal} as a <em>figure</em> — in seconds.</h1>
             <p className={styles.heroSub}>Upload one photo and see your {animal} as a collectible figure, free. Love it? We 3D-print it in full color and ship it to you.</p>
-            <button className={styles.drop} onClick={openPicker}>
+            <button className={styles.drop} onClick={openPicker} onMouseEnter={onCtaEnter} onMouseLeave={onCtaLeave}>
               <span className={styles.dropIcon}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
               </span>
