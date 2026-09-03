@@ -18,6 +18,8 @@ const NO_BASE = "with no display base, standing directly on a clean seamless lig
  *      Toma una figura ya generada como REFERENCIA y cambia SOLO la postura.
  *  - Cambiar la base:      { referenceUrl, change:"base", zone?, baseId? }
  *      Toma una figura ya generada como REFERENCIA y cambia SOLO la base.
+ *  - Cambiar el ángulo:    { referenceUrl, change:"view", zone?, baseId? }
+ *      Toma una figura (con base) ya generada y muestra el mismo sculpt de PERFIL.
  * Devuelve: { url }.
  */
 export async function POST(req: NextRequest) {
@@ -47,6 +49,13 @@ export async function POST(req: NextRequest) {
           `Keep the ${animal} figurine EXACTLY the same — identical sculpt, proportions, ` +
           `fur colors and markings. Change ONLY the pose: the ${animal} is now ${pose.prompt}. ` +
           `Keep it ${NO_BASE}. ${STUDIO}`;
+      } else if (change === "view") {
+        // Mantener figura, postura y base idénticas; cambiar SOLO el ángulo a perfil.
+        prompt =
+          `This is a full-color 3D printed figurine of a ${animal} on a display base. ` +
+          `Keep the ${animal} figurine and its base EXACTLY the same — identical sculpt, pose, ` +
+          `fur colors, markings and base.${baseRefNote} Change ONLY the camera angle: ` +
+          `show it from the SIDE, a full profile view, so the length of the ${animal} is clearly visible. ${STUDIO}`;
       } else {
         // Mantener el perro y la postura idénticos, cambiar SOLO la base.
         prompt =

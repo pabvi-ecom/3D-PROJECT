@@ -110,14 +110,6 @@ export const bases: Base[] = [
       "on a round dark wood display base with a lush, realistic short green grass top filling the whole surface, a polished dark wood rim, and a small blank brushed-gold nameplate on the front edge",
     refImage: "/bases/grass-ref.png",
   },
-  {
-    id: "cushion",
-    label: "Cozy bed",
-    price: 9.99,
-    prompt:
-      "on a round dark wood display base shaped like a cozy pet bed, with a plush cream faux-fur cushion filling the center, a polished dark wood rim, and a small blank brushed-gold nameplate on the front edge",
-    refImage: "/bases/cushion-ref.png",
-  },
 ];
 
 /** Bases de pago (para el selector, sin la opción "none"). */

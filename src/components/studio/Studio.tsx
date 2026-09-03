@@ -31,7 +31,7 @@ const REVIEWS = [
   { src: "/examples/basset-wood.jpg", name: "Luna", breed: "Basset Hound", text: "So much better than a photo." },
 ];
 
-const key = (poseId: string, baseId: string) => `${poseId}|${baseId}`;
+const key = (poseId: string, baseId: string, view: "front" | "side" = "front") => `${poseId}|${baseId}|${view}`;
 
 export default function Studio({ zone }: { zone: Zone }) {
   const [photo, setPhoto] = useState<string | null>(null);
@@ -41,11 +41,12 @@ export default function Studio({ zone }: { zone: Zone }) {
   const [error, setError] = useState<string | null>(null);
   const [poseId, setPoseId] = useState(poses[0].id);
   const [baseId, setBaseId] = useState(NO_BASE_ID);
+  const [view, setView] = useState<"front" | "side">("front");
   const [addName, setAddName] = useState(false);
   const [name, setName] = useState("");
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(0);
-  const [genTotal, setGenTotal] = useState(poses.length + poses.length * paidBases.length);
+  const [genTotal, setGenTotal] = useState(poses.length + poses.length * paidBases.length * 2);
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [reviewIdx, setReviewIdx] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -54,7 +55,8 @@ export default function Studio({ zone }: { zone: Zone }) {
   const pose = poses.find((p) => p.id === poseId) ?? poses[0];
   const base = bases.find((b) => b.id === baseId) ?? bases[0];
   const wantsBase = baseId !== NO_BASE_ID;
-  const figure = figures[key(poseId, baseId)] ?? null;
+  const currentView = wantsBase ? view : "front";
+  const figure = figures[key(poseId, baseId, currentView)] ?? null;
   const total = FIGURE_PRICE + pose.price + base.price + (wantsBase && addName ? NAMEPLATE_PRICE : 0);
   const money = (n: number) => `${brand.currencySymbol}${n.toFixed(2)}`;
 
@@ -107,22 +109,24 @@ export default function Studio({ zone }: { zone: Zone }) {
     return json.url as string;
   }
 
-  // Al subir: genera TODAS las combinaciones de golpe (postura x base), para que
-  // luego cambiar de postura o de base sea instantáneo (nada se regenera).
-  // 1) 1ª postura desde la foto; las otras posturas por referencia (sin base).
-  // 2) Con las 3 posturas ya listas, las 2 bases de pago para CADA postura.
-  // Total: posturas + posturas x bases de pago (3 + 3x2 = 9 imágenes, ~2¢ cada una).
+  // Al subir: genera TODAS las combinaciones de golpe (postura x base x vista), para que
+  // luego cambiar de postura, base o vista sea instantáneo (nada se regenera).
+  // 1) 1ª postura desde la foto; las otras posturas por referencia (sin base, vista frontal).
+  // 2) Con las posturas ya listas, la base de pago para CADA postura (vista frontal).
+  // 3) Con base + frontal listos, la vista LATERAL para CADA combo con base
+  //    (solo con base: sin base no hace falta lateral).
   async function generateAllPoses(dataUri: string) {
     setLoading(true);
     setError(null);
     setFigures({});
     setPhase("poses");
-    const total = poses.length + poses.length * paidBases.length;
+    const total = poses.length + poses.length * paidBases.length * 2;
     setGenTotal(total);
     setDone(0);
     setProgress(0);
     setPoseId(poses[0].id);
     setBaseId(NO_BASE_ID);
+    setView("front");
     setAddName(false);
     try {
       const first = await postGenerate({ imageBase64: dataUri, poseId: poses[0].id, baseId: NO_BASE_ID });
@@ -145,14 +149,29 @@ export default function Studio({ zone }: { zone: Zone }) {
           paidBases.map((b) =>
             postGenerate({ referenceUrl: noneByPose[p.id], change: "base", baseId: b.id }).then((url) => {
               setDone((d) => d + 1);
-              return [key(p.id, b.id), url] as const;
+              return [key(p.id, b.id, "front"), url] as const;
             }),
           ),
         ),
       );
+      const frontByCombo: Record<string, string> = {};
+      for (const [k, u] of baseResults) frontByCombo[k] = u;
+
+      const sideResults = await Promise.all(
+        poses.flatMap((p) =>
+          paidBases.map((b) =>
+            postGenerate({ referenceUrl: frontByCombo[key(p.id, b.id, "front")], change: "view", baseId: b.id }).then((url) => {
+              setDone((d) => d + 1);
+              return [key(p.id, b.id, "side"), url] as const;
+            }),
+          ),
+        ),
+      );
+
       const map: Record<string, string> = {};
-      for (const pid of Object.keys(noneByPose)) map[key(pid, NO_BASE_ID)] = noneByPose[pid];
+      for (const pid of Object.keys(noneByPose)) map[key(pid, NO_BASE_ID, "front")] = noneByPose[pid];
       for (const [k, u] of baseResults) map[k] = u;
+      for (const [k, u] of sideResults) map[k] = u;
       setProgress(100);
       setFigures(map);
     } catch (e) {
@@ -184,10 +203,12 @@ export default function Studio({ zone }: { zone: Zone }) {
 
   function enableBase() {
     setBaseId(paidBases[0].id);
+    setView("front");
   }
 
   function disableBase() {
     setBaseId(NO_BASE_ID);
+    setView("front");
   }
 
   function pickBase(id: string) {
@@ -195,11 +216,17 @@ export default function Studio({ zone }: { zone: Zone }) {
     setBaseId(id);
   }
 
+  function pickView(v: "front" | "side") {
+    if (loading) return;
+    setView(v);
+  }
+
   function reset() {
     setPhoto(null);
     setFigures({});
     setPoseId(poses[0].id);
     setBaseId(NO_BASE_ID);
+    setView("front");
     setAddName(false);
     setName("");
     setError(null);
@@ -317,6 +344,10 @@ export default function Studio({ zone }: { zone: Zone }) {
                         <small>+{money(b.price)}</small>
                       </button>
                     ))}
+                  </div>
+                  <div className={styles.baseRow} style={{ marginTop: 12 }}>
+                    <button className={styles.baseBtn} aria-pressed={view === "front"} disabled={loading} onClick={() => pickView("front")}>Front view</button>
+                    <button className={styles.baseBtn} aria-pressed={view === "side"} disabled={loading} onClick={() => pickView("side")}>Side view</button>
                   </div>
                   <label className={styles.toggle} style={{ marginTop: 16 }}>
                     <input type="checkbox" checked={addName} onChange={(e) => setAddName(e.target.checked)} />
