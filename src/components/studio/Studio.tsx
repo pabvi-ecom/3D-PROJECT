@@ -50,6 +50,8 @@ export default function Studio({ zone }: { zone: Zone }) {
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [reviewIdx, setReviewIdx] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
+  const gazeRef = useRef<HTMLDivElement>(null);
+  const [gazeDir, setGazeDir] = useState<"center" | "up" | "down" | "left" | "right">("center");
 
   const animal = zone.animal;
   const pose = poses.find((p) => p.id === poseId) ?? poses[0];
@@ -78,6 +80,38 @@ export default function Studio({ zone }: { zone: Zone }) {
     "Setting the nameplate…",
   ];
   const phrases = phase === "base" ? BASE_PHRASES : POSE_PHRASES;
+
+  // El golden del hero "mira" hacia el ratón (desktop) o hacia donde se
+  // arrastra el dedo (móvil), en toda la página — cambia entre 5 fotos
+  // (centro/arriba/abajo/izq/dcha) del mismo perro con fundido suave.
+  useEffect(() => {
+    const THRESHOLD = 50;
+    function look(clientX: number, clientY: number) {
+      const el = gazeRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const dx = clientX - (rect.left + rect.width / 2);
+      const dy = clientY - (rect.top + rect.height / 2);
+      if (Math.abs(dx) < THRESHOLD && Math.abs(dy) < THRESHOLD) {
+        setGazeDir("center");
+      } else if (Math.abs(dx) > Math.abs(dy)) {
+        setGazeDir(dx > 0 ? "right" : "left");
+      } else {
+        setGazeDir(dy > 0 ? "down" : "up");
+      }
+    }
+    const onMouse = (e: MouseEvent) => look(e.clientX, e.clientY);
+    const onTouch = (e: TouchEvent) => {
+      const t = e.touches[0];
+      if (t) look(t.clientX, t.clientY);
+    };
+    window.addEventListener("mousemove", onMouse);
+    window.addEventListener("touchmove", onTouch, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", onMouse);
+      window.removeEventListener("touchmove", onTouch);
+    };
+  }, []);
 
   // Frases + reseñas rotando mientras carga.
   useEffect(() => {
@@ -503,13 +537,17 @@ export default function Studio({ zone }: { zone: Zone }) {
             </div>
           </div>
           <div style={{ position: "relative" }}>
-            <div className={styles.exBadge}>✨ Real photo → figure</div>
-            <div className={styles.heroWipe}>
-              <img className={styles.heroWipeBefore} src="/examples/hero-before.png" alt="a real dog" />
-              <div className={styles.heroWipeAfterMask}>
-                <img className={styles.heroWipeAfter} src="/examples/golden-white.jpg" alt="the dog as a figure" />
-              </div>
-              <div className={styles.heroWipeBar} />
+            <div className={styles.exBadge}>🐾 He&apos;s watching you</div>
+            <div className={styles.gazeDog} ref={gazeRef}>
+              {(["center", "up", "down", "left", "right"] as const).map((d) => (
+                <img
+                  key={d}
+                  src={`/pet/${d}.png`}
+                  alt={d === "center" ? "a golden retriever" : ""}
+                  className={styles.gazeDogImg}
+                  style={{ opacity: gazeDir === d ? 1 : 0 }}
+                />
+              ))}
             </div>
           </div>
         </header>
