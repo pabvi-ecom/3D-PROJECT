@@ -502,19 +502,21 @@ export default function Studio({ zone }: { zone: Zone }) {
           <span className={styles.chip}>🐾 10,000+ dogs kept forever</span>
         </div>
 
-        <div className={styles.heroRight}>
-          <h1 className={styles.heroH1}>Your Dog<br />Keep <em>Forever</em></h1>
-          <span className={styles.chip}>Free preview in seconds — no card needed.</span>
-        </div>
+        <div className={styles.heroRightCol}>
+          <div className={styles.heroRight}>
+            <h1 className={styles.heroH1}>Your Dog<br />Keep <em>Forever</em></h1>
+            <span className={styles.chip}>Free preview in seconds — no card needed.</span>
+          </div>
 
-        <div className={styles.heroActions}>
-          <button className={styles.cta} onClick={openPicker}>
-            Create yours
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
-          </button>
-          <div className={styles.heroStats}>
-            <div className={styles.heroStat}><b>4.9 ★★★★★</b></div>
-            <div className={styles.heroStat}><b>2–4 days</b> shipping</div>
+          <div className={styles.heroActions}>
+            <button className={styles.cta} onClick={openPicker}>
+              Create yours
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
+            </button>
+            <div className={styles.heroStats}>
+              <div className={styles.heroStat}><b>4.9 ★★★★★</b></div>
+              <div className={styles.heroStat}><b>2–4 days</b> shipping</div>
+            </div>
           </div>
         </div>
       </section>
