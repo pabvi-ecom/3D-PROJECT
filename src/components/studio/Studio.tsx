@@ -506,7 +506,7 @@ export default function Studio({ zone }: { zone: Zone }) {
 
         <div className={styles.heroLeft}>
           <span className={styles.heroLeftWord}>Never<br />fades.</span>
-          <span className={styles.chip}>🐾 10,000+ dogs kept forever</span>
+          <span className={styles.chip}>🐾 10,000+ pets kept forever</span>
         </div>
 
         <div className={styles.heroRightCol}>
@@ -530,7 +530,7 @@ export default function Studio({ zone }: { zone: Zone }) {
 
       <section className={styles.swellSection}>
         <div className={styles.swellHead}>
-          <h2>🐾 Happy dogs, happy humans</h2>
+          <h2>🐾 Happy pets, happy humans</h2>
         </div>
         <div className={styles.swellBadge}>📸 Send a photo of your {animal} with the figure <span className={styles.badgeBreak}>get <b>20% off</b> your next order</span></div>
         <ReviewSwell reviews={CUSTOMER_SWELL} />
@@ -547,7 +547,7 @@ export default function Studio({ zone }: { zone: Zone }) {
 
       <div className={styles.wrap}>
         <section className={styles.section} id="how">
-          <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>How it works</span><h2>The four steps to your {animal}&apos;s <em>perfect figure</em>.</h2></div>
+          <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>How it works</span><h2>The four steps to your pet&apos;s <em>perfect figure</em>.</h2></div>
           <StepsFlow />
         </section>
 
