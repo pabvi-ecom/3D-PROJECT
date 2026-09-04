@@ -502,14 +502,14 @@ export default function Studio({ zone }: { zone: Zone }) {
         </div>
 
         <div className={styles.heroRight}>
-          <h1 className={styles.heroH1}>Your dog,<br /><em>kept forever.</em></h1>
+          <h1 className={styles.heroH1}>Your Dog<br />Keep <em>Forever</em></h1>
           <span className={styles.chip}>One photo today. A keepsake you&apos;ll never have to say goodbye to.</span>
           <button className={styles.drop} onClick={openPicker}>
             <span className={styles.dropIcon}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
             </span>
             <span>
-              <span className={styles.dropTitle}>See your {animal} as a figure</span>
+              <span className={styles.dropTitle}>Create yours</span>
               <span className={styles.dropHint}>Free preview — no card needed</span>
             </span>
           </button>
