@@ -78,11 +78,6 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
         {items.map((r, i) => (
           <figure key={i} className={styles.card}>
             <img src={r.src} alt={`${r.name}, ${r.breed}`} loading="lazy" />
-            <figcaption>
-              <b>{r.name}</b>
-              <span>{r.breed}</span>
-              <p>&ldquo;{r.text}&rdquo;</p>
-            </figcaption>
           </figure>
         ))}
       </div>

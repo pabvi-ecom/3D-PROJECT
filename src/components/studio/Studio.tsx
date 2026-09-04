@@ -10,13 +10,6 @@ import { ReviewSwell } from "./ReviewSwell";
 
 const FIGURE_PRICE = 79.99;
 
-const GALLERY = [
-  "/examples/labrador-wood.jpg", "/examples/setter-marble.jpg", "/examples/basset-black.jpg",
-  "/examples/basset-marble.jpg", "/examples/golden-white.jpg", "/examples/basset-wood.jpg",
-  "/examples/lifestyle-cooper.jpg", "/examples/lifestyle-daisy.jpg",
-  "/examples/lifestyle-buddy.jpg", "/examples/lifestyle-bailey.jpg",
-];
-
 // Reseñas que rotan mientras se genera la figura.
 // TODO: nombres/textos de EJEMPLO — sustituir por reseñas reales antes de lanzar
 // anuncios (la FTC prohíbe reseñas inventadas presentadas como reales).
@@ -37,8 +30,6 @@ const CUSTOMER_SWELL = [
   { src: "/examples/lifestyle-cooper.jpg", name: "Cooper", breed: "Havanese mix", text: "Best gift I've ever given." },
   { src: "/examples/lifestyle-daisy.jpg", name: "Daisy", breed: "Goldendoodle", text: "So much better than a photo." },
   { src: "/examples/lifestyle-bailey.jpg", name: "Bailey", breed: "Dalmatian", text: "Even got his spots right." },
-  { src: "/examples/golden-white.jpg", name: "Bella", breed: "Golden Retriever", text: "The detail on her fur is unreal." },
-  { src: "/examples/basset-black.jpg", name: "Max", breed: "Basset Hound", text: "Now he's on our shelf forever." },
 ];
 
 const key = (poseId: string, baseId: string, view: "front" | "side" = "front") => `${poseId}|${baseId}|${view}`;
@@ -501,15 +492,7 @@ export default function Studio({ zone }: { zone: Zone }) {
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
 
       <section className={styles.heroFull}>
-        <video
-          className={styles.heroVideoWrap}
-          src="/pet/turntable.mp4"
-          autoPlay
-          muted
-          loop
-          playsInline
-          aria-hidden
-        />
+        <img className={styles.heroVideoWrap} src="/pet/hero-banner.jpg" alt="" aria-hidden />
         <div className={`${styles.wrap} ${styles.heroContent}`}>
           <div className={styles.heroLeft}>
             <span className={styles.eyebrow}>🐾 Free preview · no card needed</span>
@@ -531,6 +514,10 @@ export default function Studio({ zone }: { zone: Zone }) {
             <div className={styles.heroStat}><b>Full-color</b><span>hand-finished resin</span></div>
           </div>
         </div>
+      </section>
+
+      <section className={styles.swellSection}>
+        <ReviewSwell reviews={CUSTOMER_SWELL} />
       </section>
 
       <div className={styles.wrap}>
@@ -564,23 +551,7 @@ export default function Studio({ zone }: { zone: Zone }) {
           </div>
         </section>
 
-        <section className={styles.section} id="examples">
-          <div className={styles.shead}><span className={styles.eyebrow}>Real figures</span><h2>Turn any {animal} into <em>this</em></h2><p>Every figure is sculpted from a real photo, in their true colors.</p></div>
-          <div className={styles.gallery}>
-            {GALLERY.map((src, i) => (<div className={styles.gCard} key={i}><img src={src} alt="figure example" loading="lazy" /></div>))}
-          </div>
-          <div style={{ textAlign: "center", marginTop: 28 }}>
-            <button className={styles.btn} onClick={openPicker}>See your {animal} free →</button>
-          </div>
-        </section>
       </div>
-
-      <section className={styles.swellSection}>
-        <div className={styles.wrap}>
-          <div className={styles.shead}><span className={styles.eyebrow}>Loved by pet parents</span><h2>Real <em>{animal}s</em>, real figures</h2></div>
-        </div>
-        <ReviewSwell reviews={CUSTOMER_SWELL} />
-      </section>
 
       <div className={styles.wrap}>
         <section className={styles.section} id="pricing">
