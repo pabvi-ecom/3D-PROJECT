@@ -521,11 +521,10 @@ export default function Studio({ zone }: { zone: Zone }) {
 
       <section className={styles.swellSection}>
         <div className={styles.swellHead}>
-          <span className={styles.eyebrow}>🐾 Real customers</span>
-          <h2>Happy dogs, happy humans</h2>
+          <h2>🐾 Real customers — Happy dogs, happy humans</h2>
         </div>
+        <div className={styles.swellBadge}>📸 Send a photo of your {animal} with the figure — get <b>20% off</b> your next order</div>
         <ReviewSwell reviews={CUSTOMER_SWELL} />
-        <p className={styles.swellCta}>📸 Send us a photo of your {animal} with the figure and get <b>20% off</b> your next order.</p>
       </section>
 
       <div className={styles.wrap}>

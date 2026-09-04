@@ -111,10 +111,11 @@
 
 /* swell carousel */
 .swellSection{width:100vw; margin-left:calc(50% - 50vw); padding:clamp(40px,6vw,70px) 0; background:var(--surface)}
-.swellHead{text-align:center; max-width:30ch; margin:0 auto}
-.swellHead h2{font-size:clamp(1.8rem,4vw,2.6rem); margin-top:6px}
-.swellCta{text-align:center; max-width:40ch; margin:8px auto 0; color:var(--ink-soft); font-size:.95rem}
-.swellCta b{color:var(--accent)}
+.swellHead{text-align:center; max-width:44ch; margin:0 auto}
+.swellHead h2{font-size:clamp(1.3rem,2.8vw,1.9rem); white-space:normal}
+.swellBadge{display:block; text-align:center; max-width:fit-content; margin:14px auto 0; padding:12px 22px; border-radius:999px; background:var(--accent-soft); color:var(--accent-deep); font-weight:700; font-size:clamp(.95rem,1.6vw,1.15rem)}
+.swellBadge b{color:var(--accent)}
+@media(max-width:600px){.swellBadge{font-size:.82rem; padding:10px 16px; white-space:normal}}
 
 /* gallery */
 .gallery{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
