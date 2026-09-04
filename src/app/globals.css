@@ -6,20 +6,20 @@
   una variable en línea (style={{ '--accent': ... }}) sin tocar nada más.
 */
 :root {
-  --bg: #F6F1E9;
-  --surface: #FFFDFB;
-  --surface-2: #F2ECE2;
-  --ink: #241E19;
-  --ink-soft: #6A5D52;
-  --ink-faint: #9A8C7E;
-  --line: #E6DCCD;
-  --line-soft: #EFE7DA;
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --surface-2: #F5F5F7;
+  --ink: #1D1D1F;
+  --ink-soft: #6E6E73;
+  --ink-faint: #86868B;
+  --line: #D2D2D7;
+  --line-soft: #E8E8ED;
 
-  --accent: #E4613C;        /* acento de la zona (perros = coral/terracota) */
-  --accent-deep: #C2482A;
-  --accent-soft: #FBE6DD;
-  --gold: #C4A052;          /* secundario premium, sutil */
-  --sage: #6E9A7B;          /* confianza / éxito */
+  --accent: #0071E3;        /* azul Apple — único acento */
+  --accent-deep: #0058B0;
+  --accent-soft: #E8F1FC;
+  --gold: #0071E3;          /* unificado con el acento */
+  --sage: #0071E3;          /* unificado con el acento */
 
   --shadow-sm: 0 1px 2px rgba(36,30,25,.05), 0 8px 20px -14px rgba(36,30,25,.22);
   --shadow: 0 2px 4px rgba(36,30,25,.05), 0 20px 44px -22px rgba(36,30,25,.28);
@@ -31,20 +31,20 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #17130F;
-    --surface: #201B16;
-    --surface-2: #29221B;
-    --ink: #F4ECE2;
-    --ink-soft: #C3B4A4;
-    --ink-faint: #8A7A6B;
-    --line: #352C23;
-    --line-soft: #2A231C;
+    --bg: #000000;
+    --surface: #1D1D1F;
+    --surface-2: #2A2A2C;
+    --ink: #F5F5F7;
+    --ink-soft: #A1A1A6;
+    --ink-faint: #6E6E73;
+    --line: #3A3A3C;
+    --line-soft: #2C2C2E;
 
-    --accent: #FF7A55;
-    --accent-deep: #FF9773;
-    --accent-soft: #38211A;
-    --gold: #D9B667;
-    --sage: #86B795;
+    --accent: #2997FF;
+    --accent-deep: #64B5FF;
+    --accent-soft: #0A2540;
+    --gold: #2997FF;
+    --sage: #2997FF;
 
     --shadow-sm: 0 1px 2px rgba(0,0,0,.3), 0 10px 24px -16px rgba(0,0,0,.6);
     --shadow: 0 2px 4px rgba(0,0,0,.3), 0 22px 48px -24px rgba(0,0,0,.7);
