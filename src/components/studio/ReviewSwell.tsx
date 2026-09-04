@@ -17,7 +17,14 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
   const viewportRef = useRef(null);
   const inView = useInView(viewportRef, { once: true, amount: 0.4 });
   const [entered, setEntered] = useState(false);
+  const [settled, setSettled] = useState(false);
   if (inView && !entered) setEntered(true);
+
+  useEffect(() => {
+    if (!entered) return;
+    const t = setTimeout(() => setSettled(true), 2800);
+    return () => clearTimeout(t);
+  }, [entered]);
 
   useEffect(() => {
     function updateGap() {
@@ -71,9 +78,11 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
               initial={entered ? false : { x: gap * n, scale: 0.7, opacity: 0 }}
               animate={entered ? { x: translate, scale, opacity } : {}}
               transition={
-                entered
-                  ? { type: "spring", stiffness: 300, damping: 30 }
-                  : { type: "spring", stiffness: 220, damping: 24, delay: i * 0.035 }
+                !entered
+                  ? {}
+                  : !settled
+                  ? { duration: 2, ease: [0.22, 1, 0.36, 1], delay: i * 0.12 }
+                  : { type: "spring", stiffness: 300, damping: 30 }
               }
               style={{ zIndex: 10 - abs }}
             >

@@ -113,7 +113,7 @@
 .howc .free{display:inline-block; margin-top:10px; font-size:.7rem; font-weight:800; text-transform:uppercase; letter-spacing:.05em; color:var(--good); background:color-mix(in srgb,var(--good) 14%,transparent); padding:3px 9px; border-radius:999px}
 
 /* swell carousel */
-.swellSection{width:100vw; margin-left:calc(50% - 50vw); padding:clamp(40px,6vw,70px) 0; background:var(--surface)}
+.swellSection{width:100vw; margin-left:calc(50% - 50vw); padding:clamp(40px,6vw,70px) 0 clamp(24px,3.5vw,40px); background:var(--surface)}
 .swellHead{text-align:center; max-width:44ch; margin:0 auto}
 .swellHead h2{font-size:clamp(1.3rem,2.8vw,1.9rem); white-space:normal}
 .swellBadge{display:block; text-align:center; max-width:fit-content; margin:14px auto 0; padding:12px 22px; border-radius:999px; background:var(--accent-soft); color:var(--accent-deep); font-weight:700; font-size:clamp(.95rem,1.6vw,1.15rem)}
