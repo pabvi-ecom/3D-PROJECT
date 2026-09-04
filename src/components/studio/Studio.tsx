@@ -6,6 +6,7 @@ import { brand } from "@/config/brand";
 import { poses, paidBases, bases, NO_BASE_ID, NAMEPLATE_PRICE, packs, type Pack } from "@/config/products";
 import type { Zone } from "@/config/zones";
 import { FoldCard } from "./FoldCard";
+import { ReviewSwell } from "./ReviewSwell";
 
 const FIGURE_PRICE = 79.99;
 
@@ -26,6 +27,18 @@ const REVIEWS = [
   { src: "/examples/basset-black.jpg", name: "Daisy", breed: "Basset Hound", text: "Now she's on our shelf forever." },
   { src: "/examples/basset-marble.jpg", name: "Rocky", breed: "Basset Hound", text: "Even got his little spots right." },
   { src: "/examples/basset-wood.jpg", name: "Luna", breed: "Basset Hound", text: "So much better than a photo." },
+];
+
+// Fotos reales de clientes con su figura — para el carrusel "swell".
+// TODO: mismo aviso que arriba — nombres/textos de EJEMPLO hasta tener
+// reseñas reales verificadas.
+const CUSTOMER_SWELL = [
+  { src: "/examples/lifestyle-buddy.jpg", name: "Buddy", breed: "Golden Retriever", text: "It looks exactly like him." },
+  { src: "/examples/lifestyle-cooper.jpg", name: "Cooper", breed: "Havanese mix", text: "Best gift I've ever given." },
+  { src: "/examples/lifestyle-daisy.jpg", name: "Daisy", breed: "Goldendoodle", text: "So much better than a photo." },
+  { src: "/examples/lifestyle-bailey.jpg", name: "Bailey", breed: "Dalmatian", text: "Even got his spots right." },
+  { src: "/examples/golden-white.jpg", name: "Bella", breed: "Golden Retriever", text: "The detail on her fur is unreal." },
+  { src: "/examples/basset-black.jpg", name: "Max", breed: "Basset Hound", text: "Now he's on our shelf forever." },
 ];
 
 const key = (poseId: string, baseId: string, view: "front" | "side" = "front") => `${poseId}|${baseId}|${view}`;
@@ -560,7 +573,16 @@ export default function Studio({ zone }: { zone: Zone }) {
             <button className={styles.btn} onClick={openPicker}>See your {animal} free →</button>
           </div>
         </section>
+      </div>
 
+      <section className={styles.swellSection}>
+        <div className={styles.wrap}>
+          <div className={styles.shead}><span className={styles.eyebrow}>Loved by pet parents</span><h2>Real <em>{animal}s</em>, real figures</h2></div>
+        </div>
+        <ReviewSwell reviews={CUSTOMER_SWELL} />
+      </section>
+
+      <div className={styles.wrap}>
         <section className={styles.section} id="pricing">
           <div className={styles.shead}><span className={styles.eyebrow}>Pricing</span><h2>The whole family, <em>immortalized</em></h2><p>More figures, better price — and they ship together.</p></div>
           <div className={styles.packs}>
