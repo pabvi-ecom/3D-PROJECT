@@ -46,7 +46,7 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
           const abs = Math.abs(diff);
           const scale = abs === 0 ? 1.08 : abs === 1 ? 0.86 : 0.7;
           const opacity = abs === 0 ? 1 : abs === 1 ? 0.7 : 0.35;
-          const translate = diff * 168;
+          const translate = diff * 210;
 
           return (
             <motion.figure

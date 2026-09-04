@@ -26,12 +26,13 @@ const REVIEWS = [
 // TODO: mismo aviso que arriba — nombres/textos de EJEMPLO hasta tener
 // reseñas reales verificadas.
 const CUSTOMER_SWELL = [
-  { src: "/examples/lifestyle-buddy.jpg", name: "Buddy", breed: "Golden Retriever", text: "It looks exactly like him." },
+  { src: "/examples/lifestyle-coco.jpg", name: "Coco", breed: "Cocker Spaniel", text: "Every curl, just right." },
   { src: "/examples/lifestyle-cooper.jpg", name: "Cooper", breed: "Havanese mix", text: "Best gift I've ever given." },
   { src: "/examples/lifestyle-daisy.jpg", name: "Daisy", breed: "Goldendoodle", text: "So much better than a photo." },
   { src: "/examples/lifestyle-bailey.jpg", name: "Bailey", breed: "Dalmatian", text: "Even got his spots right." },
   { src: "/examples/lifestyle-luna.jpg", name: "Luna", breed: "French Bulldog", text: "Every wrinkle, spot on." },
   { src: "/examples/lifestyle-charlie.jpg", name: "Charlie", breed: "Cavalier Spaniel", text: "Best gift I've ever given." },
+  { src: "/examples/lifestyle-milo.jpg", name: "Milo", breed: "Beagle", text: "So much better than a photo." },
 ];
 
 const key = (poseId: string, baseId: string, view: "front" | "side" = "front") => `${poseId}|${baseId}|${view}`;
@@ -523,7 +524,7 @@ export default function Studio({ zone }: { zone: Zone }) {
 
       <section className={styles.swellSection}>
         <div className={styles.swellHead}>
-          <h2>🐾 Real customers — Happy dogs, happy humans</h2>
+          <h2>🐾 Happy dogs, happy humans</h2>
         </div>
         <div className={styles.swellBadge}>📸 Send a photo of your {animal} with the figure — get <b>20% off</b> your next order</div>
         <ReviewSwell reviews={CUSTOMER_SWELL} />
