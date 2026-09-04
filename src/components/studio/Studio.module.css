@@ -98,6 +98,8 @@
 .section{padding:clamp(48px,7vw,88px) 0}
 .shead{text-align:center; max-width:30ch; margin:0 auto 40px}
 .shead h2{font-size:clamp(1.9rem,4.5vw,3rem)}
+.sheadTight{max-width:42ch; margin-bottom:24px}
+.sheadTight h2{font-size:clamp(1.5rem,3.2vw,2.1rem); line-height:1.25}
 .shead h2 em{color:var(--accent)}
 .shead p{color:var(--ink-soft); margin-top:12px; font-size:1.04rem}
 

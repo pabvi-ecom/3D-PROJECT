@@ -29,9 +29,13 @@ const REVIEWS = [
 // reseñas reales verificadas.
 const CUSTOMER_SWELL = [
   { src: "/examples/lifestyle-coco.jpg", name: "Coco", breed: "Cocker Spaniel", text: "Every curl, just right." },
+  { src: "/examples/lifestyle-miska.jpg", name: "Miska", breed: "Tabby Cat", text: "Even the whiskers are perfect." },
   { src: "/examples/lifestyle-cooper.jpg", name: "Cooper", breed: "Havanese mix", text: "Best gift I've ever given." },
+  { src: "/examples/lifestyle-oliver.jpg", name: "Oliver", breed: "Maine Coon", text: "That fluff — nailed it." },
   { src: "/examples/lifestyle-daisy.jpg", name: "Daisy", breed: "Goldendoodle", text: "So much better than a photo." },
+  { src: "/examples/lifestyle-cleo.jpg", name: "Cleo", breed: "Lynx Point Siamese", text: "Those blue eyes, just like hers." },
   { src: "/examples/lifestyle-bailey.jpg", name: "Bailey", breed: "Dalmatian", text: "Even got his spots right." },
+  { src: "/examples/lifestyle-simba.jpg", name: "Simba", breed: "Ginger Cat", text: "My favorite thing on the shelf now." },
   { src: "/examples/lifestyle-luna.jpg", name: "Luna", breed: "French Bulldog", text: "Every wrinkle, spot on." },
   { src: "/examples/lifestyle-charlie.jpg", name: "Charlie", breed: "Cavalier Spaniel", text: "Best gift I've ever given." },
   { src: "/examples/lifestyle-milo.jpg", name: "Milo", breed: "Beagle", text: "So much better than a photo." },
@@ -543,7 +547,7 @@ export default function Studio({ zone }: { zone: Zone }) {
 
       <div className={styles.wrap}>
         <section className={styles.section} id="how">
-          <div className={styles.shead}><span className={styles.eyebrow}>How it works</span><h2>From photo to <em>forever</em>, in 4 steps</h2></div>
+          <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>How it works</span><h2>The four steps to your {animal}&apos;s <em>perfect figure</em>.</h2></div>
           <StepsFlow />
         </section>
 
