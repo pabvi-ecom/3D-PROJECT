@@ -23,6 +23,7 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
   const decelStep = useRef(0);
   const stoppedRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevDiffRef = useRef<number[]>([]);
 
   useEffect(() => {
     inViewRef.current = inView;
@@ -103,12 +104,22 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
           const opacity = abs === 0 ? 1 : abs === 1 ? 0.7 : 0.35;
           const translate = diff * gap;
 
+          const prevDiff = prevDiffRef.current[i];
+          const wrapped = prevDiff !== undefined && Math.abs(diff - prevDiff) > 1;
+          prevDiffRef.current[i] = diff;
+
+          const transition = wrapped
+            ? { duration: 0 }
+            : dragging.current || stoppedRef.current
+            ? { type: "spring" as const, stiffness: 300, damping: 30 }
+            : { duration: Math.max(0.1, (stepMs / 1000) * 0.98), ease: "linear" as const };
+
           return (
             <motion.figure
               key={i}
               className={styles.card}
               animate={{ x: translate, scale, opacity }}
-              transition={dragging.current || stoppedRef.current ? { type: "spring", stiffness: 300, damping: 30 } : { duration: Math.max(0.1, (stepMs / 1000) * 0.98), ease: "linear" }}
+              transition={transition}
               style={{ zIndex: 10 - abs }}
             >
               <img src={r.src} alt={`${r.name}, ${r.breed}`} loading="lazy" draggable={false} />
