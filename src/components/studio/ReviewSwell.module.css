@@ -6,26 +6,32 @@
   justify-content: center;
   padding: 50px 0;
   overflow: hidden;
+  cursor: grab;
+  user-select: none;
+  touch-action: pan-y;
+}
+
+.viewport:active {
+  cursor: grabbing;
 }
 
 .track {
   position: relative;
-  height: 320px;
-  width: 260px;
+  height: 400px;
+  width: 200px;
 }
 
 .card {
   position: absolute;
   top: 0;
   left: 0;
-  width: 260px;
-  height: 320px;
+  width: 200px;
+  height: 355.5px; /* 9:16 */
   margin: 0;
-  border-radius: 22px;
+  border-radius: 20px;
   overflow: hidden;
   background: var(--surface-2);
   box-shadow: var(--shadow);
-  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
   will-change: transform, opacity;
 }
 
@@ -34,47 +40,16 @@
   height: 100%;
   object-fit: cover;
   display: block;
-}
-
-.arrow {
-  flex: none;
-  width: 46px;
-  height: 46px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--ink);
-  font-size: 1.6rem;
-  line-height: 1;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  box-shadow: var(--shadow-sm);
-  z-index: 20;
-  transition: transform 0.15s, background 0.15s;
-}
-
-.arrow:hover {
-  background: var(--accent);
-  color: #fff;
-  transform: scale(1.06);
-}
-
-.arrowLeft {
-  margin-right: -20px;
-}
-
-.arrowRight {
-  margin-left: -20px;
+  pointer-events: none;
 }
 
 @media (max-width: 640px) {
   .track {
-    height: 240px;
-    width: 190px;
+    height: 320px;
+    width: 160px;
   }
   .card {
-    width: 190px;
-    height: 240px;
+    width: 160px;
+    height: 284.5px;
   }
 }
