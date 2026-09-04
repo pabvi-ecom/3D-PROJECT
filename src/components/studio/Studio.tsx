@@ -5,7 +5,7 @@ import styles from "./Studio.module.css";
 import { brand } from "@/config/brand";
 import { poses, paidBases, bases, NO_BASE_ID, NAMEPLATE_PRICE, packs, type Pack } from "@/config/products";
 import type { Zone } from "@/config/zones";
-import { FoldCard } from "./FoldCard";
+import { StepsFlow } from "./StepsFlow";
 import { ReviewSwell } from "./ReviewSwell";
 import { TransformReveal } from "./TransformReveal";
 import { NameGate } from "./NameGate";
@@ -543,27 +543,8 @@ export default function Studio({ zone }: { zone: Zone }) {
 
       <div className={styles.wrap}>
         <section className={styles.section} id="how">
-          <div className={styles.shead}><span className={styles.eyebrow}>How it works</span><h2>From photo to <em>forever</em>, in 3 steps</h2></div>
-          <div className={styles.how}>
-            <FoldCard
-              number="1"
-              title="Upload a photo"
-              teaser={`Any normal snapshot of your ${animal}. Free · no card. Tap for details.`}
-              detail={`You'll see your figure in seconds. Any normal photo works — front-facing shots come out best, but our AI handles most angles and lighting just fine.`}
-            />
-            <FoldCard
-              number="2"
-              title="Make it yours"
-              teaser="Pick the pose and a display base with their name. Tap for details."
-              detail="Choose from several poses, then optionally add a display base with your pet's name engraved. You only pay once you love the preview — no surprises."
-            />
-            <FoldCard
-              number="3"
-              title="We print & ship"
-              teaser="Full-color resin, hand-finished. Tap for details."
-              detail="Every figure is 3D-printed in full color, hand-finished by our team, and shipped to your door in 2–4 days in protective packaging."
-            />
-          </div>
+          <div className={styles.shead}><span className={styles.eyebrow}>How it works</span><h2>From photo to <em>forever</em>, in 4 steps</h2></div>
+          <StepsFlow />
         </section>
 
       </div>

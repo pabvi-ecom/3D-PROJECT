@@ -1,0 +1,26 @@
+.flow{position:relative; padding-top:8px}
+
+.line{position:absolute; top:34px; left:calc(12.5% + 2px); right:calc(12.5% + 2px); height:3px; background:var(--line-2); border-radius:99px; overflow:hidden}
+.lineFill{width:100%; height:100%; background:linear-gradient(90deg, var(--accent), var(--accent-deep)); transform-origin:left center; border-radius:99px}
+
+.steps{display:grid; grid-template-columns:repeat(4,1fr); gap:20px; position:relative}
+
+.step{display:flex; flex-direction:column; align-items:center; text-align:center; padding:0 8px}
+
+.node{position:relative; display:flex; align-items:center; justify-content:center; width:68px; height:68px; border-radius:50%; border:2px solid var(--line); background:var(--surface); color:var(--accent); cursor:pointer; box-shadow:var(--shadow); transition:transform .18s ease, border-color .18s ease, box-shadow .18s ease; margin-bottom:16px}
+.node:hover{transform:translateY(-3px) scale(1.05); border-color:var(--accent)}
+.num{position:absolute; top:-6px; right:-6px; width:22px; height:22px; border-radius:50%; background:var(--accent); color:#fff; font-size:.72rem; font-weight:800; display:flex; align-items:center; justify-content:center}
+.icon{display:flex}
+
+.title{font-size:1.02rem; font-weight:800; margin:0 0 6px; color:var(--ink)}
+.teaser{font-size:.86rem; color:var(--ink-soft); margin:0; line-height:1.4}
+
+.detail{overflow:hidden; font-size:.86rem; color:var(--ink-soft); line-height:1.5; margin:0; max-width:26ch}
+.stepOpen .detail{margin-top:10px}
+.stepOpen .node{border-color:var(--accent); box-shadow:0 0 0 4px var(--accent-soft)}
+
+@media(max-width:860px){
+  .line{display:none}
+  .steps{grid-template-columns:1fr; gap:32px}
+  .step{max-width:340px; margin:0 auto}
+}
