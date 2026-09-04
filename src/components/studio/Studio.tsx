@@ -8,6 +8,7 @@ import type { Zone } from "@/config/zones";
 import { FoldCard } from "./FoldCard";
 import { ReviewSwell } from "./ReviewSwell";
 import { TransformReveal } from "./TransformReveal";
+import { NameGate } from "./NameGate";
 
 const FIGURE_PRICE = 79.99;
 
@@ -530,6 +531,8 @@ export default function Studio({ zone }: { zone: Zone }) {
         <div className={styles.swellBadge}>📸 Send a photo of your {animal} with the figure <span className={styles.badgeBreak}>get <b>20% off</b> your next order</span></div>
         <ReviewSwell reviews={CUSTOMER_SWELL} />
       </section>
+
+      <NameGate animal={animal} />
 
       <TransformReveal
         before="/pet/transform-before.jpg"

@@ -1,0 +1,14 @@
+.section{width:100%; padding:clamp(20px,3vw,32px) 0; display:flex; justify-content:center; background:var(--surface)}
+
+.card{width:100%; max-width:480px; margin:0 clamp(16px,4vw,44px); display:flex; flex-direction:column; gap:10px}
+
+.label{font-size:clamp(1rem,1.6vw,1.15rem); font-weight:800; color:var(--ink); text-align:center}
+
+.row{display:flex; gap:10px; align-items:center; background:var(--surface); border:1.5px solid var(--line); border-radius:999px; padding:6px 6px 6px 20px; box-shadow:var(--shadow)}
+
+.input{flex:1; border:none; outline:none; background:transparent; font-size:1rem; font-weight:600; color:var(--ink); min-width:0}
+.input::placeholder{color:var(--ink-faint); font-weight:500}
+
+.go{flex:none; display:flex; align-items:center; justify-content:center; width:44px; height:44px; border-radius:50%; border:none; background:var(--accent); color:#fff; cursor:pointer; transition:transform .15s ease, opacity .15s ease}
+.go:hover:not(:disabled){transform:translateX(2px)}
+.go:disabled{opacity:.4; cursor:not-allowed}
