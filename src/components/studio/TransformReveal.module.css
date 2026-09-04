@@ -5,11 +5,15 @@
 .text{max-width:46ch}
 .eyebrow{display:inline-block; font-size:.8rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--accent-deep); background:var(--accent-soft); padding:6px 14px; border-radius:999px; margin-bottom:12px}
 .text h2{font-size:clamp(1.6rem,3vw,2.3rem); line-height:1.12; margin:0 0 12px}
-.text p{font-size:clamp(.95rem,1.3vw,1.05rem); line-height:1.5; color:var(--ink-soft); margin:0}
+.text p{font-size:clamp(.95rem,1.3vw,1.05rem); line-height:1.5; color:var(--ink-soft); margin:0 0 20px}
+
+.cta{display:inline-flex; align-items:center; gap:8px; background:var(--accent); color:#fff; font-weight:800; font-size:clamp(.92rem,1.2vw,1.02rem); padding:13px 22px; border:none; border-radius:999px; cursor:pointer; box-shadow:0 8px 20px color-mix(in srgb,var(--accent) 35%,transparent); transition:transform .15s ease, box-shadow .15s ease}
+.cta:hover{transform:translateY(-1px); box-shadow:0 10px 24px color-mix(in srgb,var(--accent) 42%,transparent)}
 
 .visual{position:relative; height:clamp(280px,28vw,340px); display:flex; align-items:center; justify-content:center}
 
-.folder{font-size:clamp(60px,6.5vw,80px); line-height:1; filter:drop-shadow(0 10px 22px rgba(0,0,0,.18)); z-index:1}
+.folder{line-height:1; filter:drop-shadow(0 10px 22px rgba(0,0,0,.18)); z-index:1}
+.folder svg{width:clamp(60px,6.5vw,80px); height:clamp(60px,6.5vw,80px)}
 
 .photo{position:absolute; top:50%; left:50%; margin:0; width:clamp(190px,19vw,250px); border-radius:16px; overflow:hidden; box-shadow:var(--shadow); background:var(--surface); z-index:2; transform-origin:center}
 .photo img{width:100%; aspect-ratio:3/4; object-fit:cover; display:block}

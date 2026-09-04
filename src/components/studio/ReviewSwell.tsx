@@ -7,6 +7,8 @@ import styles from "./ReviewSwell.module.css";
 type Review = { src: string; name: string; breed: string; text: string };
 
 const SWIPE_THRESHOLD = 50;
+const RUN_DELAY = 420;
+const DECEL_DELAYS = [520, 680, 900, 1200, 1600];
 
 export function ReviewSwell({ reviews }: { reviews: Review[] }) {
   const [index, setIndex] = useState(0);
@@ -15,16 +17,37 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
   const startX = useRef(0);
   const dragging = useRef(false);
   const viewportRef = useRef(null);
-  const inView = useInView(viewportRef, { once: true, amount: 0.4 });
-  const [entered, setEntered] = useState(false);
-  const [settled, setSettled] = useState(false);
-  if (inView && !entered) setEntered(true);
+  const inView = useInView(viewportRef, { amount: 0.4 });
+  const inViewRef = useRef(false);
+  const decelStep = useRef(0);
+  const stoppedRef = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (!entered) return;
-    const t = setTimeout(() => setSettled(true), 2800);
-    return () => clearTimeout(t);
-  }, [entered]);
+    inViewRef.current = inView;
+  }, [inView]);
+
+  useEffect(() => {
+    function tick() {
+      if (stoppedRef.current) return;
+      setIndex((i) => (i + 1) % n);
+
+      let delay: number | undefined = RUN_DELAY;
+      if (inViewRef.current) {
+        delay = DECEL_DELAYS[decelStep.current];
+        decelStep.current += 1;
+        if (delay === undefined) {
+          stoppedRef.current = true;
+          return;
+        }
+      }
+      timerRef.current = setTimeout(tick, delay);
+    }
+    timerRef.current = setTimeout(tick, RUN_DELAY);
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [n]);
 
   useEffect(() => {
     function updateGap() {
@@ -36,11 +59,17 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
     return () => window.removeEventListener("resize", updateGap);
   }, []);
 
+  function stopAutoplay() {
+    stoppedRef.current = true;
+    if (timerRef.current) clearTimeout(timerRef.current);
+  }
+
   function go(dir: 1 | -1) {
     setIndex((i) => (i + dir + n) % n);
   }
 
   function onDown(x: number) {
+    stopAutoplay();
     startX.current = x;
     dragging.current = true;
   }
@@ -75,15 +104,8 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
             <motion.figure
               key={i}
               className={styles.card}
-              initial={entered ? false : { x: gap * n, scale: 0.7, opacity: 0 }}
-              animate={entered ? { x: translate, scale, opacity } : {}}
-              transition={
-                !entered
-                  ? {}
-                  : !settled
-                  ? { duration: 2, ease: [0.22, 1, 0.36, 1], delay: i * 0.12 }
-                  : { type: "spring", stiffness: 300, damping: 30 }
-              }
+              animate={{ x: translate, scale, opacity }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
               style={{ zIndex: 10 - abs }}
             >
               <img src={r.src} alt={`${r.name}, ${r.breed}`} loading="lazy" draggable={false} />

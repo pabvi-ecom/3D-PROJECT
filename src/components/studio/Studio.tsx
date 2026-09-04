@@ -535,6 +535,7 @@ export default function Studio({ zone }: { zone: Zone }) {
         before="/pet/transform-before.jpg"
         after="/pet/transform-after.jpg"
         animal={animal}
+        onCta={openPicker}
       />
 
       <div className={styles.wrap}>
