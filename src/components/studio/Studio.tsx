@@ -497,21 +497,20 @@ export default function Studio({ zone }: { zone: Zone }) {
         <img className={styles.heroVideoWrap} src="/pet/hero-banner.jpg" alt="" aria-hidden />
 
         <div className={styles.heroLeft}>
-          <span className={styles.heroLeftWord}>Forever.</span>
-          <span className={styles.chip}>🐾 Free preview · no card</span>
+          <span className={styles.heroLeftWord}>Never<br />fades.</span>
+          <span className={styles.chip}>🐾 10,000+ dogs kept forever</span>
         </div>
 
         <div className={styles.heroRight}>
-          <span className={styles.chip}>They won&apos;t be here forever.</span>
-          <h1 className={styles.heroH1}><em>This will.</em></h1>
-          <span className={styles.chip}>Upload one photo of {animal} — see them as a hand-painted keepsake, free.</span>
+          <h1 className={styles.heroH1}>Your dog,<br /><em>kept forever.</em></h1>
+          <span className={styles.chip}>One photo today. A keepsake you&apos;ll never have to say goodbye to.</span>
           <button className={styles.drop} onClick={openPicker}>
             <span className={styles.dropIcon}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
             </span>
             <span>
-              <span className={styles.dropTitle}>Upload a photo</span>
-              <span className={styles.dropHint}>Free — see it in seconds</span>
+              <span className={styles.dropTitle}>See your {animal} as a figure</span>
+              <span className={styles.dropHint}>Free preview — no card needed</span>
             </span>
           </button>
           <div className={styles.heroStats}>
