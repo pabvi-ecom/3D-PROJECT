@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import styles from "./ReviewSwell.module.css";
 
@@ -10,9 +10,20 @@ const SWIPE_THRESHOLD = 50;
 
 export function ReviewSwell({ reviews }: { reviews: Review[] }) {
   const [index, setIndex] = useState(0);
+  const [gap, setGap] = useState(210);
   const n = reviews.length;
   const startX = useRef(0);
   const dragging = useRef(false);
+
+  useEffect(() => {
+    function updateGap() {
+      const w = window.innerWidth;
+      setGap(w <= 480 ? 105 : w <= 820 ? 131 : 210);
+    }
+    updateGap();
+    window.addEventListener("resize", updateGap);
+    return () => window.removeEventListener("resize", updateGap);
+  }, []);
 
   function go(dir: 1 | -1) {
     setIndex((i) => (i + dir + n) % n);
@@ -46,7 +57,7 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
           const abs = Math.abs(diff);
           const scale = abs === 0 ? 1.08 : abs === 1 ? 0.86 : 0.7;
           const opacity = abs === 0 ? 1 : abs === 1 ? 0.7 : 0.35;
-          const translate = diff * 210;
+          const translate = diff * gap;
 
           return (
             <motion.figure

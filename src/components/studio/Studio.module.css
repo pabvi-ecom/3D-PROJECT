@@ -118,7 +118,12 @@
 .swellHead h2{font-size:clamp(1.3rem,2.8vw,1.9rem); white-space:normal}
 .swellBadge{display:block; text-align:center; max-width:fit-content; margin:14px auto 0; padding:12px 22px; border-radius:999px; background:var(--accent-soft); color:var(--accent-deep); font-weight:700; font-size:clamp(.95rem,1.6vw,1.15rem)}
 .swellBadge b{color:var(--accent)}
-@media(max-width:600px){.swellBadge{font-size:.82rem; padding:10px 16px; white-space:normal}}
+.badgeBreak{display:inline}
+@media(max-width:600px){
+  .swellSection{padding:24px 0}
+  .swellBadge{font-size:.82rem; padding:10px 16px; white-space:normal; max-width:88%}
+  .badgeBreak{display:block; margin-top:2px}
+}
 
 /* gallery */
 .gallery{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
