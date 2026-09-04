@@ -31,16 +31,15 @@ export function TransformReveal({ before, after, animal, onCta }: { before: stri
     <section className={styles.section} ref={ref}>
       <div className={styles.wrap}>
         <div className={styles.text}>
-          <span className={styles.eyebrow}>The transformation</span>
+          <span className={styles.eyebrow}>We turn your furry friend into a lifelong keepsake</span>
           <h2>Turn today&apos;s photo into forever.</h2>
           <p>
-            One day your {animal} won&apos;t be there to greet you at the door.
-            We turn a single photo into a hand-painted figure that keeps every
-            detail of them — on your shelf, forever, long after the photos have
-            faded from your feed.
+            A single photo of your {animal} becomes a hand-painted figure that
+            keeps every detail of them — on your shelf, forever, long after the
+            photos have faded from your feed.
           </p>
           <button className={styles.cta} onClick={onCta}>
-            Don&apos;t wait to say goodbye — create yours now
+            Create yours now
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
           </button>
         </div>

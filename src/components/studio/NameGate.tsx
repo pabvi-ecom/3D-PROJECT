@@ -15,7 +15,7 @@ export function NameGate({ animal }: { animal: string }) {
     <section className={styles.section}>
       <form className={styles.card} onSubmit={onSubmit}>
         <label className={styles.label} htmlFor="dog-name">
-          What&apos;s your {animal}&apos;s name?
+          ¿Cuál es el nombre de tu mascota?
         </label>
         <div className={styles.row}>
           <input

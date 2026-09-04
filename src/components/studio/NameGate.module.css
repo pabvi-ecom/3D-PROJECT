@@ -1,4 +1,4 @@
-.section{width:100%; padding:clamp(20px,3vw,32px) 0; display:flex; justify-content:center; background:var(--surface)}
+.section{width:100%; margin-top:clamp(-24px,-2vw,-10px); padding:0 0 clamp(14px,2vw,20px); display:flex; justify-content:center; background:var(--surface)}
 
 .card{width:100%; max-width:480px; margin:0 clamp(16px,4vw,44px); display:flex; flex-direction:column; gap:10px}
 

@@ -3,7 +3,7 @@
 .wrap{max-width:1160px; margin:0 auto; padding:0 clamp(16px,4vw,44px); display:grid; grid-template-columns:1fr 1fr; gap:clamp(24px,4vw,56px); align-items:center}
 
 .text{max-width:46ch}
-.eyebrow{display:inline-block; font-size:.8rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--accent-deep); background:var(--accent-soft); padding:6px 14px; border-radius:999px; margin-bottom:12px}
+.eyebrow{display:inline-block; max-width:34ch; font-size:.92rem; font-weight:700; font-style:italic; color:var(--accent-deep); background:var(--accent-soft); padding:8px 16px; border-radius:14px; margin-bottom:14px; line-height:1.3}
 .text h2{font-size:clamp(1.6rem,3vw,2.3rem); line-height:1.12; margin:0 0 12px}
 .text p{font-size:clamp(.95rem,1.3vw,1.05rem); line-height:1.5; color:var(--ink-soft); margin:0 0 20px}
 

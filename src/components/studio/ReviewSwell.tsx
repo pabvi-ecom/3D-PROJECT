@@ -7,8 +7,8 @@ import styles from "./ReviewSwell.module.css";
 type Review = { src: string; name: string; breed: string; text: string };
 
 const SWIPE_THRESHOLD = 50;
-const RUN_DELAY = 420;
-const DECEL_DELAYS = [520, 680, 900, 1200, 1600];
+const RUN_DELAY = 130;
+const DECEL_DELAYS = [140, 180, 230, 300, 390, 510, 650];
 
 export function ReviewSwell({ reviews }: { reviews: Review[] }) {
   const [index, setIndex] = useState(0);
