@@ -4,7 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 50px 0;
+  padding: 20px 0;
   overflow: hidden;
   cursor: grab;
   user-select: none;
@@ -17,17 +17,17 @@
 
 .track {
   position: relative;
-  height: 620px;
+  height: 600px;
   width: 320px;
 }
 
 .card {
   position: absolute;
-  top: 0;
+  top: 50%;
   left: 0;
   width: 320px;
   height: 568.9px; /* 9:16 */
-  margin: 0;
+  margin: -284.45px 0 0;
   border-radius: 22px;
   overflow: hidden;
   background: var(--surface-2);
@@ -45,23 +45,25 @@
 
 @media (max-width: 820px) {
   .track {
-    height: 400px;
+    height: 380px;
     width: 200px;
   }
   .card {
     width: 200px;
     height: 355.5px;
+    margin-top: -177.75px;
     border-radius: 18px;
   }
 }
 
 @media (max-width: 480px) {
   .track {
-    height: 320px;
+    height: 300px;
     width: 160px;
   }
   .card {
     width: 160px;
     height: 284.5px;
+    margin-top: -142.25px;
   }
 }

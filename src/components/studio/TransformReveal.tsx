@@ -67,7 +67,7 @@ export function TransformReveal({ before, after, animal, onCta }: { before: stri
           <motion.figure
             className={`${styles.photo} ${styles.photoBefore}`}
             initial={{ x: 0, y: 30, scale: 0.25, opacity: 0, rotate: 0 }}
-            animate={open ? { x: -140, y: -90, scale: 1, opacity: 1, rotate: -7 } : {}}
+            animate={open ? { x: -140, y: -20, scale: 1, opacity: 1, rotate: -7 } : {}}
             transition={{ type: "spring", stiffness: 190, damping: 18, delay: 0.2 }}
           >
             <img src={before} alt={`${animal}, before`} />
@@ -86,7 +86,7 @@ export function TransformReveal({ before, after, animal, onCta }: { before: stri
           <motion.figure
             className={`${styles.photo} ${styles.photoAfter}`}
             initial={{ x: 0, y: 30, scale: 0.25, opacity: 0, rotate: 0 }}
-            animate={open ? { x: 140, y: -110, scale: 1, opacity: 1, rotate: 7 } : {}}
+            animate={open ? { x: 140, y: -34, scale: 1, opacity: 1, rotate: 7 } : {}}
             transition={{ type: "spring", stiffness: 190, damping: 18, delay: 0.32 }}
           >
             <img src={after} alt={`${animal}, figure`} />
