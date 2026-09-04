@@ -493,11 +493,14 @@ export default function Studio({ zone }: { zone: Zone }) {
 
       <section className={styles.heroFull}>
         <img className={styles.heroVideoWrap} src="/pet/hero-banner.jpg" alt="" aria-hidden />
+        <div className={styles.heroEdge}>
+          <span>🐾 Loved by pet parents across the US</span>
+        </div>
         <div className={`${styles.wrap} ${styles.heroContent}`}>
-          <div className={styles.heroLeft}>
+          <div className={styles.heroRight}>
             <span className={styles.eyebrow}>🐾 Free preview · no card needed</span>
-            <h1 style={{ marginTop: 16 }}>See your {animal} as a <em>figure</em> — in seconds.</h1>
-            <p className={styles.heroSub}>Upload one photo and see your {animal} as a collectible figure, free. Love it? We 3D-print it in full color and ship it to you.</p>
+            <h1 style={{ marginTop: 16 }}>They won&apos;t be here forever.<br /><em>This will.</em></h1>
+            <p className={styles.heroSub}>Upload one photo of {animal} and see them as a hand-painted keepsake figure — free to preview, yours to keep forever.</p>
             <button className={styles.drop} onClick={openPicker}>
               <span className={styles.dropIcon}>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
@@ -507,11 +510,11 @@ export default function Studio({ zone }: { zone: Zone }) {
                 <span className={styles.dropHint}>See your figure in seconds — free</span>
               </span>
             </button>
-          </div>
-          <div className={styles.heroRight}>
-            <div className={styles.heroStat}><b>4.9<span className={styles.stars}> ★★★★★</span></b><span>loved by pet parents</span></div>
-            <div className={styles.heroStat}><b>2–4 days</b><span>🚚 fast shipping</span></div>
-            <div className={styles.heroStat}><b>Full-color</b><span>hand-finished resin</span></div>
+            <div className={styles.heroStats}>
+              <div className={styles.heroStat}><b>4.9<span className={styles.stars}> ★★★★★</span></b><span>loved by pet parents</span></div>
+              <div className={styles.heroStat}><b>2–4 days</b><span>🚚 fast shipping</span></div>
+              <div className={styles.heroStat}><b>Full-color</b><span>hand-finished resin</span></div>
+            </div>
           </div>
         </div>
       </section>
