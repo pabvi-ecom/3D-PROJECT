@@ -7,6 +7,7 @@ import { poses, paidBases, bases, NO_BASE_ID, NAMEPLATE_PRICE, packs, type Pack 
 import type { Zone } from "@/config/zones";
 import { FoldCard } from "./FoldCard";
 import { ReviewSwell } from "./ReviewSwell";
+import { TransformReveal } from "./TransformReveal";
 
 const FIGURE_PRICE = 79.99;
 
@@ -530,11 +531,11 @@ export default function Studio({ zone }: { zone: Zone }) {
         <ReviewSwell reviews={CUSTOMER_SWELL} />
       </section>
 
-      <div className={styles.wrap}>
-        <div className={styles.strip}>
-          <span>Loved by pet parents in <b>the US</b></span><span>★★★★★ <b>4.9/5</b></span><span><b>Full-color</b> resin</span><span>🚚 <b>Fast</b> shipping</span>
-        </div>
-      </div>
+      <TransformReveal
+        before="/pet/transform-before.jpg"
+        after="/pet/transform-after.jpg"
+        animal={animal}
+      />
 
       <div className={styles.wrap}>
         <section className={styles.section} id="how">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import styles from "./ReviewSwell.module.css";
 
 type Review = { src: string; name: string; breed: string; text: string };
@@ -14,6 +14,10 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
   const n = reviews.length;
   const startX = useRef(0);
   const dragging = useRef(false);
+  const viewportRef = useRef(null);
+  const inView = useInView(viewportRef, { once: true, amount: 0.4 });
+  const [entered, setEntered] = useState(false);
+  if (inView && !entered) setEntered(true);
 
   useEffect(() => {
     function updateGap() {
@@ -43,6 +47,7 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
 
   return (
     <div
+      ref={viewportRef}
       className={styles.viewport}
       onMouseDown={(e) => onDown(e.clientX)}
       onMouseUp={(e) => onUp(e.clientX)}
@@ -63,8 +68,13 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
             <motion.figure
               key={i}
               className={styles.card}
-              animate={{ x: translate, scale, opacity }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              initial={entered ? false : { x: gap * n, scale: 0.7, opacity: 0 }}
+              animate={entered ? { x: translate, scale, opacity } : {}}
+              transition={
+                entered
+                  ? { type: "spring", stiffness: 300, damping: 30 }
+                  : { type: "spring", stiffness: 220, damping: 24, delay: i * 0.035 }
+              }
               style={{ zIndex: 10 - abs }}
             >
               <img src={r.src} alt={`${r.name}, ${r.breed}`} loading="lazy" draggable={false} />
