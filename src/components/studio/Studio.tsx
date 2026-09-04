@@ -6,6 +6,7 @@ import { brand } from "@/config/brand";
 import { poses, paidBases, bases, NO_BASE_ID, NAMEPLATE_PRICE, packs, type Pack } from "@/config/products";
 import type { Zone } from "@/config/zones";
 import { StepsFlow } from "./StepsFlow";
+import { ProcessReel } from "./ProcessReel";
 import { ReviewSwell } from "./ReviewSwell";
 import { TransformReveal } from "./TransformReveal";
 import { NameGate } from "./NameGate";
@@ -551,6 +552,13 @@ export default function Studio({ zone }: { zone: Zone }) {
           <StepsFlow />
         </section>
 
+      </div>
+
+      <div className={styles.wrap}>
+        <section className={styles.section} id="process">
+          <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>Behind the scenes</span><h2>Watch your figure <em>come to life</em>.</h2></div>
+          <ProcessReel />
+        </section>
       </div>
 
       <div className={styles.wrap}>
