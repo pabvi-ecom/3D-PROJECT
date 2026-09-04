@@ -14,6 +14,7 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
   const [index, setIndex] = useState(0);
   const [gap, setGap] = useState(210);
   const [stepMs, setStepMs] = useState(RUN_DELAY);
+  const [settled, setSettled] = useState(false);
   const n = reviews.length;
   const startX = useRef(0);
   const dragging = useRef(false);
@@ -40,6 +41,7 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
         if (delay === undefined) {
           stoppedRef.current = true;
           setIndex((i) => (i + 1) % n);
+          setSettled(true);
           return;
         }
       }
@@ -65,6 +67,7 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
 
   function stopAutoplay() {
     stoppedRef.current = true;
+    setSettled(true);
     if (timerRef.current) clearTimeout(timerRef.current);
   }
 
@@ -100,8 +103,8 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
           if (diff > n / 2) diff -= n;
           if (diff < -n / 2) diff += n;
           const abs = Math.abs(diff);
-          const scale = abs === 0 ? 1.08 : abs === 1 ? 0.86 : 0.7;
-          const opacity = abs === 0 ? 1 : abs === 1 ? 0.7 : 0.35;
+          const scale = settled ? (abs === 0 ? 1.08 : abs === 1 ? 0.86 : 0.7) : abs === 0 ? 1 : abs === 1 ? 0.92 : 0.84;
+          const opacity = settled ? (abs === 0 ? 1 : abs === 1 ? 0.7 : 0.35) : abs === 0 ? 0.95 : abs === 1 ? 0.75 : 0.5;
           const translate = diff * gap;
 
           const prevDiff = prevDiffRef.current[i];
