@@ -13,6 +13,7 @@ const DECEL_DELAYS = [140, 180, 230, 300, 390, 510, 650];
 export function ReviewSwell({ reviews }: { reviews: Review[] }) {
   const [index, setIndex] = useState(0);
   const [gap, setGap] = useState(210);
+  const [stepMs, setStepMs] = useState(RUN_DELAY);
   const n = reviews.length;
   const startX = useRef(0);
   const dragging = useRef(false);
@@ -30,7 +31,6 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
   useEffect(() => {
     function tick() {
       if (stoppedRef.current) return;
-      setIndex((i) => (i + 1) % n);
 
       let delay: number | undefined = RUN_DELAY;
       if (inViewRef.current) {
@@ -38,9 +38,12 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
         decelStep.current += 1;
         if (delay === undefined) {
           stoppedRef.current = true;
+          setIndex((i) => (i + 1) % n);
           return;
         }
       }
+      setStepMs(delay);
+      setIndex((i) => (i + 1) % n);
       timerRef.current = setTimeout(tick, delay);
     }
     timerRef.current = setTimeout(tick, RUN_DELAY);
@@ -105,7 +108,7 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
               key={i}
               className={styles.card}
               animate={{ x: translate, scale, opacity }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              transition={dragging.current || stoppedRef.current ? { type: "spring", stiffness: 300, damping: 30 } : { duration: Math.max(0.1, (stepMs / 1000) * 0.98), ease: "linear" }}
               style={{ zIndex: 10 - abs }}
             >
               <img src={r.src} alt={`${r.name}, ${r.breed}`} loading="lazy" draggable={false} />
