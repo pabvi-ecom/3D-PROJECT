@@ -494,7 +494,8 @@ export default function Studio({ zone }: { zone: Zone }) {
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
 
       <section className={styles.heroFull}>
-        <img className={styles.heroVideoWrap} src="/pet/hero-banner.jpg" alt="" aria-hidden />
+        <img className={`${styles.heroVideoWrap} ${styles.heroImgDesktop}`} src="/pet/hero-banner.jpg" alt="" aria-hidden />
+        <img className={`${styles.heroVideoWrap} ${styles.heroImgMobile}`} src="/pet/hero-banner-mobile.jpg" alt="" aria-hidden />
 
         <div className={styles.heroLeft}>
           <span className={styles.heroLeftWord}>Never<br />fades.</span>
@@ -504,6 +505,9 @@ export default function Studio({ zone }: { zone: Zone }) {
         <div className={styles.heroRight}>
           <h1 className={styles.heroH1}>Your Dog<br />Keep <em>Forever</em></h1>
           <span className={styles.chip}>Free preview in seconds — no card needed.</span>
+        </div>
+
+        <div className={styles.heroActions}>
           <button className={styles.cta} onClick={openPicker}>
             Create yours
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
