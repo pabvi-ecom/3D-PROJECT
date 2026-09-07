@@ -8,9 +8,6 @@ export const maxDuration = 60;
 
 const STUDIO = "Studio product photo, soft light, plain seamless light background, photorealistic, centered.";
 const NO_BASE = "with no display base, standing directly on a clean seamless light studio surface";
-const SHELF_REF = "/scenes/shelf-ref.png";
-const SHELF_NOTE =
-  " The LAST reference image shows the exact home scene to place it in — a floating white wooden shelf on a warm beige wall, with a small potted succulent beside it, soft natural light, and the correct scale for the figurine. Match ONLY that shelf, wall, plant, lighting and scale exactly — IGNORE the pose of the dog in that reference image entirely, it is not relevant. The figurine's pose must follow the pose instruction given above, not the reference photo.";
 
 /**
  * POST /api/generate
@@ -41,9 +38,6 @@ export async function POST(req: NextRequest) {
     const baseRefNote = base.refImage
       ? " The LAST reference image shows the exact base to replicate — match its material, color and shape precisely, but keep the nameplate on it blank."
       : "";
-    const shelfRefUrls = baseId === NO_BASE_ID ? [new URL(SHELF_REF, req.nextUrl.origin).toString()] : [];
-    const shelfNote = baseId === NO_BASE_ID ? SHELF_NOTE : "";
-
     let src: string | undefined;
     let prompt: string;
 
@@ -54,7 +48,7 @@ export async function POST(req: NextRequest) {
         prompt =
           `This is a full-color 3D printed figurine of a ${animal}. ` +
           `Keep the ${animal} figurine EXACTLY the same — identical sculpt, proportions, ` +
-          `fur colors and markings. Change ONLY the pose: the ${animal} is now ${pose.prompt}.${shelfNote} ${STUDIO}`;
+          `fur colors and markings. Change ONLY the pose: the ${animal} is now ${pose.prompt}. ${STUDIO}`;
       } else if (change === "view") {
         // Mantener figura, postura y base idénticas; cambiar SOLO el ángulo a perfil.
         prompt =
@@ -85,10 +79,10 @@ export async function POST(req: NextRequest) {
       }
       prompt =
         `Turn this ${animal} into a cute, full-color collectible 3D printed figurine of the same ${animal}, ` +
-        `keeping its exact breed, fur colors and markings. The figurine is ${pose.prompt}, ${basePhrase}.${baseRefNote}${shelfNote} ${STUDIO}`;
+        `keeping its exact breed, fur colors and markings. The figurine is ${pose.prompt}, ${basePhrase}.${baseRefNote} ${STUDIO}`;
     }
 
-    const extraRefUrls = change === "name" ? [] : [...baseRefUrls, ...shelfRefUrls];
+    const extraRefUrls = change === "name" ? [] : baseRefUrls;
     const url = await generateFigurine(src, prompt, extraRefUrls);
     return NextResponse.json({ url });
   } catch (e) {

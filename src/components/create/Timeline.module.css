@@ -1,18 +1,19 @@
-.bar{width:100%; max-width:520px; margin:0 auto; padding:22px 16px 30px}
+.bar{width:100%; max-width:520px; margin:0 auto; padding:20px 20px 14px}
 
-.track{position:relative; height:4px; margin:0 24px}
+.track{position:relative; height:10px; margin:0 12px}
 
-.trackBg{position:absolute; inset:0; background:var(--line); border-radius:99px}
-.trackFill{position:absolute; top:0; left:0; height:100%; background:var(--accent); border-radius:99px}
+.trackBg{position:absolute; inset:0; background:var(--surface-2); border:1.5px solid var(--line); border-radius:99px}
+.trackFill{position:absolute; top:0; left:0; height:100%; background:linear-gradient(90deg, var(--accent-deep), var(--accent)); border-radius:99px}
 
-.post{position:absolute; top:0; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center}
-.flag{width:9px; height:9px; border-radius:50%; background:var(--surface); border:2px solid var(--line); transform:translateY(-3px); transition:all .25s ease}
-.flag.active,.flag.done{border-color:var(--accent); background:var(--accent)}
+.node{position:absolute; top:50%; transform:translate(-50%,-50%)}
 
-.label{display:none}
-@media(min-width:560px){
-  .label{display:block; margin-top:14px; font-size:.74rem; font-weight:700; color:var(--ink-faint); white-space:nowrap}
-  .label.active,.label.done{color:var(--ink)}
-}
+.dot{width:22px; height:22px; border-radius:50%; background:var(--surface); border:3px solid var(--line); display:flex; align-items:center; justify-content:center; transition:border-color .25s ease, background .25s ease, box-shadow .25s ease}
+.dot.done{border-color:var(--accent); background:var(--accent)}
+.dot.active{border-color:var(--accent); background:var(--surface); box-shadow:0 0 0 5px var(--accent-soft)}
+.dot.active::after{content:""; width:9px; height:9px; border-radius:50%; background:var(--accent)}
 
-.walker{position:absolute; top:-14px; transform:translateX(-50%); font-size:1.5rem; line-height:1; filter:drop-shadow(0 2px 3px rgba(0,0,0,.15))}
+.labels{display:flex; justify-content:space-between; margin-top:12px; padding:0 4px}
+.label{flex:1; text-align:center; font-size:.78rem; font-weight:700; color:var(--ink-faint); transition:color .25s ease}
+.label:first-child{text-align:left}
+.label:last-child{text-align:right}
+.label.active,.label.done{color:var(--ink)}

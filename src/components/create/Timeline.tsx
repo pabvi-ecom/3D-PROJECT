@@ -25,28 +25,37 @@ export function Timeline({ current }: { current: StepId }) {
           className={styles.trackFill}
           initial={false}
           animate={{ width: `${progress * 100}%` }}
-          transition={{ type: "spring", stiffness: 120, damping: 18 }}
+          transition={{ type: "spring", stiffness: 140, damping: 20 }}
         />
 
         {STEPS.map((s, i) => {
           const pos = (i / (STEPS.length - 1)) * 100;
           const state = i < currentIndex ? "done" : i === currentIndex ? "active" : "todo";
           return (
-            <div key={s.id} className={styles.post} style={{ left: `${pos}%` }}>
-              <div className={`${styles.flag} ${styles[state]}`} />
-              <span className={`${styles.label} ${styles[state]}`}>{s.label}</span>
+            <div key={s.id} className={styles.node} style={{ left: `${pos}%` }}>
+              <motion.div
+                className={`${styles.dot} ${styles[state]}`}
+                animate={state === "active" ? { scale: [1, 1.18, 1] } : { scale: 1 }}
+                transition={state === "active" ? { duration: 1.6, repeat: Infinity, ease: "easeInOut" } : {}}
+              >
+                {state === "done" && (
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+                )}
+              </motion.div>
             </div>
           );
         })}
+      </div>
 
-        <motion.div
-          className={styles.walker}
-          initial={false}
-          animate={{ left: `${progress * 100}%` }}
-          transition={{ type: "spring", stiffness: 120, damping: 16 }}
-        >
-          🐕
-        </motion.div>
+      <div className={styles.labels}>
+        {STEPS.map((s, i) => {
+          const state = i < currentIndex ? "done" : i === currentIndex ? "active" : "todo";
+          return (
+            <span key={s.id} className={`${styles.label} ${styles[state]}`}>
+              {s.label}
+            </span>
+          );
+        })}
       </div>
     </div>
   );
