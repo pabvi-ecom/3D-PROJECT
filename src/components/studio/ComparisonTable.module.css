@@ -12,13 +12,13 @@
 .canFlip{cursor:pointer}
 .flipped{transform:rotateY(180deg)}
 
-.face{position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; background:var(--surface); border:1.5px solid var(--line); border-radius:18px; padding:22px 20px; display:flex; flex-direction:column; box-shadow:var(--shadow)}
+.face{position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; background:var(--surface); border:1.5px solid var(--line); border-radius:18px; padding:22px 20px; display:flex; flex-direction:column; align-items:center; text-align:center; box-shadow:var(--shadow)}
 .back{transform:rotateY(180deg); background:var(--accent-soft); border-color:var(--accent); justify-content:center; align-items:center; text-align:center; gap:10px}
 
 .cardIcon{font-size:1.6rem; margin-bottom:10px}
 .cardLabel{font-size:1rem; font-weight:800; color:var(--ink); margin:0 0 14px}
 
-.line{display:flex; align-items:flex-start; gap:8px; margin-bottom:8px; font-size:.86rem; line-height:1.35}
+.line{display:flex; align-items:flex-start; justify-content:center; gap:8px; margin-bottom:8px; font-size:.86rem; line-height:1.35}
 .check{flex:none; display:flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:var(--accent); color:#fff; font-size:.65rem; font-weight:900; margin-top:1px}
 .cross{flex:none; display:flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:var(--line-2); color:var(--ink-faint); font-size:.6rem; font-weight:900; margin-top:1px}
 .usText{color:var(--ink); font-weight:700}
