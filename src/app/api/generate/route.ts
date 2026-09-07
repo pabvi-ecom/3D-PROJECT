@@ -78,14 +78,24 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Falta la foto (imageBase64/imageUrl) o referenceUrl" }, { status: 400 });
       }
       prompt =
-        `Turn this ${animal} into a cute, full-color collectible 3D printed figurine of the same ${animal}, ` +
-        `keeping its exact breed, fur colors and markings. The figurine is ${pose.prompt}, ${basePhrase}.${baseRefNote} ${STUDIO}`;
+        `Look ONLY at the ${animal} in this photo and turn just that ${animal} into a cute, full-color ` +
+        `collectible 3D printed figurine, keeping its exact breed, fur colors and markings. ` +
+        `Completely ignore and exclude any people, hands, other animals, furniture, boats, or background ` +
+        `objects in the photo — the figurine must show ONLY the ${animal} itself, sculpted alone. ` +
+        `If the fur is curly, matted or grows in thick corded locks (like a Puli, Komondor, or corded ` +
+        `poodle-mix coat), sculpt those rope-like cords faithfully — do not smooth or simplify them into ` +
+        `plain fluffy fur. The figurine is ${pose.prompt}, ${basePhrase}.${baseRefNote} ${STUDIO}`;
     }
 
     const extraRefUrls = change === "name" ? [] : baseRefUrls;
     const url = await generateFigurine(src, prompt, extraRefUrls);
     return NextResponse.json({ url });
   } catch (e) {
-    return NextResponse.json({ error: (e as Error).message }, { status: 500 });
+    // Log técnico para depurar en Vercel; al cliente solo un mensaje corto y amable.
+    console.error("[/api/generate]", (e as Error).message);
+    return NextResponse.json(
+      { error: "We couldn't quite see your pet clearly. Try a photo with more detail or better lighting." },
+      { status: 500 },
+    );
   }
 }
