@@ -24,7 +24,7 @@
 }
 .wavePanel::before{
   content:""; position:absolute; inset:0; z-index:0;
-  background-image:url("/pet/blob-bg.jpg");
+  background-image:url("/pet/waves-bg.jpg");
   background-size:cover;
   background-position:center;
 }
