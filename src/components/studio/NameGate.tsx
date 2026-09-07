@@ -1,14 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./NameGate.module.css";
 
-export function NameGate({ animal }: { animal: string }) {
+export function NameGate({ animal, zoneSlug }: { animal: string; zoneSlug: string }) {
   const [name, setName] = useState("");
+  const router = useRouter();
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    // TODO: redirigir al formulario con el nombre precargado
+    const n = name.trim();
+    if (!n) return;
+    router.push(`/${zoneSlug}/create?name=${encodeURIComponent(n)}`);
   }
 
   return (

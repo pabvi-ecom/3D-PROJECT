@@ -1,21 +1,23 @@
 import { notFound } from "next/navigation";
-import Configurator from "@/components/create/Configurator";
+import { CreateFlow } from "@/components/create/CreateFlow";
 import { getZone, zoneSlugs } from "@/config/zones";
-import { bases } from "@/config/products";
 
 export function generateStaticParams() {
   return zoneSlugs.map((zone) => ({ zone }));
 }
 
-// Configurador: subir foto -> generar con IA (Kie) -> elegir base + nombre -> carrito.
+// Formulario: nombre -> foto -> generación -> postura -> base -> listo.
 export default async function CreatePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ zone: string }>;
+  searchParams: Promise<{ name?: string }>;
 }) {
   const { zone } = await params;
+  const { name } = await searchParams;
   const z = getZone(zone);
   if (!z) notFound();
 
-  return <Configurator zoneSlug={z.slug} animal={z.animal} bases={bases} />;
+  return <CreateFlow zone={z} initialName={name} />;
 }
