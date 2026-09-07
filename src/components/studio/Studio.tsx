@@ -113,20 +113,20 @@ export default function Studio({ zone }: { zone: Zone }) {
 
       <PassThrough onCta={goCreate} />
 
-      <div className={styles.wavePanel}>
-        <div className={styles.wrap}>
-          <section className={styles.section} id="how-we-work" style={{ paddingTop: "clamp(20px,3vw,32px)" }}>
-            <div className={`${styles.shead} ${styles.sheadTight} ${styles.sheadOnWave}`}><span className={styles.eyebrow}>Behind the scenes</span><h2>How we <em>work</em></h2></div>
-            <HowWeWork />
-          </section>
-        </div>
+      <div className={styles.wrap}>
+        <section className={styles.section} id="how-we-work" style={{ paddingTop: "clamp(20px,3vw,32px)" }}>
+          <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>Behind the scenes</span><h2>How we <em>work</em></h2></div>
+          <HowWeWork />
+        </section>
       </div>
 
-      <div className={styles.wrap}>
-        <section className={styles.section} id="compare" style={{ paddingTop: "clamp(20px,3vw,32px)" }}>
-          <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>Us vs. everyone else</span><h2>Why settle for a <em>cheap knockoff</em>?</h2></div>
-          <ComparisonTable />
-        </section>
+      <div className={styles.wavePanel}>
+        <div className={styles.wrap}>
+          <section className={styles.section} id="compare" style={{ paddingTop: "clamp(20px,3vw,32px)" }}>
+            <div className={`${styles.shead} ${styles.sheadTight} ${styles.sheadOnWave}`}><span className={styles.eyebrow}>Us vs. everyone else</span><h2>Why settle for a <em>cheap knockoff</em>?</h2></div>
+            <ComparisonTable />
+          </section>
+        </div>
       </div>
 
       <div className={styles.wrap}>
