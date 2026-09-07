@@ -48,8 +48,9 @@ export function PassThrough() {
         transition={{ duration: 0.6 }}
       >
         <h2>
-          They run through this room today. <em>They never leave this shelf.</em>
+          This moment won&apos;t last forever. <em>This figure will.</em>
         </h2>
+        <p className={styles.sub}>Join 10,000+ pet parents who already turned today into forever.</p>
       </motion.div>
 
       <div className={styles.grid}>
@@ -63,15 +64,14 @@ export function PassThrough() {
         </motion.div>
 
         <motion.div
-          className={styles.arrowCol}
-          initial={{ opacity: 0, scale: 0.8 }}
+          className={styles.proofCol}
+          initial={{ opacity: 0, scale: 0.85 }}
           animate={inView ? { opacity: 1, scale: 1 } : {}}
           transition={{ duration: 0.4, delay: 0.5 }}
         >
-          <svg width="56" height="28" viewBox="0 0 56 28" fill="none" className={styles.arrowIcon}>
-            <path d="M2 14c10-10 34-10 44 0" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" fill="none" />
-            <path d="M38 8c3 2 6 4 8 6-3 1-6 2-8 4" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-          </svg>
+          <span className={styles.stars}>★★★★★</span>
+          <span className={styles.proofNum}>4.9/5</span>
+          <span className={styles.proofText}>10,000+ figures made</span>
         </motion.div>
 
         <motion.div
@@ -80,13 +80,6 @@ export function PassThrough() {
           animate={inView ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          <div className={styles.noteWrap}>
-            <span className={styles.note}>never fades</span>
-            <svg width="46" height="40" viewBox="0 0 46 40" fill="none" className={styles.noteArrow}>
-              <path d="M4 4c4 14 10 24 20 30" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" fill="none" />
-              <path d="M17 30c1 2 3 4 7 4-2 2-3 4-3 6" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-            </svg>
-          </div>
           <video ref={arriveRef} className={styles.video} src="/videos/transfer-arrive.mp4" muted playsInline preload="auto" />
         </motion.div>
       </div>
