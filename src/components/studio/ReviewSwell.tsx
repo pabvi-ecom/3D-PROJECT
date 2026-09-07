@@ -105,7 +105,7 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
           const abs = Math.abs(diff);
           const scale = settled ? (abs === 0 ? 1.08 : abs === 1 ? 0.86 : 0.7) : abs === 0 ? 1 : abs === 1 ? 0.92 : 0.84;
           const opacity = settled ? (abs === 0 ? 1 : abs === 1 ? 0.7 : 0.35) : abs === 0 ? 0.95 : abs === 1 ? 0.75 : 0.5;
-          const translate = diff * gap;
+          const translate = diff * (settled ? gap : gap * 1.36);
 
           const prevDiff = prevDiffRef.current[i];
           const wrapped = prevDiff !== undefined && Math.abs(diff - prevDiff) > 1;
