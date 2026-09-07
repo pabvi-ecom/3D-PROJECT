@@ -558,6 +558,13 @@ export default function Studio({ zone }: { zone: Zone }) {
       <PassThrough onCta={openPicker} />
 
       <div className={styles.wrap}>
+        <section className={styles.section} id="compare">
+          <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>Us vs. everyone else</span><h2>Why settle for a <em>cheap knockoff</em>?</h2></div>
+          <ComparisonTable />
+        </section>
+      </div>
+
+      <div className={styles.wrap}>
         <section className={styles.section} id="pricing">
           <div className={styles.shead}><span className={styles.eyebrow}>Pricing</span><h2>The whole family, <em>immortalized</em></h2><p>More figures, better price — and they ship together.</p></div>
           <div className={styles.packs}>
@@ -582,11 +589,6 @@ export default function Studio({ zone }: { zone: Zone }) {
             <p>Birthdays, holidays, or the pup that&apos;s no longer here. Nothing hits quite like this.</p>
             <button className={styles.btn} onClick={openPicker}>Preview your {animal} free →</button>
           </div>
-        </section>
-
-        <section className={styles.section} id="compare">
-          <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>Us vs. everyone else</span><h2>Why settle for a <em>cheap knockoff</em>?</h2></div>
-          <ComparisonTable />
         </section>
 
         <section className={styles.section} id="faq" style={{ paddingTop: 0 }}>
