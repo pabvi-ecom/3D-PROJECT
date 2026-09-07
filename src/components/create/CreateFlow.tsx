@@ -35,6 +35,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const [nameDraft, setNameDraft] = useState(initialName ?? "");
 
   const [photo, setPhoto] = useState<string | null>(null);
+  const [notes, setNotes] = useState("");
   const [readingFile, setReadingFile] = useState(false);
   const [figures, setFigures] = useState<Record<string, string>>({});
   const [namedFigures, setNamedFigures] = useState<Record<string, string>>({});
@@ -134,7 +135,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setView("front");
     setAddName(false);
     try {
-      const first = await postGenerate({ imageBase64: dataUri, poseId: poses[0].id, baseId: NO_BASE_ID });
+      const first = await postGenerate({ imageBase64: dataUri, poseId: poses[0].id, baseId: NO_BASE_ID, notes: notes.trim() || undefined });
       setDone(1);
       const restPoses = poses.slice(1);
       const restResults = await Promise.all(
@@ -302,6 +303,19 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
               <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V4" /><path d="m6 10 6-6 6 6" /><path d="M4 18v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1" /></svg>
               <span>{readingFile ? "Loading…" : "Tap to choose a photo"}</span>
             </button>
+
+            <label className={styles.notesLabel}>
+              Anything about {petName} we can&apos;t tell from the photo?
+              <textarea
+                className={styles.notesInput}
+                placeholder="e.g. &quot;no tail&quot;, missing a leg, one blue eye…"
+                maxLength={200}
+                rows={2}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </label>
+
             {error && <div className={styles.err}>{error}</div>}
           </div>
         )}

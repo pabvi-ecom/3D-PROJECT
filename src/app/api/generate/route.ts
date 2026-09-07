@@ -27,10 +27,14 @@ const NO_BASE = "with no display base, standing directly on a clean seamless lig
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { imageBase64, imageUrl, referenceUrl, change, zone = "dogs", poseId, baseId = NO_BASE_ID, petName } = body;
+    const { imageBase64, imageUrl, referenceUrl, change, zone = "dogs", poseId, baseId = NO_BASE_ID, petName, notes } = body;
 
     const z = getZone(zone);
     const animal = z?.animal ?? "pet";
+    const notesNote =
+      typeof notes === "string" && notes.trim()
+        ? ` The owner also told us this about the ${animal}, which may not be visible in the photo — apply it: "${notes.trim()}".`
+        : "";
     const pose = poses.find((p) => p.id === poseId) ?? poses[0];
     const base = bases.find((b) => b.id === baseId) ?? bases[0];
     const basePhrase = base.prompt || NO_BASE;
@@ -84,7 +88,7 @@ export async function POST(req: NextRequest) {
         `objects in the photo — the figurine must show ONLY the ${animal} itself, sculpted alone. ` +
         `If the fur is curly, matted or grows in thick corded locks (like a Puli, Komondor, or corded ` +
         `poodle-mix coat), sculpt those rope-like cords faithfully — do not smooth or simplify them into ` +
-        `plain fluffy fur. The figurine is ${pose.prompt}, ${basePhrase}.${baseRefNote} ${STUDIO}`;
+        `plain fluffy fur. The figurine is ${pose.prompt}, ${basePhrase}.${baseRefNote}${notesNote} ${STUDIO}`;
     }
 
     const extraRefUrls = change === "name" ? [] : baseRefUrls;
