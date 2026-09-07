@@ -72,7 +72,7 @@ const STEPS: Step[] = [
 
 export function StepsFlow() {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, amount: 0.3 });
+  const inView = useInView(ref, { once: true, amount: 0.5 });
   const [open, setOpen] = useState<number | null>(null);
 
   return (
