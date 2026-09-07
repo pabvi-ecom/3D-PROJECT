@@ -7,6 +7,7 @@ import { poses, paidBases, bases, NO_BASE_ID, NAMEPLATE_PRICE, packs, type Pack 
 import type { Zone } from "@/config/zones";
 import { StepsFlow } from "./StepsFlow";
 import { PassThrough } from "./PassThrough";
+import { ComparisonTable } from "./ComparisonTable";
 import { ReviewSwell } from "./ReviewSwell";
 import { TransformReveal } from "./TransformReveal";
 import { NameGate } from "./NameGate";
@@ -581,6 +582,11 @@ export default function Studio({ zone }: { zone: Zone }) {
             <p>Birthdays, holidays, or the pup that&apos;s no longer here. Nothing hits quite like this.</p>
             <button className={styles.btn} onClick={openPicker}>Preview your {animal} free →</button>
           </div>
+        </section>
+
+        <section className={styles.section} id="compare">
+          <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>Us vs. everyone else</span><h2>Why settle for a <em>cheap knockoff</em>?</h2></div>
+          <ComparisonTable />
         </section>
 
         <section className={styles.section} id="faq" style={{ paddingTop: 0 }}>

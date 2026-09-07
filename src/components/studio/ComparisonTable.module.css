@@ -1,0 +1,25 @@
+.wrap{width:100%; overflow-x:auto; -webkit-mask-image:linear-gradient(90deg,#000 92%,transparent); mask-image:linear-gradient(90deg,#000 92%,transparent)}
+
+.table{min-width:640px; max-width:900px; margin:0 auto}
+
+.headRow{display:grid; grid-template-columns:1.1fr 1.3fr 1fr; gap:0}
+.headCell{padding:0 16px 14px}
+.badge{display:inline-flex; align-items:center; gap:6px; background:var(--accent); color:#fff; font-weight:800; font-size:.9rem; padding:6px 16px; border-radius:999px}
+.othersLabel{font-size:.86rem; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em}
+
+.row{display:grid; grid-template-columns:1.1fr 1.3fr 1fr; align-items:stretch}
+
+.labelCell{padding:16px; font-weight:800; font-size:.92rem; color:var(--ink); display:flex; align-items:center}
+
+.cell{padding:16px; font-size:.9rem; color:var(--ink-soft); display:flex; align-items:center; gap:10px; line-height:1.35}
+
+.usCell{background:var(--accent-soft); color:var(--ink); font-weight:700; border-left:2px solid var(--accent); border-right:2px solid var(--accent)}
+.row:first-of-type .usCell{border-top:2px solid var(--accent); border-radius:14px 14px 0 0; padding-top:18px}
+.row:last-of-type .usCell{border-bottom:2px solid var(--accent); border-radius:0 0 14px 14px; padding-bottom:18px}
+
+.check{flex:none; display:flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:var(--accent); color:#fff; font-size:.72rem; font-weight:900}
+.cross{flex:none; display:flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:var(--line-2); color:var(--ink-faint); font-size:.7rem; font-weight:900}
+
+@media(max-width:720px){
+  .table{min-width:560px}
+}
