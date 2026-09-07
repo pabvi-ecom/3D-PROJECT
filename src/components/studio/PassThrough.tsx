@@ -41,18 +41,6 @@ export function PassThrough() {
 
   return (
     <section className={styles.section} ref={sectionRef}>
-      <motion.div
-        className={styles.heading}
-        initial={{ opacity: 0, y: 16 }}
-        animate={inView ? { opacity: 1, y: 0 } : {}}
-        transition={{ duration: 0.6 }}
-      >
-        <h2>
-          This moment won&apos;t last forever. <em>This figure will.</em>
-        </h2>
-        <p className={styles.sub}>Join 10,000+ pet parents who already turned today into forever.</p>
-      </motion.div>
-
       <div className={styles.grid}>
         <motion.div
           className={styles.videoCol}
@@ -64,14 +52,19 @@ export function PassThrough() {
         </motion.div>
 
         <motion.div
-          className={styles.proofCol}
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={inView ? { opacity: 1, scale: 1 } : {}}
-          transition={{ duration: 0.4, delay: 0.5 }}
+          className={styles.centerCol}
+          initial={{ opacity: 0, y: 16 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.25 }}
         >
-          <span className={styles.stars}>★★★★★</span>
-          <span className={styles.proofNum}>4.9/5</span>
-          <span className={styles.proofText}>10,000+ figures made</span>
+          <h2>
+            This moment won&apos;t last forever. <em>This figure will.</em>
+          </h2>
+          <p className={styles.sub}>Join 10,000+ pet parents who already turned today into forever.</p>
+          <div className={styles.proof}>
+            <span className={styles.stars}>★★★★★</span>
+            <span className={styles.proofNum}>4.9/5</span>
+          </div>
         </motion.div>
 
         <motion.div
