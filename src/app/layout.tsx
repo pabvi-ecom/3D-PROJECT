@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Nunito_Sans, Bricolage_Grotesque, Instrument_Sans } from "next/font/google";
+import { Fraunces, Nunito_Sans, Bricolage_Grotesque, Instrument_Sans, Caveat } from "next/font/google";
 import "./globals.css";
 import { brand } from "@/config/brand";
 
@@ -28,6 +28,12 @@ const instrument = Instrument_Sans({
   weight: ["400", "500", "600", "700"],
 });
 
+const caveat = Caveat({
+  variable: "--font-caveat",
+  subsets: ["latin"],
+  weight: ["600", "700"],
+});
+
 export const metadata: Metadata = {
   title: {
     default: `${brand.name} — Custom 3D figures of the ones you love`,
@@ -39,7 +45,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${nunito.variable} ${bricolage.variable} ${instrument.variable}`}>
+    <html lang="en" className={`${fraunces.variable} ${nunito.variable} ${bricolage.variable} ${instrument.variable} ${caveat.variable}`}>
       <body>{children}</body>
     </html>
   );

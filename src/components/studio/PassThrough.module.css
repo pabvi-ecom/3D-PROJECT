@@ -1,19 +1,26 @@
-.section{width:100%; padding:clamp(40px,6vw,72px) 0; background:var(--surface)}
+.section{width:100%; padding:clamp(48px,7vw,84px) 0; background:var(--surface)}
 
-.grid{max-width:1160px; margin:0 auto; padding:0 clamp(16px,4vw,44px); display:grid; grid-template-columns:1fr 1.1fr 1fr; gap:clamp(16px,3vw,32px); align-items:center}
+.heading{max-width:720px; margin:0 auto clamp(32px,5vw,52px); padding:0 clamp(16px,4vw,44px); text-align:center}
+.heading h2{font-size:clamp(1.5rem,3.4vw,2.3rem); line-height:1.25; margin:0}
+.heading h2 em{color:var(--accent)}
 
-.videoCol{display:flex; justify-content:center}
+.grid{max-width:1160px; margin:0 auto; padding:0 clamp(16px,4vw,44px); display:grid; grid-template-columns:1fr auto 1fr; gap:clamp(12px,2.5vw,28px); align-items:center}
 
-.video{width:100%; max-width:230px; aspect-ratio:9/16; object-fit:cover; border-radius:20px; box-shadow:var(--shadow); background:#000}
+.videoCol{position:relative; display:flex; justify-content:center}
 
-.textCol{text-align:center; padding:0 4px}
-.eyebrow{display:inline-block; font-size:.78rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; color:var(--accent-deep); background:var(--accent-soft); padding:6px 14px; border-radius:999px; margin-bottom:14px}
-.textCol h2{font-size:clamp(1.3rem,2.6vw,1.8rem); line-height:1.2; margin:0 0 10px}
-.textCol h2 em{color:var(--accent)}
-.textCol p{font-size:.92rem; color:var(--ink-soft); line-height:1.5; margin:0}
+.video{width:100%; max-width:320px; aspect-ratio:9/16; object-fit:cover; border-radius:22px; box-shadow:var(--shadow); background:#000}
+
+.arrowCol{display:flex; align-items:center; justify-content:center; color:var(--ink-faint)}
+.arrowIcon{transform:rotate(0deg)}
+
+.noteWrap{position:absolute; top:-38px; right:6px; display:flex; flex-direction:column; align-items:flex-end; color:var(--accent-deep); z-index:2; pointer-events:none}
+.note{font-family:var(--font-caveat), cursive; font-size:1.7rem; font-weight:700; transform:rotate(-6deg); white-space:nowrap}
+.noteArrow{margin-top:-4px; margin-right:18px}
 
 @media(max-width:820px){
-  .grid{grid-template-columns:1fr; gap:24px}
-  .textCol{order:3}
-  .video{max-width:200px}
+  .grid{grid-template-columns:1fr; gap:8px}
+  .arrowCol{transform:rotate(90deg); padding:4px 0}
+  .video{max-width:240px}
+  .noteWrap{top:-30px; right:0; left:0; align-items:center}
+  .note{font-size:1.4rem}
 }
