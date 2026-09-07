@@ -61,17 +61,17 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 export async function runTask(
   model: string,
   input: KieInput,
-  { timeoutMs = 55_000, intervalMs = 3_000 } = {},
+  { timeoutMs = 110_000, intervalMs = 3_000 } = {},
 ): Promise<string[]> {
   const taskId = await createTask(model, input);
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
     const info = await recordInfo(taskId);
     if (info.state === "success" && info.resultUrls?.length) return info.resultUrls;
-    if (info.state === "fail") throw new Error(`Generación fallida: ${info.failMsg ?? "desconocido"}`);
+    if (info.state === "fail") throw new Error(`KIE_FAIL: ${info.failMsg ?? "desconocido"}`);
     await sleep(intervalMs);
   }
-  throw new Error("Timeout esperando a Kie.ai");
+  throw new Error("KIE_TIMEOUT");
 }
 
 /**

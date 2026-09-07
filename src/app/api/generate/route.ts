@@ -4,7 +4,7 @@ import { getZone } from "@/config/zones";
 import { poses, bases, NO_BASE_ID } from "@/config/products";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 const STUDIO = "Studio product photo, soft light, plain seamless light background, photorealistic, centered.";
 const NO_BASE = "with no display base, standing directly on a clean seamless light studio surface";
@@ -92,10 +92,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url });
   } catch (e) {
     // Log técnico para depurar en Vercel; al cliente solo un mensaje corto y amable.
-    console.error("[/api/generate]", (e as Error).message);
-    return NextResponse.json(
-      { error: "We couldn't quite see your pet clearly. Try a photo with more detail or better lighting." },
-      { status: 500 },
-    );
+    const msg = (e as Error).message;
+    console.error("[/api/generate]", msg);
+    const friendly = msg.startsWith("KIE_TIMEOUT")
+      ? "This is taking longer than usual. Please try again in a moment."
+      : "We couldn't quite see your pet clearly. Try a photo with more detail or better lighting.";
+    return NextResponse.json({ error: friendly }, { status: 500 });
   }
 }
