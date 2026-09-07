@@ -558,11 +558,13 @@ export default function Studio({ zone }: { zone: Zone }) {
 
       <PassThrough onCta={openPicker} />
 
-      <div className={styles.wrap}>
-        <section className={styles.section} id="how-we-work" style={{ paddingTop: "clamp(20px,3vw,32px)" }}>
-          <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>Behind the scenes</span><h2>How we <em>work</em></h2></div>
-          <HowWeWork />
-        </section>
+      <div className={styles.wavePanel}>
+        <div className={styles.wrap}>
+          <section className={styles.section} id="how-we-work" style={{ paddingTop: "clamp(20px,3vw,32px)" }}>
+            <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>Behind the scenes</span><h2>How we <em>work</em></h2></div>
+            <HowWeWork />
+          </section>
+        </div>
       </div>
 
       <div className={styles.wrap}>
@@ -579,6 +581,9 @@ export default function Studio({ zone }: { zone: Zone }) {
             <details><summary>What if it doesn&apos;t look like my pet?</summary><p>Then we recast it, free. If the preview isn&apos;t right we regenerate it; if the printed figure misses the mark we remake it.</p></details>
             <details><summary>How long does it take?</summary><p>The preview is instant and free. Once you order, your figure ships in about 2–4 days.</p></details>
             <details><summary>What&apos;s it made of?</summary><p>Durable full-color resin, hand-finished. A keepsake for your shelf.</p></details>
+            <details><summary>What sizes are available?</summary><p>Standard (12cm), Large (16cm) and Grand (22cm) — pick whichever fits your shelf best when you build your preview.</p></details>
+            <details><summary>Can I add their name to the base?</summary><p>Yes — add an engraved nameplate with your pet&apos;s name, plus optional extras like a display base, bandana or gift box.</p></details>
+            <details><summary>Do you ship internationally?</summary><p>Right now we ship within the US only, with more countries coming soon.</p></details>
           </div>
         </section>
       </div>
