@@ -3,9 +3,10 @@
 import { motion } from "framer-motion";
 import styles from "./Timeline.module.css";
 
-export type StepId = "name" | "photo" | "pose" | "base" | "ready";
+export type StepId = "email" | "name" | "photo" | "pose" | "base" | "ready";
 
 const STEPS: { id: StepId; label: string }[] = [
+  { id: "email", label: "Email" },
   { id: "name", label: "Name" },
   { id: "photo", label: "Photo" },
   { id: "pose", label: "Pose" },

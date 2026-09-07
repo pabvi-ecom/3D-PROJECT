@@ -27,7 +27,9 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const router = useRouter();
   const animal = zone.animal;
 
-  const [step, setStep] = useState<StepId>(initialName ? "photo" : "name");
+  const [step, setStep] = useState<StepId>("email");
+  const [email, setEmail] = useState("");
+  const [emailDraft, setEmailDraft] = useState("");
   const [petName, setPetName] = useState(initialName ?? "");
   const [nameDraft, setNameDraft] = useState(initialName ?? "");
 
@@ -202,6 +204,20 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     reader.readAsDataURL(f);
   }
 
+  // TODO: cuando salga de pruebas, exigir formato @gmail.com aquí (pedido explícito).
+  function confirmEmail(e: React.FormEvent) {
+    e.preventDefault();
+    const v = emailDraft.trim();
+    if (!v || !v.includes("@")) return;
+    setEmail(v);
+    fetch("/api/lead", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: v, zone: zone.slug }),
+    }).catch(() => {});
+    setStep(initialName ? "photo" : "name");
+  }
+
   function confirmName(e: React.FormEvent) {
     e.preventDefault();
     const n = nameDraft.trim();
@@ -232,9 +248,31 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       </header>
 
       <main className={styles.main}>
+        {step === "email" && (
+          <div className={styles.card}>
+            <span className={styles.stepTag}>Before we start</span>
+            <h1>Where should we send your free preview?</h1>
+            <p className={styles.sub}>Just so we can save it and get it back to you — no spam, ever.</p>
+            <form onSubmit={confirmEmail} className={styles.form}>
+              <input
+                autoFocus
+                type="email"
+                className={styles.nameInput}
+                placeholder="you@email.com"
+                value={emailDraft}
+                onChange={(e) => setEmailDraft(e.target.value)}
+              />
+              <button type="submit" className={styles.cta} disabled={!emailDraft.trim().includes("@")}>
+                Continue
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
+              </button>
+            </form>
+          </div>
+        )}
+
         {step === "name" && (
           <div className={styles.card}>
-            <span className={styles.stepTag}>Step 1 of 5</span>
+            <span className={styles.stepTag}>Step 2 of 6</span>
             <h1>What&apos;s your {animal}&apos;s name?</h1>
             <p className={styles.sub}>We&apos;ll use it to personalize your preview and engrave it if you add a display base.</p>
             <form onSubmit={confirmName} className={styles.form}>
@@ -256,7 +294,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
         {step === "photo" && !generating && (
           <div className={styles.card}>
-            <span className={styles.stepTag}>Step 2 of 5</span>
+            <span className={styles.stepTag}>Step 3 of 6</span>
             <h1>Upload a photo of {petName}</h1>
             <p className={styles.sub}>Any normal snapshot works best when it&apos;s clear and front-facing.</p>
             <button className={styles.uploadBox} onClick={() => fileRef.current?.click()} disabled={readingFile}>
@@ -295,7 +333,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
         {step === "pose" && (
           <div className={styles.card}>
-            <span className={styles.stepTag}>Step 3 of 5</span>
+            <span className={styles.stepTag}>Step 4 of 6</span>
             <h1>Pick a pose</h1>
             <p className={styles.sub}>Both are ready — pick whichever looks most like {petName}.</p>
             <div className={styles.poseGrid}>
@@ -322,7 +360,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
         {step === "base" && (
           <div className={styles.card}>
-            <span className={styles.stepTag}>Step 4 of 5</span>
+            <span className={styles.stepTag}>Step 5 of 6</span>
             <h1>Add a display base?</h1>
             <p className={styles.sub}>A base with {petName}&apos;s name engraved makes it shelf-ready.</p>
 
