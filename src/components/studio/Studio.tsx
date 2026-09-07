@@ -7,6 +7,7 @@ import { poses, paidBases, bases, NO_BASE_ID, NAMEPLATE_PRICE, packs, type Pack 
 import type { Zone } from "@/config/zones";
 import { StepsFlow } from "./StepsFlow";
 import { ProcessReel } from "./ProcessReel";
+import { PassThrough } from "./PassThrough";
 import { ReviewSwell } from "./ReviewSwell";
 import { TransformReveal } from "./TransformReveal";
 import { NameGate } from "./NameGate";
@@ -560,6 +561,8 @@ export default function Studio({ zone }: { zone: Zone }) {
           <ProcessReel />
         </section>
       </div>
+
+      <PassThrough animal={animal} />
 
       <div className={styles.wrap}>
         <section className={styles.section} id="pricing">
