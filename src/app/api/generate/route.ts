@@ -10,7 +10,7 @@ const STUDIO = "Studio product photo, soft light, plain seamless light backgroun
 const NO_BASE = "with no display base, standing directly on a clean seamless light studio surface";
 const SHELF_REF = "/scenes/shelf-ref.png";
 const SHELF_NOTE =
-  " The LAST reference image shows the exact home scene to place it in — a floating white wooden shelf on a warm beige wall, with a small potted succulent beside it, soft natural light. Match that shelf, wall, plant and lighting exactly, and place the figurine on the shelf the same way.";
+  " The LAST reference image shows the exact home scene to place it in — a floating white wooden shelf on a warm beige wall, with a small potted succulent beside it, soft natural light, and the correct scale for the figurine. Match ONLY that shelf, wall, plant, lighting and scale exactly — IGNORE the pose of the dog in that reference image entirely, it is not relevant. The figurine's pose must follow the pose instruction given above, not the reference photo.";
 
 /**
  * POST /api/generate
