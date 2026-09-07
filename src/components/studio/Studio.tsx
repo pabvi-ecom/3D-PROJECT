@@ -555,7 +555,7 @@ export default function Studio({ zone }: { zone: Zone }) {
 
       </div>
 
-      <PassThrough />
+      <PassThrough onCta={openPicker} />
 
       <div className={styles.wrap}>
         <section className={styles.section} id="pricing">

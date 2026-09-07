@@ -12,7 +12,7 @@ const LEAVE_EXIT_AT = 4.3;
 const ARRIVE_ENTER_AT = 1.0;
 const DELAY_MS = (LEAVE_EXIT_AT - ARRIVE_ENTER_AT) * 1000;
 
-export function PassThrough() {
+export function PassThrough({ onCta }: { onCta: () => void }) {
   const sectionRef = useRef(null);
   const inView = useInView(sectionRef, { once: true, amount: 0.5 });
   const leaveRef = useRef<HTMLVideoElement>(null);
@@ -65,6 +65,10 @@ export function PassThrough() {
             <span className={styles.stars}>★★★★★</span>
             <span className={styles.proofNum}>4.9/5</span>
           </div>
+          <button className={styles.cta} onClick={onCta}>
+            Create yours
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
+          </button>
         </motion.div>
 
         <motion.div
