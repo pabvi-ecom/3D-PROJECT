@@ -8,6 +8,7 @@ import type { Zone } from "@/config/zones";
 import { StepsFlow } from "./StepsFlow";
 import { PassThrough } from "./PassThrough";
 import { ComparisonTable } from "./ComparisonTable";
+import { HowWeWork } from "./HowWeWork";
 import { ReviewSwell } from "./ReviewSwell";
 import { TransformReveal } from "./TransformReveal";
 import { NameGate } from "./NameGate";
@@ -556,6 +557,13 @@ export default function Studio({ zone }: { zone: Zone }) {
       </div>
 
       <PassThrough onCta={openPicker} />
+
+      <div className={styles.wrap}>
+        <section className={styles.section} id="how-we-work">
+          <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>Behind the scenes</span><h2>How we work</h2></div>
+          <HowWeWork />
+        </section>
+      </div>
 
       <div className={styles.wrap}>
         <section className={styles.section} id="compare">
