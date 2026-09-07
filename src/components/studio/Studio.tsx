@@ -561,7 +561,7 @@ export default function Studio({ zone }: { zone: Zone }) {
       <div className={styles.wavePanel}>
         <div className={styles.wrap}>
           <section className={styles.section} id="how-we-work" style={{ paddingTop: "clamp(20px,3vw,32px)" }}>
-            <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>Behind the scenes</span><h2>How we <em>work</em></h2></div>
+            <div className={`${styles.shead} ${styles.sheadTight} ${styles.sheadOnWave}`}><span className={styles.eyebrow}>Behind the scenes</span><h2>How we <em>work</em></h2></div>
             <HowWeWork />
           </section>
         </div>
