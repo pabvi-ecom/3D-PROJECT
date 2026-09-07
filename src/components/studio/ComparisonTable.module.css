@@ -7,18 +7,27 @@
 .badge{display:inline-flex; align-items:center; gap:6px; background:var(--accent); color:#fff; font-weight:800; font-size:.9rem; padding:6px 16px; border-radius:999px}
 .othersLabel{font-size:.86rem; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em}
 
-.row{display:grid; grid-template-columns:1.1fr 1.3fr 1fr; align-items:stretch}
+.rowGroup{display:block}
 
-.labelCell{padding:16px; font-weight:800; font-size:.92rem; color:var(--ink); display:flex; align-items:center}
+.row{width:100%; display:grid; grid-template-columns:1.1fr 1.3fr 1fr; align-items:stretch; background:none; border:none; padding:0; font:inherit; text-align:left; cursor:default}
+.rowClickable{cursor:pointer}
+
+.labelCell{padding:16px; font-weight:800; font-size:.92rem; color:var(--ink); display:flex; align-items:center; gap:8px}
 
 .cell{padding:16px; font-size:.9rem; color:var(--ink-soft); display:flex; align-items:center; gap:10px; line-height:1.35}
 
 .usCell{background:var(--accent-soft); color:var(--ink); font-weight:700; border-left:2px solid var(--accent); border-right:2px solid var(--accent)}
-.row:first-of-type .usCell{border-top:2px solid var(--accent); border-radius:14px 14px 0 0; padding-top:18px}
-.row:last-of-type .usCell{border-bottom:2px solid var(--accent); border-radius:0 0 14px 14px; padding-bottom:18px}
+.rowGroup:first-of-type .usCell{border-top:2px solid var(--accent); border-radius:14px 14px 0 0; padding-top:18px}
+.rowGroup:last-of-type .usCell{border-bottom:2px solid var(--accent); border-radius:0 0 14px 14px; padding-bottom:18px}
 
 .check{flex:none; display:flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:var(--accent); color:#fff; font-size:.72rem; font-weight:900}
 .cross{flex:none; display:flex; align-items:center; justify-content:center; width:20px; height:20px; border-radius:50%; background:var(--line-2); color:var(--ink-faint); font-size:.7rem; font-weight:900}
+
+.chevron{color:var(--ink-faint); font-size:1rem; transition:transform .2s ease; line-height:1}
+.chevronOpen{transform:rotate(180deg); color:var(--accent)}
+
+.detail{overflow:hidden; background:var(--surface-2)}
+.detail p{margin:0; padding:14px 16px 18px; font-size:.86rem; line-height:1.55; color:var(--ink-soft); max-width:60ch}
 
 @media(max-width:720px){
   .table{min-width:560px}
