@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./Studio.module.css";
 import { brand } from "@/config/brand";
-import { poses, paidBases, bases, NO_BASE_ID, NAMEPLATE_PRICE, packs, type Pack } from "@/config/products";
+import { poses, paidBases, bases, NO_BASE_ID, NAMEPLATE_PRICE } from "@/config/products";
 import type { Zone } from "@/config/zones";
 import { StepsFlow } from "./StepsFlow";
 import { PassThrough } from "./PassThrough";
@@ -514,7 +514,7 @@ export default function Studio({ zone }: { zone: Zone }) {
 
         <div className={styles.heroRightCol}>
           <div className={styles.heroRight}>
-            <h1 className={styles.heroH1}>Your Dog<br />Keep <em>Forever</em></h1>
+            <h1 className={styles.heroH1}>Your Pet<br />Keep <em>Forever</em></h1>
             <span className={styles.chip}>Free preview in seconds — no card needed.</span>
           </div>
 
@@ -559,50 +559,24 @@ export default function Studio({ zone }: { zone: Zone }) {
       <PassThrough onCta={openPicker} />
 
       <div className={styles.wrap}>
-        <section className={styles.section} id="how-we-work">
-          <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>Behind the scenes</span><h2>How we work</h2></div>
+        <section className={styles.section} id="how-we-work" style={{ paddingTop: "clamp(20px,3vw,32px)" }}>
+          <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>Behind the scenes</span><h2>How we <em>work</em></h2></div>
           <HowWeWork />
         </section>
       </div>
 
       <div className={styles.wrap}>
-        <section className={styles.section} id="compare">
+        <section className={styles.section} id="compare" style={{ paddingTop: "clamp(20px,3vw,32px)" }}>
           <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>Us vs. everyone else</span><h2>Why settle for a <em>cheap knockoff</em>?</h2></div>
           <ComparisonTable />
         </section>
       </div>
 
       <div className={styles.wrap}>
-        <section className={styles.section} id="pricing">
-          <div className={styles.shead}><span className={styles.eyebrow}>Pricing</span><h2>The whole family, <em>immortalized</em></h2><p>More figures, better price — and they ship together.</p></div>
-          <div className={styles.packs}>
-            {packs.map((p: Pack) => (
-              <div key={p.qty} className={`${styles.ed} ${p.badge === "Most loved" ? styles.hot : ""}`}>
-                {p.badge && <span className={styles.tag} style={p.badge === "Best value" ? { background: "var(--pop)" } : undefined}>{p.badge}</span>}
-                <div className={styles.paws}>{"🐾".repeat(p.qty)}</div>
-                <div className={styles.en}>{p.label}</div>
-                <div className={styles.ep}>{money(p.price)}</div>
-                {p.savingsNote && <span className={styles.save}>{p.savingsNote}</span>}
-                <div className={styles.eu}>{money(p.price / p.qty)} each</div>
-                <button className={`${styles.btn} ${styles.btnGhost}`} style={{ marginTop: 6, width: "100%" }} onClick={openPicker}>Start free</button>
-              </div>
-            ))}
-          </div>
-          <p className={styles.ship}>🚚 <b>Free express shipping</b> on every order over {money(brand.freeShippingThreshold)}</p>
-        </section>
-
-        <section className={styles.section} style={{ paddingTop: 0 }}>
-          <div className={styles.gift}>
-            <h2>The gift they&apos;ll <em style={{ color: "#fff" }}>never</em> forget</h2>
-            <p>Birthdays, holidays, or the pup that&apos;s no longer here. Nothing hits quite like this.</p>
-            <button className={styles.btn} onClick={openPicker}>Preview your {animal} free →</button>
-          </div>
-        </section>
-
-        <section className={styles.section} id="faq" style={{ paddingTop: 0 }}>
+        <section className={styles.section} id="faq" style={{ paddingTop: "clamp(20px,3vw,32px)" }}>
           <div className={styles.shead}><span className={styles.eyebrow}>Good to know</span><h2>Questions, <em>answered</em></h2></div>
           <div className={styles.faq}>
-            <details><summary>What if it doesn&apos;t look like my {animal}?</summary><p>Then we recast it, free. If the preview isn&apos;t right we regenerate it; if the printed figure misses the mark we remake it.</p></details>
+            <details><summary>What if it doesn&apos;t look like my pet?</summary><p>Then we recast it, free. If the preview isn&apos;t right we regenerate it; if the printed figure misses the mark we remake it.</p></details>
             <details><summary>How long does it take?</summary><p>The preview is instant and free. Once you order, your figure ships in about 2–4 days.</p></details>
             <details><summary>What&apos;s it made of?</summary><p>Durable full-color resin, hand-finished. A keepsake for your shelf.</p></details>
           </div>
