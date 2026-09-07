@@ -8,7 +8,7 @@ type Review = { src: string; name: string; breed: string; text: string };
 
 const SWIPE_THRESHOLD = 50;
 const RUN_DELAY = 130;
-const DECEL_DELAYS = [140, 180, 230, 300, 390, 510, 650, 830, 1050];
+const DECEL_DELAYS = [130, 160, 200, 260, 330, 420];
 
 export function ReviewSwell({ reviews }: { reviews: Review[] }) {
   const [index, setIndex] = useState(0);
