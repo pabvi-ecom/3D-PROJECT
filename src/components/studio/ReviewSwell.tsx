@@ -12,7 +12,7 @@ const DECEL_DELAYS = [140, 180, 230, 300, 390, 510, 650];
 
 export function ReviewSwell({ reviews }: { reviews: Review[] }) {
   const [index, setIndex] = useState(0);
-  const [gap, setGap] = useState(210);
+  const [gap, setGap] = useState(250);
   const [stepMs, setStepMs] = useState(RUN_DELAY);
   const [settled, setSettled] = useState(false);
   const n = reviews.length;
@@ -58,7 +58,7 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
   useEffect(() => {
     function updateGap() {
       const w = window.innerWidth;
-      setGap(w <= 480 ? 105 : w <= 820 ? 131 : 210);
+      setGap(w <= 480 ? 125 : w <= 820 ? 156 : 250);
     }
     updateGap();
     window.addEventListener("resize", updateGap);
