@@ -23,28 +23,19 @@ export function PassThrough({ animal }: { animal: string }) {
     if (!inView || startedRef.current) return;
     startedRef.current = true;
 
-    let arriveTimer: ReturnType<typeof setTimeout>;
-
-    function playLeave() {
-      const leave = leaveRef.current;
-      const arrive = arriveRef.current;
-      if (!leave || !arrive) return;
-      leave.currentTime = 0;
-      arrive.currentTime = 0;
-      arrive.pause();
-      leave.play().catch(() => {});
-      arriveTimer = setTimeout(() => {
-        arrive.play().catch(() => {});
-      }, DELAY_MS);
-    }
-
-    playLeave();
+    const leave = leaveRef.current;
     const arrive = arriveRef.current;
-    arrive?.addEventListener("ended", playLeave);
+    if (!leave || !arrive) return;
+
+    leave.currentTime = 0;
+    arrive.currentTime = 0;
+    leave.play().catch(() => {});
+    const arriveTimer = setTimeout(() => {
+      arrive.play().catch(() => {});
+    }, DELAY_MS);
 
     return () => {
       clearTimeout(arriveTimer);
-      arrive?.removeEventListener("ended", playLeave);
     };
   }, [inView]);
 
