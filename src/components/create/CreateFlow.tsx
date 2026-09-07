@@ -126,7 +126,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setGenerating(true);
     setError(null);
     setFigures({});
-    const totalGen = poses.length + poses.length * paidBases.length * 2;
+    const totalGen = poses.length + poses.length * paidBases.length * 4;
     setGenTotal(totalGen);
     setDone(0);
     setProgress(0);
@@ -177,8 +177,28 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       for (const pid of Object.keys(noneByPose)) map[key(pid, NO_BASE_ID, "front")] = noneByPose[pid];
       for (const [k, u] of baseResults) map[k] = u;
       for (const [k, u] of sideResults) map[k] = u;
-      setProgress(100);
       setFigures(map);
+
+      // Pre-genera TAMBIÉN las versiones grabadas (frontal + lateral) para cada
+      // postura/base — así activar "Engrave" o cambiar de vista es instantáneo,
+      // sin esperar a una generación nueva.
+      const namedResults = await Promise.all(
+        poses.flatMap((p) =>
+          paidBases.flatMap((b) =>
+            (["front", "side"] as const).map((v) =>
+              postGenerate({ referenceUrl: map[key(p.id, b.id, v)], change: "name", baseId: b.id, petName }).then((url) => {
+                setDone((d) => d + 1);
+                return [key(p.id, b.id, v), url] as const;
+              }),
+            ),
+          ),
+        ),
+      );
+      const namedMap: Record<string, string> = {};
+      for (const [k, u] of namedResults) namedMap[k] = u;
+      setNamedFigures(namedMap);
+
+      setProgress(100);
       setStep("pose");
     } catch (e) {
       setError((e as Error).message);
