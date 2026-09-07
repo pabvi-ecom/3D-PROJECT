@@ -13,7 +13,14 @@
 .headerSpacer{width:90px; flex:none}
 .header>:nth-child(2){flex:1}
 
-.main{max-width:640px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(16px,4vw,24px) 80px}
+.main{max-width:640px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(16px,4vw,24px) 80px; transition:max-width .2s ease}
+.mainWide{max-width:940px}
+
+.genCard{display:grid; grid-template-columns:1fr 1fr; gap:clamp(20px,3vw,36px); align-items:start}
+.genCol{min-width:0}
+@media(max-width:760px){
+  .genCard{grid-template-columns:1fr}
+}
 
 .card{background:var(--surface); border:1px solid var(--line); border-radius:24px; padding:clamp(24px,4vw,40px); box-shadow:var(--shadow)}
 

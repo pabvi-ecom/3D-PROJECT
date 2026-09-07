@@ -7,6 +7,7 @@ import { brand } from "@/config/brand";
 import { poses, paidBases, bases, NO_BASE_ID, NAMEPLATE_PRICE } from "@/config/products";
 import type { Zone } from "@/config/zones";
 import { Timeline, type StepId } from "./Timeline";
+import { MiniGame } from "./MiniGame";
 
 const FIGURE_PRICE = 79.99;
 
@@ -247,7 +248,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         <span className={styles.headerSpacer} />
       </header>
 
-      <main className={styles.main}>
+      <main className={`${styles.main} ${generating ? styles.mainWide : ""}`}>
         {step === "email" && (
           <div className={styles.card}>
             <span className={styles.stepTag}>Before we start</span>
@@ -306,27 +307,32 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         )}
 
         {generating && (
-          <div className={styles.card}>
-            <span className={styles.stepTag}>Generating your preview…</span>
-            <h1>Bringing {petName} to life</h1>
-            <div className={styles.genStage}>
-              {photo && <img className={styles.genGhost} src={photo} alt="" />}
-              <div className={styles.genOverlay}>
-                <div className={styles.spinner} />
-                <p className={styles.progPhrase}>{PHRASES[phraseIdx % PHRASES.length]}</p>
-                <div className={styles.progTrack}>
-                  <div className={styles.progFill} style={{ width: `${progress}%` }} />
+          <div className={`${styles.card} ${styles.genCard}`}>
+            <div className={styles.genCol}>
+              <span className={styles.stepTag}>Generating your preview…</span>
+              <h1>Bringing {petName} to life</h1>
+              <div className={styles.genStage}>
+                {photo && <img className={styles.genGhost} src={photo} alt="" />}
+                <div className={styles.genOverlay}>
+                  <div className={styles.spinner} />
+                  <p className={styles.progPhrase}>{PHRASES[phraseIdx % PHRASES.length]}</p>
+                  <div className={styles.progTrack}>
+                    <div className={styles.progFill} style={{ width: `${progress}%` }} />
+                  </div>
+                  <span className={styles.progPct}>{Math.round(progress)}%</span>
                 </div>
-                <span className={styles.progPct}>{Math.round(progress)}%</span>
+              </div>
+              <div className={styles.review}>
+                <img src={rv.src} alt="" />
+                <div className={styles.reviewBody}>
+                  <div className={styles.reviewStars}>★★★★★</div>
+                  <div className={styles.reviewText}>&ldquo;{rv.text}&rdquo;</div>
+                  <div className={styles.reviewName}>{rv.name} · {rv.breed}</div>
+                </div>
               </div>
             </div>
-            <div className={styles.review}>
-              <img src={rv.src} alt="" />
-              <div className={styles.reviewBody}>
-                <div className={styles.reviewStars}>★★★★★</div>
-                <div className={styles.reviewText}>&ldquo;{rv.text}&rdquo;</div>
-                <div className={styles.reviewName}>{rv.name} · {rv.breed}</div>
-              </div>
+            <div className={styles.genCol}>
+              <MiniGame />
             </div>
           </div>
         )}
