@@ -8,7 +8,6 @@ import { poses, paidBases, bases, NO_BASE_ID, NAMEPLATE_PRICE } from "@/config/p
 import type { Zone } from "@/config/zones";
 import { Timeline, type StepId } from "./Timeline";
 import { MiniGame } from "./MiniGame";
-import { FallingFigures } from "./FallingFigures";
 
 const FIGURE_PRICE = 79.99;
 
@@ -283,8 +282,6 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         <Timeline current={timelineStep} />
         <span className={styles.headerSpacer} />
       </header>
-
-      {generating && <FallingFigures />}
 
       <main className={`${styles.main} ${generating ? styles.mainWide : ""}`}>
         {step === "email" && (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import styles from "./PassThrough.module.css";
 
@@ -18,6 +18,8 @@ export function PassThrough({ onCta }: { onCta: () => void }) {
   const leaveRef = useRef<HTMLVideoElement>(null);
   const arriveRef = useRef<HTMLVideoElement>(null);
   const startedRef = useRef(false);
+  const [leaveReady, setLeaveReady] = useState(false);
+  const [arriveReady, setArriveReady] = useState(false);
 
   useEffect(() => {
     if (!inView || startedRef.current) return;
@@ -48,7 +50,17 @@ export function PassThrough({ onCta }: { onCta: () => void }) {
           animate={inView ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          <video ref={leaveRef} className={styles.video} src="/videos/transfer-leave.mp4" poster="/videos/transfer-leave-poster.jpg" muted playsInline preload="auto" />
+          <div className={styles.videoFrame} style={{ backgroundImage: "url(/videos/transfer-leave-poster.jpg)" }}>
+            <video
+              ref={leaveRef}
+              className={`${styles.video} ${leaveReady ? styles.videoReady : ""}`}
+              src="/videos/transfer-leave.mp4"
+              muted
+              playsInline
+              preload="auto"
+              onLoadedData={() => setLeaveReady(true)}
+            />
+          </div>
         </motion.div>
 
         <motion.div
@@ -77,7 +89,17 @@ export function PassThrough({ onCta }: { onCta: () => void }) {
           animate={inView ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          <video ref={arriveRef} className={styles.video} src="/videos/transfer-arrive.mp4" poster="/videos/transfer-arrive-poster.jpg" muted playsInline preload="auto" />
+          <div className={styles.videoFrame} style={{ backgroundImage: "url(/videos/transfer-arrive-poster.jpg)" }}>
+            <video
+              ref={arriveRef}
+              className={`${styles.video} ${arriveReady ? styles.videoReady : ""}`}
+              src="/videos/transfer-arrive.mp4"
+              muted
+              playsInline
+              preload="auto"
+              onLoadedData={() => setArriveReady(true)}
+            />
+          </div>
         </motion.div>
       </div>
     </section>
