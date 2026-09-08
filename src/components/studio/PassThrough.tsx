@@ -6,12 +6,13 @@ import styles from "./PassThrough.module.css";
 
 // Tiempos medidos a mano en los clips fuente (ambos duran 5.04s, sin recortar):
 // - transfer-leave.mp4: el perro EMPIEZA a salir de plano (parte del cuerpo ya
-//   fuera) sobre los 3.7s, y ha desaparecido del todo hacia los 4.1s.
+//   fuera) sobre los 3.7s, y ha desaparecido del todo hacia los 4.1s. Arrancamos
+//   el segundo vídeo un poco antes de ese instante (3.4s) para que se solapen.
 // - transfer-arrive.mp4: arranca desde el frame 0 real (base vacía, perro aún
 //   no ha entrado) — si arrancara más tarde se verían dos perros a la vez.
 // delay = cuándo arrancar el segundo vídeo: justo cuando el primero EMPIEZA a
 // salir (no cuando ya ha salido del todo), para que se sientan como el mismo perro.
-const DELAY_MS = 3700;
+const DELAY_MS = 3400;
 
 export function PassThrough({ onCta }: { onCta: () => void }) {
   const sectionRef = useRef(null);

@@ -15,7 +15,10 @@
    arriba) porque el compositor de vídeo por hardware no respeta el recorte. */
 .videoFrame{position:relative; width:100%; max-width:320px; aspect-ratio:9/16; border-radius:22px; overflow:hidden; box-shadow:var(--shadow); background:#000}
 
-.video{width:100%; height:100%; object-fit:cover; display:block}
+/* scale(1.04): al arrancar la reproducción, el compositor de vídeo por hardware
+   a veces deja una franja de 1-2px sin pintar en un borde (típico en el primer
+   frame en Chrome/iOS) — sobreescalar un pelín la tapa sin que se note el recorte. */
+.video{width:100%; height:100%; object-fit:cover; display:block; transform:scale(1.04)}
 
 .videoPoster{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; pointer-events:none}
 
