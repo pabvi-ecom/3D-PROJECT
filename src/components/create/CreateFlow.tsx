@@ -285,7 +285,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         {step === "email" && (
           <div className={styles.card}>
             <span className={styles.stepTag}>Before we start</span>
-            <h1>Where should we send your free preview?</h1>
+            <h1>✉️ Where should we send your free preview?</h1>
             <p className={styles.sub}>Just so we can save it and get it back to you — no spam, ever.</p>
             <form onSubmit={confirmEmail} className={styles.form}>
               <input
@@ -307,7 +307,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         {step === "name" && (
           <div className={styles.card}>
             <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 2 of 6</span></div>
-            <h1>What&apos;s your pet&apos;s name?</h1>
+            <h1>✏️ What&apos;s your pet&apos;s name?</h1>
             <p className={styles.sub}>We&apos;ll use it to personalize your preview and engrave it if you add a display base.</p>
             <form onSubmit={confirmName} className={styles.form}>
               <input
@@ -329,7 +329,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         {step === "photo" && !generating && (
           <div className={styles.card}>
             <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 3 of 6</span></div>
-            <h1>Upload a photo of {petName}</h1>
+            <h1>📸 Upload a photo of {petName}</h1>
             <p className={styles.sub}>Any normal snapshot works best when it&apos;s clear and front-facing.</p>
             {photo ? (
               <div className={styles.photoPreview}>
@@ -401,7 +401,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         {step === "pose" && (
           <div className={styles.card}>
             <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 4 of 6</span></div>
-            <h1>Pick a pose</h1>
+            <h1>🐾 Pick a pose</h1>
             <p className={styles.sub}>Both are ready — pick whichever looks most like {petName}.</p>
             <div className={styles.poseGrid}>
               {poses.map((p) => {
@@ -429,7 +429,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         {step === "base" && (
           <div className={styles.card}>
             <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 5 of 6</span></div>
-            <h1>Add a display base?</h1>
+            <h1>🏆 Add a display base?</h1>
             <p className={styles.sub}>A base with {petName}&apos;s name engraved makes it shelf-ready.</p>
 
             <div className={styles.stage}>
@@ -473,7 +473,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         {step === "ready" && (
           <div className={styles.card}>
             <span className={styles.stepTag}>You&apos;re all set</span>
-            <h1>{petName}&apos;s figure is ready</h1>
+            <h1>🎁 {petName}&apos;s figure is ready</h1>
             <div className={styles.stage}>
               {figure && <img src={figure} alt={`${animal} figure`} />}
             </div>

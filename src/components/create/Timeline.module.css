@@ -1,15 +1,12 @@
 .bar{width:100%; max-width:640px; margin:0 auto; padding:22px 28px 16px}
 
-.track{position:relative; height:2px; margin:0 18px}
+.track{position:relative; height:2px; margin:0 8px}
 
-.trackBg{position:absolute; inset:0; background:var(--line); border-radius:99px; opacity:.7}
-.trackFill{position:absolute; top:0; left:0; height:100%; background:linear-gradient(90deg, var(--accent-deep), var(--accent)); border-radius:99px}
+.trackBg{position:absolute; inset:0; background:var(--line); border-radius:99px; opacity:.6}
+.trackFill{position:absolute; top:0; left:0; height:100%; background:var(--accent); border-radius:99px; opacity:.8}
 
 .node{position:absolute; top:50%; transform:translate(-50%,-50%)}
 
-.dot{width:30px; height:30px; border-radius:50%; background:var(--surface); border:1.5px solid var(--line); display:flex; align-items:center; justify-content:center; transition:border-color .25s ease, background .25s ease, box-shadow .25s ease; opacity:.55}
-.dot.todo{opacity:.4}
-.dot.done{border-color:var(--accent); background:var(--accent-soft); opacity:1}
-.dot.active{border-color:var(--accent); background:var(--surface); box-shadow:0 0 0 5px var(--accent-soft); opacity:1}
-
-.icon{font-size:.92rem; line-height:1}
+.dot{width:6px; height:6px; border-radius:50%; background:var(--line); transition:background .25s ease}
+.dot.done{background:var(--accent)}
+.dot.active{background:var(--accent); box-shadow:0 0 0 4px var(--accent-soft)}
