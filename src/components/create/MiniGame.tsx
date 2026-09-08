@@ -6,8 +6,8 @@ import styles from "./MiniGame.module.css";
 const W = 320;
 const H = 220;
 const GROUND_Y = H - 26;
-const GRAVITY = 0.85;
-const JUMP_V = -13.5;
+const GRAVITY = 1.1;
+const JUMP_V = -16.5;
 const DOG_X = 40;
 const DOG_W = 30;
 const DOG_H = 46;
@@ -23,7 +23,7 @@ export function MiniGame() {
     vy: 0,
     jumping: false,
     obstacles: [] as Obstacle[],
-    speed: 3.2,
+    speed: 5.2,
     frame: 0,
     score: 0,
     dead: false,
@@ -52,7 +52,7 @@ export function MiniGame() {
     s.vy = 0;
     s.jumping = false;
     s.obstacles = [];
-    s.speed = 3.2;
+    s.speed = 5.2;
     s.frame = 0;
     s.score = 0;
     s.dead = false;
@@ -147,7 +147,7 @@ export function MiniGame() {
         s.obstacles.forEach((o) => (o.x -= s.speed));
         s.obstacles = s.obstacles.filter((o) => o.x + o.w > 0);
 
-        s.speed = Math.min(6.5, 3.2 + s.score / 22);
+        s.speed = Math.min(9, 5.2 + s.score / 18);
         s.score += 0.06;
         setScore(Math.floor(s.score));
 

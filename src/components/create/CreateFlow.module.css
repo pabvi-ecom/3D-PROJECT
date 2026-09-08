@@ -22,6 +22,8 @@
 
 .genCard{display:grid; grid-template-columns:1fr 1fr; gap:clamp(20px,3vw,36px); align-items:start}
 .genCol{min-width:0}
+.genCol .stepTag{margin-bottom:10px}
+.genCol h1{margin-bottom:18px}
 .gameHint{margin:0 0 10px; text-align:center; font-size:.86rem; font-weight:700; color:var(--accent-deep); background:var(--accent-soft); padding:8px 14px; border-radius:999px}
 @media(max-width:760px){
   .genCard{grid-template-columns:1fr}
