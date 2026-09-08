@@ -74,11 +74,15 @@ export async function POST(req: NextRequest) {
         const engraved = typeof petName === "string" && petName.trim() ? petName.trim().toUpperCase() : "";
         prompt =
           `This is a full-color 3D printed figurine of a ${animal} on a display base with a blank brushed-gold ` +
-          `nameplate. Keep the ${animal} figurine, its pose, its base and the camera angle EXACTLY the same. ` +
-          `Change ONLY the nameplate: engrave the name "${engraved}" on it in elegant serif lettering. ` +
-          `The text MUST be perfectly horizontally and vertically centered on the visible nameplate area, ` +
-          `regardless of the camera angle — recompute the centering for whatever portion of the plate is ` +
-          `visible in THIS view, never offset to one side. Match the plate's brushed-gold metal. ${STUDIO}`;
+          `nameplate. Keep the ${animal} figurine, its pose, its base, the nameplate's exact position/angle ` +
+          `and the camera angle EXACTLY the same — do NOT rotate or flatten the plate to face the camera, ` +
+          `keep it at whatever angle it is already shown at in this image (if the base is seen from the side, ` +
+          `the plate is seen edge-on too, mostly foreshortened, and that must stay that way). ` +
+          `Change ONLY the nameplate: engrave the name "${engraved}" into it as recessed, engraved lettering ` +
+          `in a dark oxidized bronze/charcoal tone (NOT shiny gold, NOT the same color as the plate — it must ` +
+          `read as carved-in, darker than the brushed-gold metal around it), in an elegant serif font. ` +
+          `The text MUST be perfectly horizontally and vertically centered on whatever portion of the ` +
+          `nameplate is visible in THIS view — never offset to one side. ${STUDIO}`;
       } else {
         // Mantener el perro y la postura idénticos, cambiar SOLO la base.
         prompt =
@@ -97,7 +101,11 @@ export async function POST(req: NextRequest) {
       const viewNote =
         view === "side"
           ? ` Show the figurine from the SIDE — a full profile view, camera rotated 90° so the ${animal}'s ` +
-            `full body length is clearly visible (not facing the camera).`
+            `full body length is clearly visible (not facing the camera). The base rotates together with ` +
+            `the ${animal} as ONE rigid object — the nameplate is physically fixed to the base's front edge, ` +
+            `so from this side angle the nameplate must ALSO be seen edge-on / foreshortened, mostly hidden, ` +
+            `with only a thin sliver of it facing toward the camera — it must NOT still be facing the ` +
+            `viewer flat-on like in a front view.`
           : "";
       prompt =
         `Look ONLY at the ${animal} in this photo and turn just that ${animal} into a cute, full-color ` +
