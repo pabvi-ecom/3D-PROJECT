@@ -6,11 +6,11 @@ import styles from "./PassThrough.module.css";
 
 // Tiempos medidos a mano en los clips fuente:
 // - transfer-leave.mp4: el perro sale de plano hacia la derecha en ~4.3s (dura 5.04s)
-// - transfer-arrive.mp4: el perro entra por la izquierda en ~1.0s (dura 5.04s)
+// - transfer-arrive.mp4: recortado (ffmpeg -ss 1.0) para que empiece YA en el
+//   instante en que el perro entra — así no hay "aire muerto" al principio.
 // delay = cuánto esperar antes de arrancar el segundo vídeo para que "entre" justo cuando el primero "sale"
 const LEAVE_EXIT_AT = 4.3;
-const ARRIVE_ENTER_AT = 1.0;
-const DELAY_MS = (LEAVE_EXIT_AT - ARRIVE_ENTER_AT) * 1000;
+const DELAY_MS = LEAVE_EXIT_AT * 1000;
 
 export function PassThrough({ onCta }: { onCta: () => void }) {
   const sectionRef = useRef(null);
@@ -48,7 +48,7 @@ export function PassThrough({ onCta }: { onCta: () => void }) {
           animate={inView ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          <video ref={leaveRef} className={styles.video} src="/videos/transfer-leave.mp4" muted playsInline preload="auto" />
+          <video ref={leaveRef} className={styles.video} src="/videos/transfer-leave.mp4" poster="/videos/transfer-leave-poster.jpg" muted playsInline preload="auto" />
         </motion.div>
 
         <motion.div
@@ -77,7 +77,7 @@ export function PassThrough({ onCta }: { onCta: () => void }) {
           animate={inView ? { opacity: 1, x: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          <video ref={arriveRef} className={styles.video} src="/videos/transfer-arrive.mp4" muted playsInline preload="auto" />
+          <video ref={arriveRef} className={styles.video} src="/videos/transfer-arrive.mp4" poster="/videos/transfer-arrive-poster.jpg" muted playsInline preload="auto" />
         </motion.div>
       </div>
     </section>

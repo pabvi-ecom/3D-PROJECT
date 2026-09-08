@@ -86,14 +86,6 @@ export default function Studio({ zone }: { zone: Zone }) {
         </div>
       </section>
 
-      <div className={styles.wrap}>
-        <section className={styles.section} id="how">
-          <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>How it works</span><h2>The four steps to your pet&apos;s <em>perfect figure</em>.</h2></div>
-          <StepsFlow />
-        </section>
-
-      </div>
-
       <section className={styles.swellSection}>
         <div className={styles.swellHead}>
           <h2>🐾 Happy pets, happy humans</h2>
@@ -110,6 +102,14 @@ export default function Studio({ zone }: { zone: Zone }) {
         animal={animal}
         onCta={goCreate}
       />
+
+      <div className={styles.wrap}>
+        <section className={styles.section} id="how">
+          <div className={`${styles.shead} ${styles.sheadTight}`}><span className={styles.eyebrow}>How it works</span><h2>The four steps to your pet&apos;s <em>perfect figure</em>.</h2></div>
+          <StepsFlow />
+        </section>
+
+      </div>
 
       <PassThrough onCta={goCreate} />
 
