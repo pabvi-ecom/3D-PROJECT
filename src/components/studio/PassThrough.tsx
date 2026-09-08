@@ -12,7 +12,7 @@ import styles from "./PassThrough.module.css";
 //   no ha entrado) — si arrancara más tarde se verían dos perros a la vez.
 // delay = cuándo arrancar el segundo vídeo: justo cuando el primero EMPIEZA a
 // salir (no cuando ya ha salido del todo), para que se sientan como el mismo perro.
-const DELAY_MS = 2600;
+const DELAY_MS = 2300;
 
 export function PassThrough({ onCta }: { onCta: () => void }) {
   const sectionRef = useRef(null);
