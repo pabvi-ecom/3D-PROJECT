@@ -217,7 +217,6 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       const dataUri = reader.result as string;
       setReadingFile(false);
       setPhoto(dataUri);
-      generateAllPoses(dataUri);
     };
     reader.onerror = () => {
       setReadingFile(false);
@@ -319,10 +318,17 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
             <span className={styles.stepTag}>Step 3 of 6</span>
             <h1>Upload a photo of {petName}</h1>
             <p className={styles.sub}>Any normal snapshot works best when it&apos;s clear and front-facing.</p>
-            <button className={styles.uploadBox} onClick={() => fileRef.current?.click()} disabled={readingFile}>
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V4" /><path d="m6 10 6-6 6 6" /><path d="M4 18v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1" /></svg>
-              <span>{readingFile ? "Loading…" : "Tap to choose a photo"}</span>
-            </button>
+            {photo ? (
+              <div className={styles.photoPreview}>
+                <img src={photo} alt="" />
+                <button className={styles.changePhoto} onClick={() => fileRef.current?.click()}>Change photo</button>
+              </div>
+            ) : (
+              <button className={styles.uploadBox} onClick={() => fileRef.current?.click()} disabled={readingFile}>
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V4" /><path d="m6 10 6-6 6 6" /><path d="M4 18v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1" /></svg>
+                <span>{readingFile ? "Loading…" : "Tap to choose a photo"}</span>
+              </button>
+            )}
 
             <label className={styles.notesLabel}>
               Anything about {petName} we can&apos;t tell from the photo?
@@ -337,6 +343,13 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
             </label>
 
             {error && <div className={styles.err}>{error}</div>}
+
+            {photo && (
+              <button className={styles.cta} onClick={() => generateAllPoses(photo)}>
+                Continue
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
+              </button>
+            )}
           </div>
         )}
 
