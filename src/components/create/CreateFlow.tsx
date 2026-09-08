@@ -380,6 +380,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
               </div>
             </div>
             <div className={styles.genCol}>
+              <p className={styles.gameHint}>⏱️ Takes about 60 seconds — got time for a quick round?</p>
               <MiniGame />
             </div>
           </div>
