@@ -64,13 +64,15 @@ export async function POST(req: NextRequest) {
         // alrededor. Framing de "foto nueva del mismo objeto físico", no de "dibuja de nuevo".
         prompt =
           `This is a photo of a single physical object: an already-finished, already-painted 3D printed ` +
-          `figurine of a ${animal} permanently glued to its display base, sitting on a photo studio turntable. ` +
-          `Nothing about the object itself is being redrawn, re-sculpted or re-imagined — the sculpt, the pose ` +
-          `(${pose.prompt}), the fur colors, the markings and the base are a fixed, rigid, already-cast piece ` +
-          `that cannot change shape. The ONLY thing that happened is the turntable was rotated 90°, so the ` +
-          `camera is now looking at the exact same rigid object from its SIDE, a full profile view, showing ` +
-          `the ${animal}'s full body length. Take a new studio photo of this same physical object from that ` +
-          `new camera position — same object, same pose, same base, different photo angle only.${baseRefNote} ${STUDIO}`;
+          `figurine of a ${animal} permanently glued to its display base. Nothing about the object itself is ` +
+          `being redrawn, re-sculpted or re-imagined — the sculpt, the pose (${pose.prompt}), the fur colors, ` +
+          `the markings and the base are a fixed, rigid, already-cast piece that cannot change shape. The ONLY ` +
+          `thing that changes is the camera position: it now walks around to the SIDE of the same object, a ` +
+          `full profile view, showing the ${animal}'s full body length. Do NOT add any extra platform, ` +
+          `pedestal, turntable or surface underneath the base — the base still sits directly on the same plain ` +
+          `studio background as before, nothing new appears beneath it. Take a new studio photo of this same ` +
+          `physical object from that new camera position — same object, same pose, same base, different photo ` +
+          `angle only.${baseRefNote} ${STUDIO}`;
       } else if (change === "name") {
         // Mantener figura y base idénticas; grabar el nombre en la placa (antes en blanco).
         const engraved = typeof petName === "string" && petName.trim() ? petName.trim().toUpperCase() : "";
