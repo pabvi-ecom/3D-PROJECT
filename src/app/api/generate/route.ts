@@ -60,25 +60,33 @@ export async function POST(req: NextRequest) {
           `to match this new pose exactly. ${STUDIO}`;
       } else if (change === "view") {
         // Mantener figura, postura y base idénticas; cambiar SOLO el ángulo a perfil.
+        // Reforzamos la postura explícitamente porque el modelo tiende a "relajarla"
+        // de vuelta a sentado al rotar la cámara.
         prompt =
-          `This is a full-color 3D printed figurine of a ${animal} on a display base. ` +
-          `Keep the ${animal} figurine and its base EXACTLY the same — identical sculpt, pose, ` +
-          `fur colors, markings and base.${baseRefNote} Change ONLY the camera angle: ` +
-          `show it from the SIDE, a full profile view, so the length of the ${animal} is clearly visible. ${STUDIO}`;
+          `This is a full-color 3D printed figurine of a ${animal} on a display base, currently ${pose.prompt}. ` +
+          `Keep the ${animal} figurine and its base EXACTLY the same — identical sculpt, fur colors, ` +
+          `markings and base. The ${animal} MUST remain exactly ${pose.prompt} — do NOT change the pose ` +
+          `back to sitting or any other posture when rotating the camera.${baseRefNote} Change ONLY the ` +
+          `camera angle: show it from the SIDE, a full profile view, so the length of the ${animal} is ` +
+          `clearly visible. ${STUDIO}`;
       } else if (change === "name") {
         // Mantener figura y base idénticas; grabar el nombre en la placa (antes en blanco).
         const engraved = typeof petName === "string" && petName.trim() ? petName.trim().toUpperCase() : "";
         prompt =
           `This is a full-color 3D printed figurine of a ${animal} on a display base with a blank brushed-gold ` +
           `nameplate. Keep the ${animal} figurine, its pose, its base and the camera angle EXACTLY the same. ` +
-          `Change ONLY the nameplate: engrave the name "${engraved}" on it in elegant centered serif lettering, ` +
-          `matching the plate's brushed-gold metal. ${STUDIO}`;
+          `Change ONLY the nameplate: engrave the name "${engraved}" on it in elegant serif lettering. ` +
+          `The text MUST be perfectly horizontally and vertically centered on the visible nameplate area, ` +
+          `regardless of the camera angle — recompute the centering for whatever portion of the plate is ` +
+          `visible in THIS view, never offset to one side. Match the plate's brushed-gold metal. ${STUDIO}`;
       } else {
         // Mantener el perro y la postura idénticos, cambiar SOLO la base.
         prompt =
           `This is a full-color 3D printed figurine of a ${animal}. ` +
           `Keep the ${animal} figurine EXACTLY the same — identical sculpt, pose, proportions, ` +
-          `fur colors and markings. Change ONLY the display base: the figurine is now ${basePhrase}.${baseRefNote} ${STUDIO}`;
+          `fur colors and markings. Change ONLY the display base: the figurine is now ${basePhrase}. ` +
+          `The ${animal} must be perfectly centered on top of the base, front-to-back and side-to-side — ` +
+          `not offset toward any edge.${baseRefNote} ${STUDIO}`;
       }
     } else {
       src = typeof imageUrl === "string" ? imageUrl : undefined;
