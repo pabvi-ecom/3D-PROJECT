@@ -13,11 +13,14 @@
   .row{grid-template-columns:1fr 1fr; row-gap:36px; align-items:start}
 
   /* Tamaños tipo "pizarra": 2º y 3º más grandes, 1º y 4º más pequeños —
-     y los textos a distinta altura, no todos alineados. */
-  .item:nth-child(1){transform:scale(.84); margin-top:26px}
-  .item:nth-child(2){transform:scale(1.14); margin-top:0}
-  .item:nth-child(3){transform:scale(1.1); margin-top:38px}
-  .item:nth-child(4){transform:scale(.86); margin-top:8px}
+     y los textos a distinta altura, no todos alineados.
+     OJO: no usar transform aquí — framer-motion ya mete un transform
+     inline (translateY) en este mismo div, y el inline pisa el de CSS,
+     así que el scale nunca se veía. Usar width en su lugar. */
+  .item:nth-child(1){width:76%; margin-top:26px; margin-left:auto; margin-right:auto}
+  .item:nth-child(2){width:108%; margin-top:0; margin-left:auto; margin-right:auto}
+  .item:nth-child(3){width:104%; margin-top:38px; margin-left:auto; margin-right:auto}
+  .item:nth-child(4){width:78%; margin-top:8px; margin-left:auto; margin-right:auto}
 }
 @media(max-width:520px){
   .row{grid-template-columns:1fr 1fr; row-gap:24px; column-gap:10px}
