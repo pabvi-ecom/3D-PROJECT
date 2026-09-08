@@ -27,7 +27,7 @@ const NO_BASE = "with no display base, standing directly on a clean seamless lig
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { imageBase64, imageUrl, referenceUrl, change, zone = "dogs", poseId, baseId = NO_BASE_ID, petName, notes } = body;
+    const { imageBase64, imageUrl, referenceUrl, change, zone = "dogs", poseId, baseId = NO_BASE_ID, petName, notes, view } = body;
 
     const z = getZone(zone);
     const animal = z?.animal ?? "pet";
@@ -94,6 +94,11 @@ export async function POST(req: NextRequest) {
       if (!src) {
         return NextResponse.json({ error: "Falta la foto (imageBase64/imageUrl) o referenceUrl" }, { status: 400 });
       }
+      const viewNote =
+        view === "side"
+          ? ` Show the figurine from the SIDE — a full profile view, camera rotated 90° so the ${animal}'s ` +
+            `full body length is clearly visible (not facing the camera).`
+          : "";
       prompt =
         `Look ONLY at the ${animal} in this photo and turn just that ${animal} into a cute, full-color ` +
         `collectible 3D printed figurine, keeping its exact breed, fur colors and markings. ` +
@@ -101,7 +106,8 @@ export async function POST(req: NextRequest) {
         `objects in the photo — the figurine must show ONLY the ${animal} itself, sculpted alone. ` +
         `If the fur is curly, matted or grows in thick corded locks (like a Puli, Komondor, or corded ` +
         `poodle-mix coat), sculpt those rope-like cords faithfully — do not smooth or simplify them into ` +
-        `plain fluffy fur. The figurine is ${pose.prompt}, ${basePhrase}.${baseRefNote}${notesNote} ${STUDIO}`;
+        `plain fluffy fur. The figurine is ${pose.prompt}, ${basePhrase}. The ${animal} must be perfectly ` +
+        `centered on the base, front-to-back and side-to-side.${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
     }
 
     const extraRefUrls = change === "name" ? [] : baseRefUrls;

@@ -159,13 +159,14 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
           ),
         ),
       );
-      const frontByCombo: Record<string, string> = {};
-      for (const [k, u] of baseResults) frontByCombo[k] = u;
-
+      // La vista lateral se genera DIRECTO desde la foto original (no encadenada
+      // sobre la frontal ya generada) — encadenar "coge esta figura y gírala"
+      // hacía que el modelo perdiera la postura (volvía a sentado). Generarla
+      // desde cero con la postura y la base ya en el mismo prompt es más fiable.
       const sideResults = await Promise.all(
         poses.flatMap((p) =>
           paidBases.map((b) =>
-            postGenerate({ referenceUrl: frontByCombo[key(p.id, b.id, "front")], change: "view", baseId: b.id }).then((url) => {
+            postGenerate({ imageBase64: dataUri, poseId: p.id, baseId: b.id, view: "side", notes: notes.trim() || undefined }).then((url) => {
               setDone((d) => d + 1);
               return [key(p.id, b.id, "side"), url] as const;
             }),
