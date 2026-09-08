@@ -59,16 +59,18 @@ export async function POST(req: NextRequest) {
           `For example, if the legs were tucked under the body before, they must now be repositioned ` +
           `to match this new pose exactly. ${STUDIO}`;
       } else if (change === "view") {
-        // Mantener figura, postura y base idénticas; cambiar SOLO el ángulo a perfil.
-        // Reforzamos la postura explícitamente porque el modelo tiende a "relajarla"
-        // de vuelta a sentado al rotar la cámara.
+        // No es "re-sculpt con la pose recordada" (el modelo reinterpreta y cambia
+        // identidad/pose) — es un objeto físico YA TERMINADO y la cámara orbita
+        // alrededor. Framing de "foto nueva del mismo objeto físico", no de "dibuja de nuevo".
         prompt =
-          `This is a full-color 3D printed figurine of a ${animal} on a display base, currently ${pose.prompt}. ` +
-          `Keep the ${animal} figurine and its base EXACTLY the same — identical sculpt, fur colors, ` +
-          `markings and base. The ${animal} MUST remain exactly ${pose.prompt} — do NOT change the pose ` +
-          `back to sitting or any other posture when rotating the camera.${baseRefNote} Change ONLY the ` +
-          `camera angle: show it from the SIDE, a full profile view, so the length of the ${animal} is ` +
-          `clearly visible. ${STUDIO}`;
+          `This is a photo of a single physical object: an already-finished, already-painted 3D printed ` +
+          `figurine of a ${animal} permanently glued to its display base, sitting on a photo studio turntable. ` +
+          `Nothing about the object itself is being redrawn, re-sculpted or re-imagined — the sculpt, the pose ` +
+          `(${pose.prompt}), the fur colors, the markings and the base are a fixed, rigid, already-cast piece ` +
+          `that cannot change shape. The ONLY thing that happened is the turntable was rotated 90°, so the ` +
+          `camera is now looking at the exact same rigid object from its SIDE, a full profile view, showing ` +
+          `the ${animal}'s full body length. Take a new studio photo of this same physical object from that ` +
+          `new camera position — same object, same pose, same base, different photo angle only.${baseRefNote} ${STUDIO}`;
       } else if (change === "name") {
         // Mantener figura y base idénticas; grabar el nombre en la placa (antes en blanco).
         const engraved = typeof petName === "string" && petName.trim() ? petName.trim().toUpperCase() : "";

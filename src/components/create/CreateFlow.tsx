@@ -161,14 +161,14 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
           ),
         ),
       );
-      // La vista lateral se genera DIRECTO desde la foto original (no encadenada
-      // sobre la frontal ya generada) — encadenar "coge esta figura y gírala"
-      // hacía que el modelo perdiera la postura (volvía a sentado). Generarla
-      // desde cero con la postura y la base ya en el mismo prompt es más fiable.
+      // La lateral se genera encadenada desde la frontal ya generada (mismo objeto
+      // físico, la cámara "orbita") — generarla independiente desde la foto original
+      // producía un perro visualmente distinto (cara, pelaje) al de la frontal.
+      const frontByCombo: Record<string, string> = Object.fromEntries(baseResults);
       const sideResults = await Promise.all(
         poses.flatMap((p) =>
           paidBases.map((b) =>
-            postGenerate({ imageBase64: dataUri, poseId: p.id, baseId: b.id, view: "side", notes: notes.trim() || undefined }).then((url) => {
+            postGenerate({ referenceUrl: frontByCombo[key(p.id, b.id)], change: "view", poseId: p.id, baseId: b.id }).then((url) => {
               setDone((d) => d + 1);
               return [key(p.id, b.id, "side"), url] as const;
             }),
