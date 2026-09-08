@@ -17,3 +17,12 @@
 .label:first-child{text-align:left}
 .label:last-child{text-align:right}
 .label.active,.label.done{color:var(--ink)}
+
+@media(max-width:640px){
+  .bar{padding:14px 16px 10px}
+  .track{height:4px; margin:0 8px}
+  .dot{width:12px; height:12px; border-width:2px}
+  .dot.active{box-shadow:0 0 0 4px var(--accent-soft)}
+  .dot.active::after{width:5px; height:5px}
+  .labels{display:none}
+}

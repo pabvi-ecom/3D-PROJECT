@@ -385,6 +385,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
                     className={`${styles.poseCard} ${poseId === p.id ? styles.poseCardActive : ""}`}
                     onClick={() => setPoseId(p.id)}
                   >
+                    {p.id === "sitting" && <span className={styles.popBadge}>86% pick this</span>}
                     {img && <img src={img} alt={p.label} />}
                     <span>{p.label}</span>
                   </button>
@@ -414,6 +415,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
               </button>
               {paidBases.map((b) => (
                 <button key={b.id} className={`${styles.baseBtn} ${baseId === b.id ? styles.baseBtnActive : ""}`} onClick={() => { setBaseId(b.id); setView("front"); }}>
+                  <span className={styles.popBadge}>94% pick this</span>
                   {b.label} <small>+{money(b.price)}</small>
                 </button>
               ))}
@@ -429,6 +431,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
                 <label className={styles.toggle}>
                   <input type="checkbox" checked={addName} onChange={(e) => setAddName(e.target.checked)} />
                   Engrave &quot;{petName.toUpperCase()}&quot; on the base (+{money(NAMEPLATE_PRICE)})
+                  <span className={styles.popBadgeInline}>99% pick this</span>
                 </label>
               </>
             )}

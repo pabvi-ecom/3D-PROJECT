@@ -77,12 +77,20 @@ export function MiniGame() {
     if (!ctx) return;
     let raf: number;
 
+    const bg = new Image();
+    bg.src = "/pet/waves-bg.jpg";
+
     function loop() {
       const s = stateRef.current;
       ctx!.clearRect(0, 0, W, H);
+      if (bg.complete) {
+        ctx!.globalAlpha = 0.3;
+        ctx!.drawImage(bg, 0, 0, W, H);
+        ctx!.globalAlpha = 1;
+      }
 
       // ground
-      ctx!.fillStyle = "#E8E8ED";
+      ctx!.fillStyle = "#B9C2CC";
       ctx!.fillRect(0, GROUND_Y + DOG_SIZE, W, 2);
 
       if (started && !s.dead) {
@@ -123,15 +131,25 @@ export function MiniGame() {
         }
       }
 
-      // dog
+      // dog — el emoji mira a la izquierda por defecto, lo espejamos para que
+      // parezca que corre HACIA los obstáculos (a la derecha).
+      ctx!.save();
       ctx!.font = `${DOG_SIZE}px serif`;
       ctx!.textBaseline = "top";
-      ctx!.fillText("🐕", DOG_X - 2, s.dogY - 2);
+      ctx!.translate(DOG_X + DOG_SIZE - 2, s.dogY - 2);
+      ctx!.scale(-1, 1);
+      ctx!.fillText("🐕", 0, 0);
+      ctx!.restore();
 
       // obstacles
-      ctx!.fillStyle = "#0071E3";
+      ctx!.fillStyle = "#FF7A45";
       s.obstacles.forEach((o) => {
-        ctx!.fillRect(o.x, GROUND_Y - o.h + DOG_SIZE, o.w, o.h);
+        const r = 4;
+        const x = o.x;
+        const y = GROUND_Y - o.h + DOG_SIZE;
+        ctx!.beginPath();
+        ctx!.roundRect(x, y, o.w, o.h, r);
+        ctx!.fill();
       });
 
       raf = requestAnimationFrame(loop);

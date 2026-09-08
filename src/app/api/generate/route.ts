@@ -49,10 +49,15 @@ export async function POST(req: NextRequest) {
       src = referenceUrl;
       if (change === "pose") {
         // Mantener el perro idéntico, cambiar SOLO la postura (sin base, en la estantería).
+        // Muy explícito porque el modelo tiende a ignorar el cambio de postura y devolver
+        // la misma pose de la imagen de referencia.
         prompt =
-          `This is a full-color 3D printed figurine of a ${animal}. ` +
-          `Keep the ${animal} figurine EXACTLY the same — identical sculpt, proportions, ` +
-          `fur colors and markings. Change ONLY the pose: the ${animal} is now ${pose.prompt}. ${STUDIO}`;
+          `This is a full-color 3D printed figurine of a ${animal}, currently sculpted in one pose. ` +
+          `You MUST re-sculpt its body into a DIFFERENT pose — do not leave the pose unchanged. ` +
+          `Keep the ${animal}'s identity EXACTLY the same — same breed, proportions, fur colors and ` +
+          `markings — but the body posture has to visibly change to: ${pose.prompt}. ` +
+          `For example, if the legs were tucked under the body before, they must now be repositioned ` +
+          `to match this new pose exactly. ${STUDIO}`;
       } else if (change === "view") {
         // Mantener figura, postura y base idénticas; cambiar SOLO el ángulo a perfil.
         prompt =
