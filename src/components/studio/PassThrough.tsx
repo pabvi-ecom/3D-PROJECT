@@ -4,13 +4,14 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import styles from "./PassThrough.module.css";
 
-// Tiempos medidos a mano en los clips fuente:
-// - transfer-leave.mp4: el perro sale de plano hacia la derecha en ~4.3s (dura 5.04s)
-// - transfer-arrive.mp4: recortado (ffmpeg -ss 1.0) para que empiece YA en el
-//   instante en que el perro entra — así no hay "aire muerto" al principio.
-// delay = cuánto esperar antes de arrancar el segundo vídeo para que "entre" justo cuando el primero "sale"
-const LEAVE_EXIT_AT = 4.3;
-const DELAY_MS = LEAVE_EXIT_AT * 1000;
+// Tiempos medidos a mano en los clips fuente (ambos duran 5.04s, sin recortar):
+// - transfer-leave.mp4: el perro EMPIEZA a salir de plano (parte del cuerpo ya
+//   fuera) sobre los 3.7s, y ha desaparecido del todo hacia los 4.1s.
+// - transfer-arrive.mp4: arranca desde el frame 0 real (base vacía, perro aún
+//   no ha entrado) — si arrancara más tarde se verían dos perros a la vez.
+// delay = cuándo arrancar el segundo vídeo: justo cuando el primero EMPIEZA a
+// salir (no cuando ya ha salido del todo), para que se sientan como el mismo perro.
+const DELAY_MS = 3700;
 
 export function PassThrough({ onCta }: { onCta: () => void }) {
   const sectionRef = useRef(null);
