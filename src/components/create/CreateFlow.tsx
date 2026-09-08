@@ -62,7 +62,9 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const currentView = wantsBase ? view : "front";
   const comboKey = key(poseId, baseId, currentView);
   const plainFigure = figures[comboKey] ?? null;
-  const showEngraved = wantsBase && addName;
+  // El grabado del nombre solo se muestra en vista frontal — en lateral la IA
+  // no coloca el texto en el ángulo correcto de forma fiable (queda a medias).
+  const showEngraved = wantsBase && addName && currentView === "front";
   const figure = showEngraved ? (namedFigures[comboKey] ?? null) : plainFigure;
   const total = FIGURE_PRICE + pose.price + base.price + (wantsBase && addName ? NAMEPLATE_PRICE : 0);
   const money = (n: number) => `${brand.currencySymbol}${n.toFixed(2)}`;

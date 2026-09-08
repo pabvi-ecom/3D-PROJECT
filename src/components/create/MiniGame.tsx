@@ -5,22 +5,25 @@ import styles from "./MiniGame.module.css";
 
 const W = 320;
 const H = 220;
-const GROUND_Y = H - 30;
-const GRAVITY = 0.9;
-const JUMP_V = -13;
-const DOG_X = 44;
-const DOG_SIZE = 26;
+const GROUND_Y = H - 26;
+const GRAVITY = 0.85;
+const JUMP_V = -13.5;
+const DOG_X = 40;
+const DOG_W = 30;
+const DOG_H = 46;
 
-type Obstacle = { x: number; w: number; h: number };
+type ObstacleKind = "bush" | "tree";
+type Obstacle = { x: number; w: number; h: number; kind: ObstacleKind };
 
 export function MiniGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const spriteRef = useRef<HTMLImageElement | null>(null);
   const stateRef = useRef({
-    dogY: GROUND_Y - DOG_SIZE,
+    dogY: GROUND_Y - DOG_H,
     vy: 0,
     jumping: false,
     obstacles: [] as Obstacle[],
-    speed: 4,
+    speed: 3.2,
     frame: 0,
     score: 0,
     dead: false,
@@ -45,11 +48,11 @@ export function MiniGame() {
 
   function restart() {
     const s = stateRef.current;
-    s.dogY = GROUND_Y - DOG_SIZE;
+    s.dogY = GROUND_Y - DOG_H;
     s.vy = 0;
     s.jumping = false;
     s.obstacles = [];
-    s.speed = 4;
+    s.speed = 3.2;
     s.frame = 0;
     s.score = 0;
     s.dead = false;
@@ -71,53 +74,87 @@ export function MiniGame() {
   }, []);
 
   useEffect(() => {
+    const img = new Image();
+    img.src = "/game/dog-sprite.png";
+    spriteRef.current = img;
+  }, []);
+
+  useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    ctx.scale(dpr, dpr);
+
     let raf: number;
 
-    const bg = new Image();
-    bg.src = "/pet/waves-bg.jpg";
+    function drawBush(x: number, groundY: number, w: number, h: number) {
+      ctx!.fillStyle = "#4C9A5B";
+      const r = h * 0.55;
+      ctx!.beginPath();
+      ctx!.arc(x + w * 0.3, groundY - r * 0.8, r * 0.7, 0, Math.PI * 2);
+      ctx!.arc(x + w * 0.65, groundY - r, r * 0.85, 0, Math.PI * 2);
+      ctx!.arc(x + w * 0.9, groundY - r * 0.75, r * 0.6, 0, Math.PI * 2);
+      ctx!.fill();
+    }
+
+    function drawTree(x: number, groundY: number, w: number, h: number) {
+      const trunkW = w * 0.28;
+      ctx!.fillStyle = "#8A5A34";
+      ctx!.fillRect(x + w / 2 - trunkW / 2, groundY - h * 0.4, trunkW, h * 0.4);
+      ctx!.fillStyle = "#3E8C4F";
+      ctx!.beginPath();
+      ctx!.arc(x + w / 2, groundY - h * 0.55, w * 0.55, 0, Math.PI * 2);
+      ctx!.fill();
+    }
 
     function loop() {
       const s = stateRef.current;
       ctx!.clearRect(0, 0, W, H);
-      if (bg.complete) {
-        ctx!.globalAlpha = 0.3;
-        ctx!.drawImage(bg, 0, 0, W, H);
-        ctx!.globalAlpha = 1;
-      }
 
-      // ground
-      ctx!.fillStyle = "#B9C2CC";
-      ctx!.fillRect(0, GROUND_Y + DOG_SIZE, W, 2);
+      // cielo
+      ctx!.fillStyle = "#EAF3FE";
+      ctx!.fillRect(0, 0, W, GROUND_Y);
+
+      // césped
+      ctx!.fillStyle = "#5FAE6A";
+      ctx!.fillRect(0, GROUND_Y, W, H - GROUND_Y);
+      ctx!.fillStyle = "#4C9A5B";
+      ctx!.fillRect(0, GROUND_Y, W, 4);
 
       if (started && !s.dead) {
         s.frame++;
         s.vy += GRAVITY;
         s.dogY += s.vy;
-        if (s.dogY > GROUND_Y - DOG_SIZE) {
-          s.dogY = GROUND_Y - DOG_SIZE;
+        if (s.dogY > GROUND_Y - DOG_H) {
+          s.dogY = GROUND_Y - DOG_H;
           s.vy = 0;
           s.jumping = false;
         }
 
-        if (s.frame % Math.max(50 - Math.floor(s.speed * 2), 28) === 0) {
-          const h = 20 + Math.random() * 18;
-          s.obstacles.push({ x: W, w: 14 + Math.random() * 10, h });
+        const spawnEvery = Math.max(72, 100 - s.speed * 6);
+        if (s.frame % Math.round(spawnEvery) === 0) {
+          const kind: ObstacleKind = Math.random() < 0.6 ? "bush" : "tree";
+          const h = kind === "bush" ? 16 + Math.random() * 8 : 30 + Math.random() * 14;
+          const w = kind === "bush" ? 26 + Math.random() * 10 : 20 + Math.random() * 8;
+          s.obstacles.push({ x: W, w, h, kind });
         }
 
         s.obstacles.forEach((o) => (o.x -= s.speed));
         s.obstacles = s.obstacles.filter((o) => o.x + o.w > 0);
 
-        s.speed = Math.min(9, 4 + s.score / 12);
+        s.speed = Math.min(6.5, 3.2 + s.score / 22);
         s.score += 0.06;
         setScore(Math.floor(s.score));
 
-        const dogBox = { x: DOG_X, y: s.dogY, w: DOG_SIZE, h: DOG_SIZE };
+        const pad = 6;
+        const dogBox = { x: DOG_X + pad, y: s.dogY + pad, w: DOG_W - pad * 2, h: DOG_H - pad };
         for (const o of s.obstacles) {
-          const oBox = { x: o.x, y: GROUND_Y - o.h + DOG_SIZE, w: o.w, h: o.h };
+          const oBox = { x: o.x, y: GROUND_Y - o.h, w: o.w, h: o.h };
           if (
             dogBox.x < oBox.x + oBox.w &&
             dogBox.x + dogBox.w > oBox.x &&
@@ -131,26 +168,17 @@ export function MiniGame() {
         }
       }
 
-      // dog — el emoji mira a la izquierda por defecto, lo espejamos para que
-      // parezca que corre HACIA los obstáculos (a la derecha).
-      ctx!.save();
-      ctx!.font = `${DOG_SIZE}px serif`;
-      ctx!.textBaseline = "top";
-      ctx!.translate(DOG_X + DOG_SIZE - 2, s.dogY - 2);
-      ctx!.scale(-1, 1);
-      ctx!.fillText("🐕", 0, 0);
-      ctx!.restore();
-
-      // obstacles
-      ctx!.fillStyle = "#FF7A45";
+      // obstáculos
       s.obstacles.forEach((o) => {
-        const r = 4;
-        const x = o.x;
-        const y = GROUND_Y - o.h + DOG_SIZE;
-        ctx!.beginPath();
-        ctx!.roundRect(x, y, o.w, o.h, r);
-        ctx!.fill();
+        if (o.kind === "bush") drawBush(o.x, GROUND_Y, o.w, o.h);
+        else drawTree(o.x, GROUND_Y, o.w, o.h);
       });
+
+      // perrito (figura real, sin fondo)
+      const sprite = spriteRef.current;
+      if (sprite && sprite.complete && sprite.naturalWidth > 0) {
+        ctx!.drawImage(sprite, DOG_X, s.dogY + 6, DOG_W, DOG_H);
+      }
 
       raf = requestAnimationFrame(loop);
     }
@@ -165,7 +193,7 @@ export function MiniGame() {
         <span>{score}</span>
       </div>
       <div className={styles.stage} onClick={jump}>
-        <canvas ref={canvasRef} width={W} height={H} className={styles.canvas} />
+        <canvas ref={canvasRef} style={{ width: W, height: H }} className={styles.canvas} />
         {!started && !dead && (
           <div className={styles.overlay}>
             <p>Bored while we work? 🐾</p>
