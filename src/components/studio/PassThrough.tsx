@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import styles from "./PassThrough.module.css";
 
@@ -19,6 +19,8 @@ export function PassThrough({ onCta }: { onCta: () => void }) {
   const leaveRef = useRef<HTMLVideoElement>(null);
   const arriveRef = useRef<HTMLVideoElement>(null);
   const startedRef = useRef(false);
+  const [leavePlaying, setLeavePlaying] = useState(false);
+  const [arrivePlaying, setArrivePlaying] = useState(false);
 
   useEffect(() => {
     if (!inView || startedRef.current) return;
@@ -58,7 +60,14 @@ export function PassThrough({ onCta }: { onCta: () => void }) {
               muted
               playsInline
               preload="auto"
+              onPlaying={() => setLeavePlaying(true)}
             />
+            {/* Overlay explícito sobre el poster nativo — en algunos navegadores el
+                poster tarda en pintarse mientras el vídeo precarga y se ve negro un
+                instante. Esta imagen se queda encima hasta que el vídeo REALMENTE
+                empieza a reproducir (evento "playing", no "loadeddata": ese evento
+                a veces no llega nunca en móvil y dejaba el vídeo negro para siempre). */}
+            {!leavePlaying && <img className={styles.videoPoster} src="/videos/transfer-leave-poster.jpg" alt="" />}
           </div>
         </motion.div>
 
@@ -97,7 +106,9 @@ export function PassThrough({ onCta }: { onCta: () => void }) {
               muted
               playsInline
               preload="auto"
+              onPlaying={() => setArrivePlaying(true)}
             />
+            {!arrivePlaying && <img className={styles.videoPoster} src="/videos/transfer-arrive-poster.jpg" alt="" />}
           </div>
         </motion.div>
       </div>

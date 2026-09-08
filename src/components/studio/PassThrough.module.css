@@ -13,9 +13,11 @@
 /* border-radius va en el contenedor, no en <video> — en iOS Safari un <video>
    con su propio border-radius a veces pinta una franja recta (normalmente
    arriba) porque el compositor de vídeo por hardware no respeta el recorte. */
-.videoFrame{width:100%; max-width:320px; aspect-ratio:9/16; border-radius:22px; overflow:hidden; box-shadow:var(--shadow); background:#000}
+.videoFrame{position:relative; width:100%; max-width:320px; aspect-ratio:9/16; border-radius:22px; overflow:hidden; box-shadow:var(--shadow); background:#000}
 
 .video{width:100%; height:100%; object-fit:cover; display:block}
+
+.videoPoster{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; pointer-events:none}
 
 .centerCol{text-align:center; padding:18px 16px; background:rgba(255,255,255,.92); backdrop-filter:blur(2px); border-radius:20px}
 .centerCol h2{font-size:clamp(1.2rem,2.2vw,1.55rem); line-height:1.25; margin:0 0 10px}
