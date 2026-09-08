@@ -1,28 +1,15 @@
-.bar{width:100%; max-width:520px; margin:0 auto; padding:20px 20px 14px}
+.bar{width:100%; max-width:640px; margin:0 auto; padding:22px 28px 16px}
 
-.track{position:relative; height:10px; margin:0 12px}
+.track{position:relative; height:2px; margin:0 18px}
 
-.trackBg{position:absolute; inset:0; background:var(--surface-2); border:1.5px solid var(--line); border-radius:99px}
+.trackBg{position:absolute; inset:0; background:var(--line); border-radius:99px; opacity:.7}
 .trackFill{position:absolute; top:0; left:0; height:100%; background:linear-gradient(90deg, var(--accent-deep), var(--accent)); border-radius:99px}
 
 .node{position:absolute; top:50%; transform:translate(-50%,-50%)}
 
-.dot{width:22px; height:22px; border-radius:50%; background:var(--surface); border:3px solid var(--line); display:flex; align-items:center; justify-content:center; transition:border-color .25s ease, background .25s ease, box-shadow .25s ease}
-.dot.done{border-color:var(--accent); background:var(--accent)}
-.dot.active{border-color:var(--accent); background:var(--surface); box-shadow:0 0 0 5px var(--accent-soft)}
-.dot.active::after{content:""; width:9px; height:9px; border-radius:50%; background:var(--accent)}
+.dot{width:30px; height:30px; border-radius:50%; background:var(--surface); border:1.5px solid var(--line); display:flex; align-items:center; justify-content:center; transition:border-color .25s ease, background .25s ease, box-shadow .25s ease; opacity:.55}
+.dot.todo{opacity:.4}
+.dot.done{border-color:var(--accent); background:var(--accent-soft); opacity:1}
+.dot.active{border-color:var(--accent); background:var(--surface); box-shadow:0 0 0 5px var(--accent-soft); opacity:1}
 
-.labels{display:flex; justify-content:space-between; margin-top:12px; padding:0 4px}
-.label{flex:1; text-align:center; font-size:.78rem; font-weight:700; color:var(--ink-faint); transition:color .25s ease}
-.label:first-child{text-align:left}
-.label:last-child{text-align:right}
-.label.active,.label.done{color:var(--ink)}
-
-@media(max-width:640px){
-  .bar{padding:14px 16px 10px}
-  .track{height:4px; margin:0 8px}
-  .dot{width:12px; height:12px; border-width:2px}
-  .dot.active{box-shadow:0 0 0 4px var(--accent-soft)}
-  .dot.active::after{width:5px; height:5px}
-  .labels{display:none}
-}
+.icon{font-size:.92rem; line-height:1}

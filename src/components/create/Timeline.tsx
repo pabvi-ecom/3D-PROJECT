@@ -5,13 +5,13 @@ import styles from "./Timeline.module.css";
 
 export type StepId = "email" | "name" | "photo" | "pose" | "base" | "ready";
 
-const STEPS: { id: StepId; label: string }[] = [
-  { id: "email", label: "Email" },
-  { id: "name", label: "Name" },
-  { id: "photo", label: "Photo" },
-  { id: "pose", label: "Pose" },
-  { id: "base", label: "Base" },
-  { id: "ready", label: "Ready" },
+const STEPS: { id: StepId; icon: string }[] = [
+  { id: "email", icon: "✉️" },
+  { id: "name", icon: "✏️" },
+  { id: "photo", icon: "📸" },
+  { id: "pose", icon: "🐾" },
+  { id: "base", icon: "🏆" },
+  { id: "ready", icon: "🎁" },
 ];
 
 export function Timeline({ current }: { current: StepId }) {
@@ -36,25 +36,12 @@ export function Timeline({ current }: { current: StepId }) {
             <div key={s.id} className={styles.node} style={{ left: `${pos}%` }}>
               <motion.div
                 className={`${styles.dot} ${styles[state]}`}
-                animate={state === "active" ? { scale: [1, 1.18, 1] } : { scale: 1 }}
+                animate={state === "active" ? { scale: [1, 1.15, 1] } : { scale: 1 }}
                 transition={state === "active" ? { duration: 1.6, repeat: Infinity, ease: "easeInOut" } : {}}
               >
-                {state === "done" && (
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
-                )}
+                <span className={styles.icon}>{s.icon}</span>
               </motion.div>
             </div>
-          );
-        })}
-      </div>
-
-      <div className={styles.labels}>
-        {STEPS.map((s, i) => {
-          const state = i < currentIndex ? "done" : i === currentIndex ? "active" : "todo";
-          return (
-            <span key={s.id} className={`${styles.label} ${styles[state]}`}>
-              {s.label}
-            </span>
           );
         })}
       </div>

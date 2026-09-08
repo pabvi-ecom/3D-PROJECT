@@ -256,6 +256,18 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setStep(wantsBase && !addName ? "base" : "ready");
   }
 
+  const STEP_ORDER: StepId[] = ["email", "name", "photo", "pose", "base", "ready"];
+  function goBack() {
+    const idx = STEP_ORDER.indexOf(step);
+    if (idx > 0) setStep(STEP_ORDER[idx - 1]);
+  }
+
+  const BackBtn = (
+    <button type="button" className={styles.stepBack} onClick={goBack} aria-label="Go back">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5" /><path d="m11 18-6-6 6-6" /></svg>
+    </button>
+  );
+
   const timelineStep: StepId = generating ? "photo" : step;
   const rv = REVIEWS[reviewIdx];
 
@@ -294,15 +306,15 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
         {step === "name" && (
           <div className={styles.card}>
-            <span className={styles.stepTag}>Step 2 of 6</span>
-            <h1>What&apos;s your {animal}&apos;s name?</h1>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 2 of 6</span></div>
+            <h1>What&apos;s your pet&apos;s name?</h1>
             <p className={styles.sub}>We&apos;ll use it to personalize your preview and engrave it if you add a display base.</p>
             <form onSubmit={confirmName} className={styles.form}>
               <input
                 autoFocus
                 className={styles.nameInput}
                 maxLength={20}
-                placeholder={`Your ${animal}'s name`}
+                placeholder="Your pet's name"
                 value={nameDraft}
                 onChange={(e) => setNameDraft(e.target.value)}
               />
@@ -316,7 +328,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
         {step === "photo" && !generating && (
           <div className={styles.card}>
-            <span className={styles.stepTag}>Step 3 of 6</span>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 3 of 6</span></div>
             <h1>Upload a photo of {petName}</h1>
             <p className={styles.sub}>Any normal snapshot works best when it&apos;s clear and front-facing.</p>
             {photo ? (
@@ -388,7 +400,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
         {step === "pose" && (
           <div className={styles.card}>
-            <span className={styles.stepTag}>Step 4 of 6</span>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 4 of 6</span></div>
             <h1>Pick a pose</h1>
             <p className={styles.sub}>Both are ready — pick whichever looks most like {petName}.</p>
             <div className={styles.poseGrid}>
@@ -416,7 +428,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
         {step === "base" && (
           <div className={styles.card}>
-            <span className={styles.stepTag}>Step 5 of 6</span>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 5 of 6</span></div>
             <h1>Add a display base?</h1>
             <p className={styles.sub}>A base with {petName}&apos;s name engraved makes it shelf-ready.</p>
 
