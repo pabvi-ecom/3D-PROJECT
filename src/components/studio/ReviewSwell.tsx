@@ -8,7 +8,7 @@ type Review = { src: string; name: string; breed: string; text: string };
 
 const SWIPE_THRESHOLD = 50;
 const RUN_DELAY = 130;
-const DECEL_DELAYS = [130, 160, 200, 260, 330, 420];
+const DECEL_DELAYS = [130, 155, 185, 220, 270, 330, 400, 480];
 
 export function ReviewSwell({ reviews }: { reviews: Review[] }) {
   const [index, setIndex] = useState(0);
@@ -58,7 +58,7 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
   useEffect(() => {
     function updateGap() {
       const w = window.innerWidth;
-      setGap(w <= 480 ? 138 : w <= 820 ? 172 : 275);
+      setGap(w <= 480 ? 125 : w <= 820 ? 159 : 275);
     }
     updateGap();
     window.addEventListener("resize", updateGap);
@@ -114,7 +114,7 @@ export function ReviewSwell({ reviews }: { reviews: Review[] }) {
           const transition = wrapped
             ? { duration: 0 }
             : dragging.current || stoppedRef.current
-            ? { type: "spring" as const, stiffness: 170, damping: 24 }
+            ? { type: "spring" as const, stiffness: 120, damping: 26, mass: 0.9 }
             : { duration: Math.max(0.1, (stepMs / 1000) * 0.98), ease: "linear" as const };
 
           return (

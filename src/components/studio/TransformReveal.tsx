@@ -18,8 +18,19 @@ export function TransformReveal({ before, after, animal, onCta }: { before: stri
   const inView = useInView(ref, { once: true, amount: 0.5 });
   const [visible, setVisible] = useState(false);
   const [open, setOpen] = useState(false);
+  const [xOffset, setXOffset] = useState(140);
 
   if (inView && !visible) setVisible(true);
+
+  useEffect(() => {
+    function update() {
+      const w = window.innerWidth;
+      setXOffset(w <= 480 ? 78 : w <= 860 ? 100 : 140);
+    }
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
 
   useEffect(() => {
     if (!visible) return;
@@ -67,7 +78,7 @@ export function TransformReveal({ before, after, animal, onCta }: { before: stri
           <motion.figure
             className={`${styles.photo} ${styles.photoBefore}`}
             initial={{ x: 0, y: 30, scale: 0.25, opacity: 0, rotate: 0 }}
-            animate={open ? { x: -140, y: -20, scale: 1, opacity: 1, rotate: -7 } : {}}
+            animate={open ? { x: -xOffset, y: -20, scale: 1, opacity: 1, rotate: -7 } : {}}
             transition={{ type: "spring", stiffness: 190, damping: 18, delay: 0.2 }}
           >
             <img src={before} alt={`${animal}, before`} />
@@ -86,7 +97,7 @@ export function TransformReveal({ before, after, animal, onCta }: { before: stri
           <motion.figure
             className={`${styles.photo} ${styles.photoAfter}`}
             initial={{ x: 0, y: 30, scale: 0.25, opacity: 0, rotate: 0 }}
-            animate={open ? { x: 140, y: -34, scale: 1, opacity: 1, rotate: 7 } : {}}
+            animate={open ? { x: xOffset, y: -34, scale: 1, opacity: 1, rotate: 7 } : {}}
             transition={{ type: "spring", stiffness: 190, damping: 18, delay: 0.32 }}
           >
             <img src={after} alt={`${animal}, figure`} />
