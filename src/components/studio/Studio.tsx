@@ -69,7 +69,7 @@ export default function Studio({ zone }: { zone: Zone }) {
 
         <div className={styles.heroRightCol}>
           <div className={styles.heroRight}>
-            <h1 className={styles.heroH1}>Your Pet<br />Keep <em>Forever</em></h1>
+            <h1 className={styles.heroH1}>Your Pet<br /><span className={styles.heroH1Line}>Keep <em>Forever</em></span></h1>
             <span className={`${styles.chip} ${styles.chipAccent}`}>Free preview in seconds<span className={styles.chipDesktopOnly}> — no card needed.</span></span>
           </div>
 
