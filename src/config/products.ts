@@ -116,4 +116,4 @@ export const bases: Base[] = [
 export const paidBases = bases.filter((b) => b.id !== NO_BASE_ID);
 
 /** Coste de añadir el nombre grabado en la placa (requiere base). */
-export const NAMEPLATE_PRICE = 9.99;
+export const NAMEPLATE_PRICE = 4.99;

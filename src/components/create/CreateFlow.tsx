@@ -48,6 +48,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const [baseId, setBaseId] = useState(NO_BASE_ID);
   const [view, setView] = useState<"front" | "side">("front");
   const [addName, setAddName] = useState(false);
+  const [giftDuplicate, setGiftDuplicate] = useState(false);
 
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(0);
@@ -68,6 +69,8 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const showEngraved = wantsBase && addName && currentView === "front";
   const figure = showEngraved ? (namedFigures[comboKey] ?? null) : plainFigure;
   const total = FIGURE_PRICE + pose.price + base.price + (wantsBase && addName ? NAMEPLATE_PRICE : 0);
+  const giftPrice = total * 0.5;
+  const grandTotal = total + (giftDuplicate ? giftPrice : 0);
   const money = (n: number) => `${brand.currencySymbol}${n.toFixed(2)}`;
 
   const PHRASES = [
@@ -294,10 +297,10 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   }
 
   function goBase() {
-    setStep(wantsBase && !addName ? "base" : "ready");
+    setStep(wantsBase && !addName ? "base" : "upsell");
   }
 
-  const STEP_ORDER: StepId[] = ["email", "name", "photo", "pose", "base", "ready"];
+  const STEP_ORDER: StepId[] = ["email", "name", "photo", "pose", "base", "upsell", "ready"];
   function goBack() {
     const idx = STEP_ORDER.indexOf(step);
     if (idx > 0) setStep(STEP_ORDER[idx - 1]);
@@ -523,6 +526,40 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
           </div>
         )}
 
+        {step === "upsell" && (
+          <div className={styles.card}>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>One more thing</span></div>
+            <h1>🎁 Know someone who&apos;d love one too?</h1>
+            <p className={styles.sub}>
+              {petName} probably isn&apos;t just your {animal} — since we already have everything set up,
+              get a second copy of this exact figure for a friend or family member at half price.
+            </p>
+            <div className={styles.giftPitch}>
+              <span>Second figure, same design</span>
+              <b>{money(giftPrice)} <s>{money(total)}</s></b>
+            </div>
+            <button
+              className={styles.cta}
+              onClick={() => {
+                setGiftDuplicate(true);
+                setStep("ready");
+              }}
+            >
+              Yes, add a second one — {money(giftPrice)}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
+            </button>
+            <button
+              className={styles.linkBtn}
+              onClick={() => {
+                setGiftDuplicate(false);
+                setStep("ready");
+              }}
+            >
+              No thanks, just the one for now
+            </button>
+          </div>
+        )}
+
         {step === "ready" && (
           <div className={styles.card}>
             <span className={styles.stepTag}>You&apos;re all set</span>
@@ -530,12 +567,19 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
             <div className={styles.stage}>
               {figure && <img src={figure} alt={`${animal} figure`} />}
             </div>
+
+            <label className={styles.toggle}>
+              <input type="checkbox" checked={giftDuplicate} onChange={(e) => setGiftDuplicate(e.target.checked)} />
+              🎁 Add a second one to gift — 50% off (+{money(giftPrice)})
+            </label>
+
             <div className={styles.summary}>
               <div className={styles.row}><span>Figure · full-color resin</span><b>{money(FIGURE_PRICE)}</b></div>
               <div className={styles.row}><span>Pose — {pose.label}</span><span>{pose.price ? `+${money(pose.price)}` : "Free"}</span></div>
               <div className={styles.row}><span>Base — {base.label}</span><span>{base.price ? `+${money(base.price)}` : "—"}</span></div>
               {wantsBase && addName && <div className={styles.row}><span>Nameplate — &ldquo;{petName.toUpperCase()}&rdquo;</span><span>+{money(NAMEPLATE_PRICE)}</span></div>}
-              <div className={styles.tot}><span>Total</span><b>{money(total)}</b></div>
+              {giftDuplicate && <div className={styles.row}><span>Second figure to gift (50% off)</span><span>+{money(giftPrice)}</span></div>}
+              <div className={styles.tot}><span>Total</span><b>{money(grandTotal)}</b></div>
               <button className={styles.buy} disabled>Checkout — coming soon</button>
             </div>
             <button className={styles.linkBtn} onClick={() => setStep("base")}>← Back to base options</button>
