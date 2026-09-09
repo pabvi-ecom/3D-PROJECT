@@ -328,6 +328,10 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   }
 
   function goBase() {
+    setStep("reveal");
+  }
+
+  function confirmAddToCart() {
     addCurrentToCart();
     setStep("upsell");
   }
@@ -355,7 +359,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setStep("name");
   }
 
-  const STEP_ORDER: StepId[] = ["email", "name", "photo", "pose", "base", "upsell", "ready"];
+  const STEP_ORDER: StepId[] = ["email", "name", "photo", "pose", "base", "reveal", "upsell", "ready"];
   function goBack() {
     // Si retrocede desde "upsell", deshace el artículo que se acaba de meter
     // en el carrito al pulsar Continue en "base" — si no, al volver a darle
@@ -372,7 +376,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   );
 
   useEffect(() => {
-    if (step !== "ready") return;
+    if (step !== "reveal") return;
     const colors = ["#0071E3", "#F4B400", "#34A853"];
     confetti({ particleCount: 90, spread: 75, startVelocity: 42, origin: { x: 0.5, y: 0.35 }, colors });
     const t1 = setTimeout(() => confetti({ particleCount: 50, angle: 60, spread: 65, startVelocity: 38, origin: { x: 0, y: 0.4 }, colors }), 150);
@@ -383,7 +387,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     };
   }, [step]);
 
-  const timelineStep: StepId = generating ? "photo" : step === "upsell" ? "base" : step;
+  const timelineStep: StepId = generating ? "photo" : step === "upsell" || step === "reveal" ? "base" : step;
   const rv = REVIEWS[reviewIdx];
 
   return (
@@ -581,6 +585,21 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
             <button className={styles.cta} onClick={goBase} disabled={nameLoading}>
               {nameLoading ? "Engraving…" : "Continue"}
               {!nameLoading && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>}
+            </button>
+          </div>
+        )}
+
+        {step === "reveal" && (
+          <div className={styles.card}>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Figure 1 of 1</span></div>
+            <h1>🎉 You&apos;ve got {petName}&apos;s figure!</h1>
+            <p className={styles.sub}>Here&apos;s your finished {animal}, ready to add to your cart.</p>
+            <div className={styles.stage}>
+              {figure && <img src={figure} alt={`${animal} figure`} />}
+            </div>
+            <button className={styles.cta} onClick={confirmAddToCart}>
+              Add to cart — {money(total)}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
             </button>
           </div>
         )}
