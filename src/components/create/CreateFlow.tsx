@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import confetti from "canvas-confetti";
 import styles from "./CreateFlow.module.css";
 import { brand } from "@/config/brand";
 import { poses, paidBases, bases, NO_BASE_ID, NAMEPLATE_PRICE } from "@/config/products";
@@ -308,6 +309,18 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     </button>
   );
 
+  useEffect(() => {
+    if (step !== "ready") return;
+    const colors = ["#0071E3", "#F4B400", "#34A853"];
+    confetti({ particleCount: 90, spread: 75, startVelocity: 42, origin: { x: 0.5, y: 0.35 }, colors });
+    const t1 = setTimeout(() => confetti({ particleCount: 50, angle: 60, spread: 65, startVelocity: 38, origin: { x: 0, y: 0.4 }, colors }), 150);
+    const t2 = setTimeout(() => confetti({ particleCount: 50, angle: 120, spread: 65, startVelocity: 38, origin: { x: 1, y: 0.4 }, colors }), 150);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [step]);
+
   const timelineStep: StepId = generating ? "photo" : step;
   const rv = REVIEWS[reviewIdx];
 
@@ -513,7 +526,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         {step === "ready" && (
           <div className={styles.card}>
             <span className={styles.stepTag}>You&apos;re all set</span>
-            <h1>🎁 {petName}&apos;s figure is ready</h1>
+            <h1 className={styles.readyH1}>🎁 {petName}&apos;s figure is ready</h1>
             <div className={styles.stage}>
               {figure && <img src={figure} alt={`${animal} figure`} />}
             </div>
