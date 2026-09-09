@@ -34,8 +34,21 @@ type CartItem = {
   baseLabel: string;
   hasNameplate: boolean;
   unitPrice: number;
-  discountPct: number; // 0 = precio completo, .35 = mascota nueva, .5 = gemela
+  firstUnitDiscountPct: number; // 0 = primera figura del pedido, .35 = mascota nueva añadida después
+  qty: number; // unidad 1: firstUnitDiscountPct · unidad 2: -50% · unidad 3+: precio completo
 };
+
+// Precio de la unidad N (1-based) de un artículo del carrito.
+function unitPriceAt(it: CartItem, n: number): number {
+  if (n === 1) return it.unitPrice * (1 - it.firstUnitDiscountPct);
+  if (n === 2) return it.unitPrice * 0.5;
+  return it.unitPrice;
+}
+function itemTotal(it: CartItem): number {
+  let sum = 0;
+  for (let i = 1; i <= it.qty; i++) sum += unitPriceAt(it, i);
+  return sum;
+}
 
 export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: string }) {
   const router = useRouter();
@@ -83,10 +96,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const figure = showEngraved ? (namedFigures[comboKey] ?? null) : plainFigure;
   const total = FIGURE_PRICE + pose.price + base.price + (wantsBase && addName ? NAMEPLATE_PRICE : 0);
   const money = (n: number) => `${brand.currencySymbol}${n.toFixed(2)}`;
-  const itemFinalPrice = (it: CartItem) => it.unitPrice * (1 - it.discountPct);
-  const cartTotal = cart.reduce((sum, it) => sum + itemFinalPrice(it), 0);
-  const lastItem = cart[cart.length - 1] as CartItem | undefined;
-  const twinPrice = lastItem ? lastItem.unitPrice * 0.5 : 0;
+  const cartTotal = cart.reduce((sum, it) => sum + itemTotal(it), 0);
 
   // Progreso hacia el envío gratis — cuenta lo que ya hay en el carrito MÁS
   // la figura que está a punto de añadirse (aún no está en `cart` en "reveal").
@@ -317,18 +327,11 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setStep("base");
   }
 
-  // Mete la figura recién configurada en el carrito. La primera figura del
-  // pedido siempre va a precio completo; cualquier mascota NUEVA añadida
-  // después (a través de todo el asistente) lleva el descuento de -35%.
-  function addCurrentToCart() {
-    setCart((c) => [...c, buildCurrentItem(cart.length === 0 ? 0 : 0.35)]);
-  }
-
   function goBase() {
     setStep("reveal");
   }
 
-  function buildCurrentItem(discountPct: number): CartItem {
+  function buildCurrentItem(firstUnitDiscountPct: number, qty: number): CartItem {
     return {
       id: `${Date.now()}-${Math.random()}`,
       petName,
@@ -337,8 +340,17 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       baseLabel: base.label,
       hasNameplate: wantsBase && addName,
       unitPrice: total,
-      discountPct,
+      firstUnitDiscountPct,
+      qty,
     };
+  }
+
+  // Mete la figura recién configurada en el carrito. La primera figura del
+  // pedido siempre va a precio completo; cualquier mascota NUEVA añadida
+  // después (a través de todo el asistente) lleva el descuento de -35% en
+  // su primera unidad.
+  function addCurrentToCart() {
+    setCart((c) => [...c, buildCurrentItem(cart.length === 0 ? 0 : 0.35, 1)]);
   }
 
   function confirmAddToCart() {
@@ -346,12 +358,10 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setStep("ready");
   }
 
-  // Añade la figura en curso a precio completo Y una gemela suya a -50%,
-  // en un único setCart — evita depender de `cart` recién actualizado.
+  // Añade la figura en curso directamente con cantidad 2 (la 2ª unidad ya
+  // sale a -50% por la propia lógica de itemTotal/unitPriceAt).
   function confirmAddTwin() {
-    const first = buildCurrentItem(cart.length === 0 ? 0 : 0.35);
-    const twin = { ...first, id: `${Date.now()}-${Math.random()}-twin`, discountPct: 0.5 };
-    setCart((c) => [...c, first, twin]);
+    setCart((c) => [...c, buildCurrentItem(cart.length === 0 ? 0 : 0.35, 2)]);
     setStep("ready");
   }
 
@@ -360,11 +370,11 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     startNewPet();
   }
 
-  // Gemela exacta del último artículo del carrito — no hace falta pasar por
-  // el asistente de nuevo (misma figura ya generada), siempre a -50%.
-  function addTwin() {
-    if (!lastItem) return;
-    setCart((c) => [...c, { ...lastItem, id: `${Date.now()}-${Math.random()}`, discountPct: 0.5 }]);
+  function incrementQty(id: string) {
+    setCart((c) => c.map((it) => (it.id === id ? { ...it, qty: it.qty + 1 } : it)));
+  }
+  function decrementQty(id: string) {
+    setCart((c) => c.map((it) => (it.id === id && it.qty > 1 ? { ...it, qty: it.qty - 1 } : it)));
   }
 
   // Reinicia los campos de "mascota en curso" para configurar una nueva
@@ -532,7 +542,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
               </div>
             </div>
             <div className={styles.genCol}>
-              <p className={styles.gameHint}>⏱️ Takes about 60 seconds — got time for a quick round?</p>
+              <p className={styles.gameHint}>🎯 Get up to 10% off playing the mini-game</p>
               <MiniGame />
             </div>
           </div>
@@ -670,36 +680,30 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
                   <div className={styles.cartItemBody}>
                     <b>{it.petName}</b>
                     <span>{it.poseLabel} · {it.baseLabel}{it.hasNameplate ? " · engraved" : ""}</span>
-                    {it.discountPct > 0 && <span className={styles.cartItemBadge}>{Math.round(it.discountPct * 100)}% off</span>}
+                    {it.firstUnitDiscountPct > 0 && <span className={styles.cartItemBadge}>{Math.round(it.firstUnitDiscountPct * 100)}% off</span>}
+                    {it.qty === 1 && <span className={styles.cartItemBadge}>🎁 50% off your next {it.petName}</span>}
+                  </div>
+                  <div className={styles.qtyStepper}>
+                    <button type="button" onClick={() => decrementQty(it.id)} disabled={it.qty <= 1} aria-label="Remove one">−</button>
+                    <span>{it.qty}</span>
+                    <button type="button" onClick={() => incrementQty(it.id)} aria-label="Add one">+</button>
                   </div>
                   <div className={styles.cartItemPrice}>
-                    {it.discountPct > 0 && <s>{money(it.unitPrice)}</s>}
-                    <b>{money(itemFinalPrice(it))}</b>
+                    <b>{money(itemTotal(it))}</b>
                   </div>
                 </div>
               ))}
             </div>
 
-            {lastItem && (
-              <>
-                <div className={styles.giftPitch}>
-                  <span>🎁 One more twin of {lastItem.petName}, to gift</span>
-                  <b>{money(twinPrice)} <s>{money(lastItem.unitPrice)}</s></b>
-                </div>
-                <button className={styles.ctaGhost} onClick={addTwin}>
-                  Add a twin of {lastItem.petName} — {money(twinPrice)}
-                </button>
-                <button className={styles.linkBtn} onClick={startNewPet}>
-                  or add a different pet instead — 35% off →
-                </button>
-              </>
-            )}
+            <button className={styles.linkBtn} onClick={startNewPet}>
+              + Add a different pet — 35% off →
+            </button>
 
             <div className={styles.summary}>
               {cart.map((it) => (
                 <div className={styles.row} key={it.id}>
-                  <span>{it.petName}{it.discountPct > 0 ? ` (${Math.round(it.discountPct * 100)}% off)` : ""}</span>
-                  <span>{money(itemFinalPrice(it))}</span>
+                  <span>{it.petName}{it.qty > 1 ? ` ×${it.qty}` : ""}</span>
+                  <span>{money(itemTotal(it))}</span>
                 </div>
               ))}
 
