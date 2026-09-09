@@ -89,7 +89,7 @@
 
 .heroH1{font-size:clamp(2.4rem,5.4vw,4.4rem); color:#fff; text-shadow:0 3px 16px rgba(0,0,0,.45); margin:0; line-height:1.02}
 .heroH1Line{display:flex; align-items:center; gap:.28em; white-space:nowrap}
-.heroH1 em{display:inline-block; color:var(--accent); font-style:italic; font-size:.62em}
+.heroH1 em{display:inline-block; color:var(--accent); font-style:italic; font-size:.95em}
 /* Caja blanca de fondo solo en mobile (ahí se leía mal sobre la foto) — en
    escritorio se queda solo el texto en azul, sin fondo. */
 @media(max-width:820px){
