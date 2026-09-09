@@ -25,6 +25,17 @@ const REVIEWS = [
 
 const key = (poseId: string, baseId: string, view: "front" | "side" = "front") => `${poseId}|${baseId}|${view}`;
 
+type CartItem = {
+  id: string;
+  petName: string;
+  figureUrl: string | null;
+  poseLabel: string;
+  baseLabel: string;
+  hasNameplate: boolean;
+  unitPrice: number;
+  discountPct: number; // 0 = precio completo, .35 = mascota nueva, .5 = gemela
+};
+
 export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: string }) {
   const router = useRouter();
   const animal = zone.animal;
@@ -48,7 +59,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const [baseId, setBaseId] = useState(NO_BASE_ID);
   const [view, setView] = useState<"front" | "side">("front");
   const [addName, setAddName] = useState(false);
-  const [giftDuplicate, setGiftDuplicate] = useState(false);
+  const [cart, setCart] = useState<CartItem[]>([]);
 
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(0);
@@ -69,9 +80,12 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const showEngraved = wantsBase && addName && currentView === "front";
   const figure = showEngraved ? (namedFigures[comboKey] ?? null) : plainFigure;
   const total = FIGURE_PRICE + pose.price + base.price + (wantsBase && addName ? NAMEPLATE_PRICE : 0);
-  const giftPrice = total * 0.5;
-  const grandTotal = total + (giftDuplicate ? giftPrice : 0);
   const money = (n: number) => `${brand.currencySymbol}${n.toFixed(2)}`;
+  const itemFinalPrice = (it: CartItem) => it.unitPrice * (1 - it.discountPct);
+  const cartTotal = cart.reduce((sum, it) => sum + itemFinalPrice(it), 0);
+  const lastItem = cart[cart.length - 1] as CartItem | undefined;
+  const twinPrice = lastItem ? lastItem.unitPrice * 0.5 : 0;
+  const newPetPrice = total * 0.65;
 
   const PHRASES = [
     `Sculpting your ${animal}…`,
@@ -296,12 +310,57 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setStep("base");
   }
 
+  // Mete la figura recién configurada en el carrito. La primera figura del
+  // pedido siempre va a precio completo; cualquier mascota NUEVA añadida
+  // después (a través de todo el asistente) lleva el descuento de -35%.
+  function addCurrentToCart() {
+    const item: CartItem = {
+      id: `${Date.now()}-${Math.random()}`,
+      petName,
+      figureUrl: figure,
+      poseLabel: pose.label,
+      baseLabel: base.label,
+      hasNameplate: wantsBase && addName,
+      unitPrice: total,
+      discountPct: cart.length === 0 ? 0 : 0.35,
+    };
+    setCart((c) => [...c, item]);
+  }
+
   function goBase() {
-    setStep(wantsBase && !addName ? "base" : "upsell");
+    addCurrentToCart();
+    setStep("upsell");
+  }
+
+  // Gemela exacta del último artículo del carrito — no hace falta pasar por
+  // el asistente de nuevo (misma figura ya generada), siempre a -50%.
+  function addTwin() {
+    if (!lastItem) return;
+    setCart((c) => [...c, { ...lastItem, id: `${Date.now()}-${Math.random()}`, discountPct: 0.5 }]);
+  }
+
+  // Reinicia los campos de "mascota en curso" para configurar una nueva
+  // figura desde cero (foto distinta) sin perder lo que ya hay en el carrito.
+  function startNewPet() {
+    setPetName("");
+    setNameDraft("");
+    setPhoto(null);
+    setNotes("");
+    setFigures({});
+    setNamedFigures({});
+    setPoseId(poses[0].id);
+    setBaseId(NO_BASE_ID);
+    setView("front");
+    setAddName(false);
+    setStep("name");
   }
 
   const STEP_ORDER: StepId[] = ["email", "name", "photo", "pose", "base", "upsell", "ready"];
   function goBack() {
+    // Si retrocede desde "upsell", deshace el artículo que se acaba de meter
+    // en el carrito al pulsar Continue en "base" — si no, al volver a darle
+    // a Continue se duplicaría.
+    if (step === "upsell") setCart((c) => c.slice(0, -1));
     const idx = STEP_ORDER.indexOf(step);
     if (idx > 0) setStep(STEP_ORDER[idx - 1]);
   }
@@ -324,7 +383,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     };
   }, [step]);
 
-  const timelineStep: StepId = generating ? "photo" : step;
+  const timelineStep: StepId = generating ? "photo" : step === "upsell" ? "base" : step;
   const rv = REVIEWS[reviewIdx];
 
   return (
@@ -526,36 +585,36 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
           </div>
         )}
 
-        {step === "upsell" && (
+        {step === "upsell" && lastItem && (
           <div className={styles.card}>
             <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>One more thing</span></div>
-            <h1>🎁 Know someone who&apos;d love one too?</h1>
+            <h1>🎁 Want to add another?</h1>
             <p className={styles.sub}>
-              {petName} probably isn&apos;t just your {animal} — since we already have everything set up,
-              get a second copy of this exact figure for a friend or family member at half price.
+              {cart.length > 1
+                ? `You've got ${cart.length} figures so far. Add one more?`
+                : `Since everything's already set up for ${lastItem.petName}, here are two easy ways to add another.`}
             </p>
+
             <div className={styles.giftPitch}>
-              <span>Second figure, same design</span>
-              <b>{money(giftPrice)} <s>{money(total)}</s></b>
+              <span>A twin of {lastItem.petName}, to gift</span>
+              <b>{money(twinPrice)} <s>{money(lastItem.unitPrice)}</s></b>
             </div>
-            <button
-              className={styles.cta}
-              onClick={() => {
-                setGiftDuplicate(true);
-                setStep("ready");
-              }}
-            >
-              Yes, add a second one — {money(giftPrice)}
+            <button className={styles.cta} onClick={addTwin}>
+              Add a twin of {lastItem.petName} — {money(twinPrice)}
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
             </button>
-            <button
-              className={styles.linkBtn}
-              onClick={() => {
-                setGiftDuplicate(false);
-                setStep("ready");
-              }}
-            >
-              No thanks, just the one for now
+
+            <div className={styles.giftPitch} style={{ marginTop: 14 }}>
+              <span>A different pet, brand new figure</span>
+              <b>from {money(newPetPrice)} <s>from {money(FIGURE_PRICE)}</s></b>
+            </div>
+            <button className={styles.cta} onClick={startNewPet}>
+              Add a different pet — 35% off
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
+            </button>
+
+            <button className={styles.linkBtn} onClick={() => setStep("ready")}>
+              No thanks, show my total{cart.length > 1 ? ` (${cart.length} figures)` : ""}
             </button>
           </div>
         )}
@@ -563,26 +622,38 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         {step === "ready" && (
           <div className={styles.card}>
             <span className={styles.stepTag}>You&apos;re all set</span>
-            <h1 className={styles.readyH1}>🎁 {petName}&apos;s figure is ready</h1>
-            <div className={styles.stage}>
-              {figure && <img src={figure} alt={`${animal} figure`} />}
-            </div>
+            <h1 className={styles.readyH1}>
+              🎁 {cart.length > 1 ? `${cart.length} figures are ready` : `${petName}'s figure is ready`}
+            </h1>
 
-            <label className={styles.toggle}>
-              <input type="checkbox" checked={giftDuplicate} onChange={(e) => setGiftDuplicate(e.target.checked)} />
-              🎁 Add a second one to gift — 50% off (+{money(giftPrice)})
-            </label>
+            <div className={styles.cartList}>
+              {cart.map((it) => (
+                <div key={it.id} className={styles.cartItem}>
+                  <div className={styles.cartItemStage}>{it.figureUrl && <img src={it.figureUrl} alt={`${it.petName} figure`} />}</div>
+                  <div className={styles.cartItemBody}>
+                    <b>{it.petName}</b>
+                    <span>{it.poseLabel} · {it.baseLabel}{it.hasNameplate ? " · engraved" : ""}</span>
+                    {it.discountPct > 0 && <span className={styles.cartItemBadge}>{Math.round(it.discountPct * 100)}% off</span>}
+                  </div>
+                  <div className={styles.cartItemPrice}>
+                    {it.discountPct > 0 && <s>{money(it.unitPrice)}</s>}
+                    <b>{money(itemFinalPrice(it))}</b>
+                  </div>
+                </div>
+              ))}
+            </div>
 
             <div className={styles.summary}>
-              <div className={styles.row}><span>Figure · full-color resin</span><b>{money(FIGURE_PRICE)}</b></div>
-              <div className={styles.row}><span>Pose — {pose.label}</span><span>{pose.price ? `+${money(pose.price)}` : "Free"}</span></div>
-              <div className={styles.row}><span>Base — {base.label}</span><span>{base.price ? `+${money(base.price)}` : "—"}</span></div>
-              {wantsBase && addName && <div className={styles.row}><span>Nameplate — &ldquo;{petName.toUpperCase()}&rdquo;</span><span>+{money(NAMEPLATE_PRICE)}</span></div>}
-              {giftDuplicate && <div className={styles.row}><span>Second figure to gift (50% off)</span><span>+{money(giftPrice)}</span></div>}
-              <div className={styles.tot}><span>Total</span><b>{money(grandTotal)}</b></div>
+              {cart.map((it) => (
+                <div className={styles.row} key={it.id}>
+                  <span>{it.petName}{it.discountPct > 0 ? ` (${Math.round(it.discountPct * 100)}% off)` : ""}</span>
+                  <span>{money(itemFinalPrice(it))}</span>
+                </div>
+              ))}
+              <div className={styles.tot}><span>Total</span><b>{money(cartTotal)}</b></div>
               <button className={styles.buy} disabled>Checkout — coming soon</button>
             </div>
-            <button className={styles.linkBtn} onClick={() => setStep("base")}>← Back to base options</button>
+            <button className={styles.linkBtn} onClick={() => setStep("upsell")}>← Add another figure</button>
           </div>
         )}
       </main>

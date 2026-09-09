@@ -85,6 +85,18 @@
 .poseCardActive{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
 
 .stage{width:100%; aspect-ratio:1/1; border-radius:18px; background:var(--surface-2); display:flex; align-items:center; justify-content:center; overflow:hidden; margin-bottom:20px}
+
+.cartList{display:flex; flex-direction:column; gap:10px; margin-bottom:20px}
+.cartItem{display:flex; align-items:center; gap:12px; padding:10px; border:1px solid var(--line); border-radius:14px}
+.cartItemStage{flex:none; width:64px; height:64px; border-radius:10px; overflow:hidden; background:var(--surface-2); display:flex; align-items:center; justify-content:center}
+.cartItemStage img{width:100%; height:100%; object-fit:cover}
+.cartItemBody{flex:1; min-width:0; display:flex; flex-direction:column; gap:2px}
+.cartItemBody b{font-size:.94rem}
+.cartItemBody span{font-size:.78rem; color:var(--ink-faint)}
+.cartItemBadge{display:inline-block; width:fit-content; background:var(--accent-soft); color:var(--accent-deep); font-size:.7rem; font-weight:800; padding:2px 8px; border-radius:999px; margin-top:2px}
+.cartItemPrice{flex:none; text-align:right; display:flex; flex-direction:column; gap:2px}
+.cartItemPrice s{font-size:.78rem; color:var(--ink-faint)}
+.cartItemPrice b{font-size:.98rem}
 .stage img{width:100%; height:100%; object-fit:contain}
 
 .baseChoice{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px}
