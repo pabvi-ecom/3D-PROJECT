@@ -24,8 +24,8 @@ const PICKUP_Y_OFFSET = 100; // altura sobre el suelo — hay que saltar para to
 // Hitos de descuento — hay que SALTAR y TOCAR el símbolo para conseguirlo,
 // no basta con llegar al score. Si lo pasas de largo, lo pierdes.
 const DISCOUNT_MILESTONES = [
-  { score: 50, pct: 5, code: "CAVEMAN:ULTRA" },
-  { score: 150, pct: 10, code: "CAVEMAN:MEGA" },
+  { score: 50, pct: 5, code: "PLAY5" },
+  { score: 150, pct: 10, code: "PLAY10" },
 ];
 
 export function MiniGame({ onUnlock }: { onUnlock?: (pct: number, code: string) => void }) {
