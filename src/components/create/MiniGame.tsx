@@ -3,17 +3,21 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./MiniGame.module.css";
 
-const W = 320;
-const H = 220;
-const GROUND_Y = H - 26;
+// 9:16 vertical — usa el hueco que sobraba debajo del canvas horizontal viejo.
+const W = 270;
+const H = 480;
+const GROUND_Y = H - 46;
 const GRAVITY = 1.1;
 const JUMP_V = -16.5;
 const DOG_X = 40;
 const DOG_W = 30;
 const DOG_H = 46;
 
-type ObstacleKind = "bush" | "tree";
+type ObstacleKind = "bush" | "tree" | "house" | "car" | "cat";
 type Obstacle = { x: number; w: number; h: number; kind: ObstacleKind };
+type Coin = { x: number; y: number; life: number };
+
+const KINDS: ObstacleKind[] = ["bush", "tree", "house", "car", "cat"];
 
 export function MiniGame() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -23,13 +27,18 @@ export function MiniGame() {
     vy: 0,
     jumping: false,
     obstacles: [] as Obstacle[],
+    coins: [] as Coin[],
+    nextGapFrames: 70,
+    framesSinceSpawn: 0,
     speed: 5.2,
     frame: 0,
     score: 0,
     dead: false,
+    lastMilestone: 0,
   });
   const [score, setScore] = useState(0);
   const [best, setBest] = useState(0);
+  const [coinCount, setCoinCount] = useState(0);
   const [dead, setDead] = useState(false);
   const [started, setStarted] = useState(false);
 
@@ -52,11 +61,16 @@ export function MiniGame() {
     s.vy = 0;
     s.jumping = false;
     s.obstacles = [];
+    s.coins = [];
+    s.nextGapFrames = 70;
+    s.framesSinceSpawn = 0;
     s.speed = 5.2;
     s.frame = 0;
     s.score = 0;
     s.dead = false;
+    s.lastMilestone = 0;
     setScore(0);
+    setCoinCount(0);
     setDead(false);
     setStarted(true);
   }
@@ -112,13 +126,98 @@ export function MiniGame() {
       ctx!.fill();
     }
 
+    function drawHouse(x: number, groundY: number, w: number, h: number) {
+      ctx!.fillStyle = "#D98A5F";
+      ctx!.fillRect(x, groundY - h * 0.62, w, h * 0.62);
+      ctx!.fillStyle = "#B5472E";
+      ctx!.beginPath();
+      ctx!.moveTo(x - 4, groundY - h * 0.6);
+      ctx!.lineTo(x + w / 2, groundY - h);
+      ctx!.lineTo(x + w + 4, groundY - h * 0.6);
+      ctx!.closePath();
+      ctx!.fill();
+      ctx!.fillStyle = "#FDE9B8";
+      ctx!.fillRect(x + w * 0.35, groundY - h * 0.42, w * 0.3, h * 0.28);
+    }
+
+    function drawCar(x: number, groundY: number, w: number, h: number) {
+      ctx!.fillStyle = "#3E7CD6";
+      ctx!.beginPath();
+      ctx!.roundRect(x, groundY - h, w, h * 0.65, 4);
+      ctx!.fill();
+      ctx!.beginPath();
+      ctx!.roundRect(x + w * 0.18, groundY - h * 1.5, w * 0.6, h * 0.6, 5);
+      ctx!.fill();
+      ctx!.fillStyle = "#233";
+      ctx!.beginPath();
+      ctx!.arc(x + w * 0.24, groundY, h * 0.16, 0, Math.PI * 2);
+      ctx!.arc(x + w * 0.76, groundY, h * 0.16, 0, Math.PI * 2);
+      ctx!.fill();
+    }
+
+    function drawCat(x: number, groundY: number, w: number, h: number) {
+      ctx!.fillStyle = "#8A8D8F";
+      ctx!.beginPath();
+      ctx!.ellipse(x + w / 2, groundY - h * 0.4, w * 0.5, h * 0.4, 0, 0, Math.PI * 2);
+      ctx!.fill();
+      ctx!.beginPath();
+      ctx!.moveTo(x + w * 0.15, groundY - h * 0.7);
+      ctx!.lineTo(x + w * 0.05, groundY - h);
+      ctx!.lineTo(x + w * 0.32, groundY - h * 0.75);
+      ctx!.closePath();
+      ctx!.moveTo(x + w * 0.68, groundY - h * 0.75);
+      ctx!.lineTo(x + w * 0.95, groundY - h);
+      ctx!.lineTo(x + w * 0.85, groundY - h * 0.7);
+      ctx!.closePath();
+      ctx!.fill();
+    }
+
+    function drawObstacle(o: Obstacle) {
+      if (o.kind === "bush") drawBush(o.x, GROUND_Y, o.w, o.h);
+      else if (o.kind === "tree") drawTree(o.x, GROUND_Y, o.w, o.h);
+      else if (o.kind === "house") drawHouse(o.x, GROUND_Y, o.w, o.h);
+      else if (o.kind === "car") drawCar(o.x, GROUND_Y, o.w, o.h);
+      else drawCat(o.x, GROUND_Y, o.w, o.h);
+    }
+
+    function drawCoin(c: Coin) {
+      const t = c.life / 40;
+      ctx!.globalAlpha = Math.max(0, 1 - t);
+      ctx!.fillStyle = "#F4B400";
+      ctx!.beginPath();
+      ctx!.arc(c.x, c.y - t * 30, 9, 0, Math.PI * 2);
+      ctx!.fill();
+      ctx!.fillStyle = "#B9860A";
+      ctx!.font = "bold 11px sans-serif";
+      ctx!.textAlign = "center";
+      ctx!.fillText("$", c.x, c.y - t * 30 + 4);
+      ctx!.globalAlpha = 1;
+    }
+
     function loop() {
       const s = stateRef.current;
       ctx!.clearRect(0, 0, W, H);
 
-      // cielo
-      ctx!.fillStyle = "#EAF3FE";
+      // cielo con degradado + sol
+      const sky = ctx!.createLinearGradient(0, 0, 0, GROUND_Y);
+      sky.addColorStop(0, "#CFE8FF");
+      sky.addColorStop(1, "#EAF3FE");
+      ctx!.fillStyle = sky;
       ctx!.fillRect(0, 0, W, GROUND_Y);
+
+      ctx!.fillStyle = "#FFD873";
+      ctx!.beginPath();
+      ctx!.arc(W - 46, 46, 26, 0, Math.PI * 2);
+      ctx!.fill();
+
+      // nubes
+      ctx!.fillStyle = "rgba(255,255,255,.8)";
+      [[60, 70, 22], [100, 80, 16], [30, 130, 18]].forEach(([cx, cy, r]) => {
+        ctx!.beginPath();
+        ctx!.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx!.arc(cx + r * 0.9, cy + 4, r * 0.75, 0, Math.PI * 2);
+        ctx!.fill();
+      });
 
       // césped
       ctx!.fillStyle = "#5FAE6A";
@@ -136,11 +235,17 @@ export function MiniGame() {
           s.jumping = false;
         }
 
-        const spawnEvery = Math.max(72, 100 - s.speed * 6);
-        if (s.frame % Math.round(spawnEvery) === 0) {
-          const kind: ObstacleKind = Math.random() < 0.6 ? "bush" : "tree";
-          const h = kind === "bush" ? 16 + Math.random() * 8 : 30 + Math.random() * 14;
-          const w = kind === "bush" ? 26 + Math.random() * 10 : 20 + Math.random() * 8;
+        s.framesSinceSpawn++;
+        if (s.framesSinceSpawn >= s.nextGapFrames) {
+          s.framesSinceSpawn = 0;
+          // Alterna huecos cortos y largos — no siempre a la misma distancia.
+          const isShort = Math.random() < 0.5;
+          const base = isShort ? 55 : 110;
+          s.nextGapFrames = Math.max(46, base - s.speed * 3 + Math.random() * 26);
+
+          const kind = KINDS[Math.floor(Math.random() * KINDS.length)];
+          const h = kind === "bush" ? 16 + Math.random() * 8 : kind === "cat" ? 20 : kind === "car" ? 30 : kind === "house" ? 46 : 30 + Math.random() * 14;
+          const w = kind === "bush" ? 26 + Math.random() * 10 : kind === "cat" ? 26 : kind === "car" ? 46 : kind === "house" ? 40 : 20 + Math.random() * 8;
           s.obstacles.push({ x: W, w, h, kind });
         }
 
@@ -149,7 +254,15 @@ export function MiniGame() {
 
         s.speed = Math.min(9, 5.2 + s.score / 18);
         s.score += 0.06;
-        setScore(Math.floor(s.score));
+        const floored = Math.floor(s.score);
+        setScore(floored);
+
+        // Hito cada 100 puntos — moneda + contador
+        if (floored - s.lastMilestone >= 100) {
+          s.lastMilestone = floored - (floored % 100);
+          s.coins.push({ x: DOG_X + DOG_W / 2, y: s.dogY, life: 0 });
+          setCoinCount((c) => c + 1);
+        }
 
         const pad = 6;
         const dogBox = { x: DOG_X + pad, y: s.dogY + pad, w: DOG_W - pad * 2, h: DOG_H - pad };
@@ -168,11 +281,11 @@ export function MiniGame() {
         }
       }
 
-      // obstáculos
-      s.obstacles.forEach((o) => {
-        if (o.kind === "bush") drawBush(o.x, GROUND_Y, o.w, o.h);
-        else drawTree(o.x, GROUND_Y, o.w, o.h);
-      });
+      s.obstacles.forEach(drawObstacle);
+
+      s.coins.forEach((c) => (c.life += 1));
+      s.coins = s.coins.filter((c) => c.life < 40);
+      s.coins.forEach(drawCoin);
 
       // perrito (figura real, sin fondo)
       const sprite = spriteRef.current;
@@ -190,6 +303,7 @@ export function MiniGame() {
     <div className={styles.wrap}>
       <div className={styles.hud}>
         <span>🏆 {best}</span>
+        <span>🪙 {coinCount}</span>
         <span>{score}</span>
       </div>
       <div className={styles.stage} onClick={jump}>
