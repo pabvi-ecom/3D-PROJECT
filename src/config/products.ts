@@ -105,7 +105,7 @@ export const bases: Base[] = [
   {
     id: "grass",
     label: "Grass top",
-    price: 9.99,
+    price: 10,
     prompt:
       "on a round dark wood display base with a lush, realistic short green grass top filling the whole surface, a polished dark wood rim, and a small blank brushed-gold nameplate on the front edge",
     refImage: "/bases/grass-ref.png",
@@ -116,4 +116,4 @@ export const bases: Base[] = [
 export const paidBases = bases.filter((b) => b.id !== NO_BASE_ID);
 
 /** Coste de añadir el nombre grabado en la placa (requiere base). */
-export const NAMEPLATE_PRICE = 4.99;
+export const NAMEPLATE_PRICE = 5;

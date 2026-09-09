@@ -48,6 +48,19 @@
 .cta{display:inline-flex; align-items:center; justify-content:center; gap:8px; background:var(--accent); color:#fff; font-weight:800; font-size:1rem; padding:15px 26px; border:none; border-radius:999px; cursor:pointer; width:100%; margin-top:8px; transition:opacity .15s ease}
 .cta:disabled{opacity:.4; cursor:not-allowed}
 
+.ctaGhost{display:inline-flex; align-items:center; justify-content:center; gap:8px; background:var(--accent-soft); color:var(--accent-deep); font-weight:800; font-size:.94rem; padding:13px 22px; border:none; border-radius:999px; cursor:pointer; width:100%; margin-top:8px}
+.ctaGhost:hover{background:color-mix(in srgb,var(--accent-soft) 70%,var(--accent) 10%)}
+
+.shipBar{margin-bottom:18px}
+.shipMsg{display:block; font-size:.86rem; font-weight:700; color:var(--accent-deep); margin-bottom:6px}
+.shipTrack{width:100%; height:7px; background:var(--surface-2); border-radius:99px; overflow:hidden}
+.shipFill{height:100%; background:linear-gradient(90deg,var(--accent),var(--gold)); border-radius:99px; transition:width .4s ease}
+
+.discountRow{display:flex; gap:8px; margin:14px 0}
+.discountRow input{flex:1; border:1.5px solid var(--line); border-radius:12px; padding:11px 14px; font-size:.9rem; outline:none; color:var(--ink); background:var(--surface)}
+.discountRow input:focus{border-color:var(--accent)}
+.discountBtn{flex:none; background:#fff; color:var(--accent-deep); font-weight:800; font-size:.86rem; padding:0 18px; border:none; border-radius:12px; cursor:pointer}
+
 .uploadBox{width:100%; display:flex; flex-direction:column; align-items:center; gap:12px; padding:48px 20px; border:2px dashed var(--line); border-radius:18px; background:var(--surface-2); color:var(--ink-soft); font-weight:700; cursor:pointer}
 
 .photoPreview{position:relative; width:100%; border-radius:18px; overflow:hidden; background:var(--surface-2)}
