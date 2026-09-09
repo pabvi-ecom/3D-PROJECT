@@ -1,0 +1,6 @@
+.bar{
+  position:relative; z-index:31; width:100%; background:var(--accent); color:#fff;
+  font-size:.82rem; font-weight:700; text-align:center; padding:8px 16px;
+  overflow:hidden; display:flex; align-items:center; justify-content:center; height:34px;
+}
+.bar span{display:block}

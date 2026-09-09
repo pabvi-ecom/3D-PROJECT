@@ -10,7 +10,7 @@ export const brand = {
   currency: "USD",
   currencySymbol: "$",
   // Envío gratis a partir de este importe (empuja packs y extras hasta el carrito)
-  freeShippingThreshold: 99.99,
+  freeShippingThreshold: 100,
   // Zona por defecto a la que redirige la home mientras solo haya una
   defaultZone: "dogs",
   // Contacto / legal (rellenar cuando exista)

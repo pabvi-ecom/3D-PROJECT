@@ -11,6 +11,7 @@ import { HowWeWork } from "./HowWeWork";
 import { ReviewSwell } from "./ReviewSwell";
 import { TransformReveal } from "./TransformReveal";
 import { NameGate } from "./NameGate";
+import { AnnouncementBar } from "./AnnouncementBar";
 
 // Fotos reales de clientes con su figura — para el carrusel "swell".
 // TODO: nombres/textos de EJEMPLO — sustituir por reseñas reales antes de lanzar
@@ -56,6 +57,7 @@ export default function Studio({ zone }: { zone: Zone }) {
 
   return (
     <div className={styles.page}>
+      <AnnouncementBar />
       {Nav}
 
       <section className={styles.heroFull}>
