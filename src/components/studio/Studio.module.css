@@ -62,8 +62,11 @@
 /* trozos de texto sueltos, cada uno con su propio fondo — cuadrado
    con esquinas redondeadas, coherente con el resto del sitio */
 .chip{display:inline-block; font-size:clamp(1rem,1.6vw,1.2rem); font-weight:700; color:var(--ink); background:rgba(255,255,255,.94); padding:10px 16px; border-radius:12px; line-height:1.35; box-shadow:0 6px 18px -6px rgba(0,0,0,.35); width:fit-content}
-.chipAccent{color:#fff; background:var(--accent)}
-@media(max-width:820px){.chip{font-size:.62rem; padding:4px 8px; border-radius:7px; align-self:flex-end; margin-right:-4px}}
+/* Chip azul solo en mobile — en escritorio se queda el look original (negro sobre blanco) */
+@media(max-width:820px){
+  .chip{font-size:.62rem; padding:4px 8px; border-radius:7px; align-self:flex-end; margin-right:-4px}
+  .chipAccent{color:#fff; background:var(--accent)}
+}
 
 .chipDesktopOnly{display:inline}
 @media(max-width:820px){.chipDesktopOnly{display:none}}
@@ -86,7 +89,12 @@
 
 .heroH1{font-size:clamp(2.4rem,5.4vw,4.4rem); color:#fff; text-shadow:0 3px 16px rgba(0,0,0,.45); margin:0; line-height:1.02}
 .heroH1Line{display:flex; align-items:center; gap:.28em; white-space:nowrap}
-.heroH1 em{display:inline-block; color:var(--accent); font-style:italic; font-size:.62em; background:#fff; padding:2px 14px; border-radius:10px; text-shadow:none; box-shadow:0 4px 14px rgba(0,0,0,.2)}
+.heroH1 em{display:inline-block; color:var(--accent); font-style:italic; font-size:.62em}
+/* Caja blanca de fondo solo en mobile (ahí se leía mal sobre la foto) — en
+   escritorio se queda solo el texto en azul, sin fondo. */
+@media(max-width:820px){
+  .heroH1 em{background:#fff; padding:2px 14px; border-radius:10px; text-shadow:none; box-shadow:0 4px 14px rgba(0,0,0,.2)}
+}
 @media(max-width:820px){.heroH1{font-size:clamp(1.7rem,8.5vw,2.3rem)}}
 
 .heroActions{display:flex; flex-direction:column; align-items:center; gap:14px}
