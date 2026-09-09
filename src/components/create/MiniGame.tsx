@@ -7,8 +7,8 @@ import styles from "./MiniGame.module.css";
 const W = 270;
 const H = 480;
 const GROUND_Y = H - 46;
-const GRAVITY = 1.1;
-const JUMP_V = -16.5;
+const GRAVITY = 1.3;
+const JUMP_V = -18.5;
 const DOG_X = 40;
 const DOG_W = 30;
 const DOG_H = 46;
@@ -16,21 +16,19 @@ const DOG_H = 46;
 type ObstacleKind = "bush" | "tree" | "house" | "car" | "cat";
 type Obstacle = { x: number; w: number; h: number; kind: ObstacleKind };
 type Popup = { x: number; y: number; life: number; text: string };
+type Pickup = { x: number; y: number; w: number; h: number; pct: number; code: string; collected: boolean; missed: boolean };
 
 const KINDS: ObstacleKind[] = ["bush", "tree", "house", "car", "cat"];
+const PICKUP_Y_OFFSET = 100; // altura sobre el suelo — hay que saltar para tocarlo
 
-// Hitos de descuento — cuanto más lejos llegues, mejor descuento.
+// Hitos de descuento — hay que SALTAR y TOCAR el símbolo para conseguirlo,
+// no basta con llegar al score. Si lo pasas de largo, lo pierdes.
 const DISCOUNT_MILESTONES = [
-  { score: 50, pct: 5 },
-  { score: 150, pct: 10 },
+  { score: 50, pct: 5, code: "CAVEMAN:ULTRA" },
+  { score: 150, pct: 10, code: "CAVEMAN:MEGA" },
 ];
 
-function makeDiscountCode(pct: number) {
-  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
-  return `PLAY${pct}-${rand}`;
-}
-
-export function MiniGame() {
+export function MiniGame({ onUnlock }: { onUnlock?: (pct: number, code: string) => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const spriteRef = useRef<HTMLImageElement | null>(null);
   const stateRef = useRef({
@@ -39,9 +37,10 @@ export function MiniGame() {
     jumping: false,
     obstacles: [] as Obstacle[],
     popups: [] as Popup[],
+    pickups: [] as Pickup[],
     nextGapFrames: 70,
     framesSinceSpawn: 0,
-    speed: 5.2,
+    speed: 7,
     frame: 0,
     score: 0,
     dead: false,
@@ -75,9 +74,10 @@ export function MiniGame() {
     s.jumping = false;
     s.obstacles = [];
     s.popups = [];
+    s.pickups = [];
     s.nextGapFrames = 70;
     s.framesSinceSpawn = 0;
-    s.speed = 5.2;
+    s.speed = 7;
     s.frame = 0;
     s.score = 0;
     s.dead = false;
@@ -195,6 +195,23 @@ export function MiniGame() {
       else drawCat(o.x, GROUND_Y, o.w, o.h);
     }
 
+    function drawPickup(p: Pickup) {
+      const bob = Math.sin((stateRef.current.frame + p.x) * 0.12) * 4;
+      const cx = p.x + p.w / 2;
+      const cy = p.y + p.h / 2 + bob;
+      ctx!.fillStyle = "#F4B400";
+      ctx!.beginPath();
+      ctx!.arc(cx, cy, p.w / 2, 0, Math.PI * 2);
+      ctx!.fill();
+      ctx!.strokeStyle = "#fff";
+      ctx!.lineWidth = 2;
+      ctx!.stroke();
+      ctx!.fillStyle = "#fff";
+      ctx!.font = "bold 10px sans-serif";
+      ctx!.textAlign = "center";
+      ctx!.fillText(`${p.pct}%`, cx, cy + 4);
+    }
+
     function drawPopup(c: Popup) {
       const t = c.life / 50;
       const y = c.y - t * 40;
@@ -263,22 +280,41 @@ export function MiniGame() {
         s.obstacles.forEach((o) => (o.x -= s.speed));
         s.obstacles = s.obstacles.filter((o) => o.x + o.w > 0);
 
-        s.speed = Math.min(9, 5.2 + s.score / 18);
+        s.speed = Math.min(12, 7 + s.score / 20);
         s.score += 0.06;
         const floored = Math.floor(s.score);
         setScore(floored);
 
-        // Hitos de descuento (score 50 → 5%, score 150 → 10%)
+        // Hitos de descuento: aparece un símbolo flotando en el aire un poco
+        // antes del score objetivo — hay que SALTAR y TOCARLO para cobrarlo.
+        // Si lo dejas pasar sin tocarlo, se pierde (no se reintenta).
         const next = DISCOUNT_MILESTONES[s.milestoneIdx];
-        if (next && floored >= next.score) {
-          s.milestoneIdx++;
-          s.discountPct = next.pct;
-          s.popups.push({ x: DOG_X + DOG_W / 2, y: s.dogY, life: 0, text: `${next.pct}% off!` });
-          setDiscountPct(next.pct);
+        if (next && floored >= next.score - 12 && !s.pickups.some((p) => p.pct === next.pct)) {
+          s.pickups.push({ x: W, y: GROUND_Y - PICKUP_Y_OFFSET, w: 26, h: 26, pct: next.pct, code: next.code, collected: false, missed: false });
         }
+        s.pickups.forEach((p) => (p.x -= s.speed));
+        s.pickups = s.pickups.filter((p) => p.x + p.w > -10 && !p.collected);
 
         const pad = 6;
         const dogBox = { x: DOG_X + pad, y: s.dogY + pad, w: DOG_W - pad * 2, h: DOG_H - pad };
+
+        for (const p of s.pickups) {
+          if (
+            dogBox.x < p.x + p.w &&
+            dogBox.x + dogBox.w > p.x &&
+            dogBox.y < p.y + p.h &&
+            dogBox.y + dogBox.h > p.y
+          ) {
+            p.collected = true;
+            s.milestoneIdx++;
+            s.discountPct = p.pct;
+            s.popups.push({ x: p.x + p.w / 2, y: p.y, life: 0, text: `+${p.pct}%!` });
+            setDiscountPct(p.pct);
+            setDiscountCode(p.code);
+            onUnlock?.(p.pct, p.code);
+          }
+        }
+
         for (const o of s.obstacles) {
           const oBox = { x: o.x, y: GROUND_Y - o.h, w: o.w, h: o.h };
           if (
@@ -290,12 +326,13 @@ export function MiniGame() {
             s.dead = true;
             setDead(true);
             setBest((b) => Math.max(b, Math.floor(s.score)));
-            if (s.discountPct > 0) setDiscountCode(makeDiscountCode(s.discountPct));
           }
         }
       }
 
       s.obstacles.forEach(drawObstacle);
+
+      s.pickups.forEach(drawPickup);
 
       s.popups.forEach((c) => (c.life += 1));
       s.popups = s.popups.filter((c) => c.life < 50);

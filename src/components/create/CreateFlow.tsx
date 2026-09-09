@@ -75,6 +75,8 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const [addName, setAddName] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [discountCode, setDiscountCode] = useState("");
+  const [unlockedDiscounts, setUnlockedDiscounts] = useState<{ pct: number; code: string }[]>([]);
+  const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(0);
@@ -97,6 +99,9 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const total = FIGURE_PRICE + pose.price + base.price + (wantsBase && addName ? NAMEPLATE_PRICE : 0);
   const money = (n: number) => `${brand.currencySymbol}${n.toFixed(2)}`;
   const cartTotal = cart.reduce((sum, it) => sum + itemTotal(it), 0);
+  // Los artículos a 0 unidades se quedan en el carrito (para poder volver a
+  // subirlos) pero no cuentan de cara al checkout.
+  const activeCart = cart.filter((it) => it.qty > 0);
 
   // Progreso hacia el envío gratis — cuenta lo que ya hay en el carrito MÁS
   // la figura que está a punto de añadirse (aún no está en `cart` en "reveal").
@@ -373,8 +378,10 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   function incrementQty(id: string) {
     setCart((c) => c.map((it) => (it.id === id ? { ...it, qty: it.qty + 1 } : it)));
   }
+  // Baja hasta 0 (no elimina el artículo) — así se puede volver a subirlo
+  // sin tener que reconfigurar la figura desde cero.
   function decrementQty(id: string) {
-    setCart((c) => c.map((it) => (it.id === id && it.qty > 1 ? { ...it, qty: it.qty - 1 } : it)));
+    setCart((c) => c.map((it) => (it.id === id && it.qty > 0 ? { ...it, qty: it.qty - 1 } : it)));
   }
 
   // Reinicia los campos de "mascota en curso" para configurar una nueva
@@ -416,6 +423,19 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       clearTimeout(t2);
     };
   }, [step]);
+
+  // El jugador tocó el símbolo de descuento en el minijuego — se desbloquea
+  // arriba (fuera del propio juego), con su propio confeti.
+  function handleUnlock(pct: number, code: string) {
+    setUnlockedDiscounts((d) => (d.some((x) => x.code === code) ? d : [...d, { pct, code }]));
+    confetti({ particleCount: 70, spread: 70, startVelocity: 36, origin: { x: 0.75, y: 0.3 }, colors: ["#0071E3", "#F4B400", "#34A853"] });
+  }
+
+  function copyCode(code: string) {
+    navigator.clipboard?.writeText(code).catch(() => {});
+    setCopiedCode(code);
+    setTimeout(() => setCopiedCode((c) => (c === code ? null : c)), 1600);
+  }
 
   const timelineStep: StepId = generating ? "photo" : step === "reveal" ? "base" : step;
   const rv = REVIEWS[reviewIdx];
@@ -542,8 +562,21 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
               </div>
             </div>
             <div className={styles.genCol}>
-              <p className={styles.gameHint}>🎯 Get up to 10% off playing the mini-game</p>
-              <MiniGame />
+              {unlockedDiscounts.length > 0 ? (
+                <div className={styles.unlockedList}>
+                  {unlockedDiscounts.map((d) => (
+                    <div key={d.code} className={styles.unlockedRow}>
+                      <span>🔓 {d.pct}% off unlocked!</span>
+                      <button type="button" onClick={() => copyCode(d.code)}>
+                        <code>{d.code}</code> {copiedCode === d.code ? "✓ Copied" : "Copy"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className={styles.gameHint}>🎯 Get up to 10% off playing the mini-game</p>
+              )}
+              <MiniGame onUnlock={handleUnlock} />
             </div>
           </div>
         )}
@@ -669,22 +702,23 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
             </div>
 
             <span className={styles.stepTag}>Your order</span>
-            <h1 className={styles.readyH1}>
-              🎁 {cart.length > 1 ? `${cart.length} figures are ready` : `${cart[0]?.petName ?? petName}'s figure is ready`}
+            <h1 className={`${styles.readyH1} ${styles.readyH1Tight}`}>
+              🎁 {activeCart.length > 1 ? `${activeCart.length} figures are ready` : `${activeCart[0]?.petName ?? petName}'s figure is ready`}
             </h1>
 
             <div className={styles.cartList}>
               {cart.map((it) => (
-                <div key={it.id} className={styles.cartItem}>
+                <div key={it.id} className={`${styles.cartItem} ${it.qty === 0 ? styles.cartItemZero : ""}`}>
                   <div className={styles.cartItemStage}>{it.figureUrl && <img src={it.figureUrl} alt={`${it.petName} figure`} />}</div>
                   <div className={styles.cartItemBody}>
                     <b>{it.petName}</b>
                     <span>{it.poseLabel} · {it.baseLabel}{it.hasNameplate ? " · engraved" : ""}</span>
-                    {it.firstUnitDiscountPct > 0 && <span className={styles.cartItemBadge}>{Math.round(it.firstUnitDiscountPct * 100)}% off</span>}
+                    {it.qty === 0 && <span className={styles.cartItemBadge}>Not in order — set to 1+ to include</span>}
+                    {it.firstUnitDiscountPct > 0 && it.qty > 0 && <span className={styles.cartItemBadge}>{Math.round(it.firstUnitDiscountPct * 100)}% off</span>}
                     {it.qty === 1 && <span className={styles.cartItemBadge}>🎁 50% off your next {it.petName}</span>}
                   </div>
                   <div className={styles.qtyStepper}>
-                    <button type="button" onClick={() => decrementQty(it.id)} disabled={it.qty <= 1} aria-label="Remove one">−</button>
+                    <button type="button" onClick={() => decrementQty(it.id)} disabled={it.qty <= 0} aria-label="Remove one">−</button>
                     <span>{it.qty}</span>
                     <button type="button" onClick={() => incrementQty(it.id)} aria-label="Add one">+</button>
                   </div>
@@ -699,8 +733,34 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
               + Add a different pet — 35% off →
             </button>
 
+            {unlockedDiscounts.length > 0 && (
+              <div className={styles.unlockedList} style={{ marginTop: 14 }}>
+                {unlockedDiscounts.map((d) => (
+                  <div key={d.code} className={styles.unlockedRow}>
+                    <span>🎟️ {d.pct}% off code ready</span>
+                    <button type="button" onClick={() => { setDiscountCode(d.code); copyCode(d.code); }}>
+                      <code>{d.code}</code> {copiedCode === d.code ? "✓ Copied" : "Use"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <div className={styles.trustStrip}>
+              {REVIEWS.slice(0, 3).map((r) => (
+                <div className={styles.trustCard} key={r.name}>
+                  <img src={r.src} alt="" />
+                  <div>
+                    <div className={styles.reviewStars}>★★★★★</div>
+                    <p>&ldquo;{r.text}&rdquo;</p>
+                    <span>{r.name} · {r.breed}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
             <div className={styles.summary}>
-              {cart.map((it) => (
+              {activeCart.map((it) => (
                 <div className={styles.row} key={it.id}>
                   <span>{it.petName}{it.qty > 1 ? ` ×${it.qty}` : ""}</span>
                   <span>{money(itemTotal(it))}</span>
