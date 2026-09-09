@@ -3,4 +3,5 @@
   font-size:.82rem; font-weight:700; text-align:center; padding:8px 16px;
   overflow:hidden; display:flex; align-items:center; justify-content:center; height:34px;
 }
-.bar span{display:block}
+.msg{display:block; opacity:0; transform:translateY(6px); transition:opacity .3s ease, transform .3s ease}
+.msgVisible{opacity:1; transform:translateY(0)}
