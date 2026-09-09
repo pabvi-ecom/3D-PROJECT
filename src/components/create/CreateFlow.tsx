@@ -103,7 +103,15 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ zone: zone.slug, ...body }),
     });
-    const json = await res.json();
+    let json: { url?: string; error?: string } = {};
+    try {
+      json = await res.json();
+    } catch {
+      // El servidor puede devolver texto plano (ej. "Request Entity Too Large")
+      // cuando el error ocurre antes de llegar a nuestro código (límite de tamaño
+      // del body, timeout de la plataforma, etc.) — no es JSON válido.
+      throw new Error(res.status === 413 ? "That photo is too large. Try a smaller one." : "Couldn't generate");
+    }
     if (!res.ok) throw new Error(json.error ?? "Couldn't generate");
     return json.url as string;
   }
@@ -210,16 +218,46 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     }
   }
 
+  // Las fotos de móvil pueden pesar varios MB — en base64 crecen ~33% más y
+  // podían superar el límite de tamaño del body en el servidor (413). Las
+  // reescalamos a un máximo razonable antes de mandarlas.
+  function resizeImage(dataUri: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1600;
+        const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return resolve(dataUri);
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.onerror = () => reject(new Error("bad image"));
+      img.src = dataUri;
+    });
+  }
+
   function onFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
     setError(null);
     setReadingFile(true);
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       const dataUri = reader.result as string;
-      setReadingFile(false);
-      setPhoto(dataUri);
+      try {
+        const resized = await resizeImage(dataUri);
+        setPhoto(resized);
+      } catch {
+        setPhoto(dataUri);
+      } finally {
+        setReadingFile(false);
+      }
     };
     reader.onerror = () => {
       setReadingFile(false);
