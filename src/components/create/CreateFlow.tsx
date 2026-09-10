@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import confetti from "canvas-confetti";
 import styles from "./CreateFlow.module.css";
 import { brand } from "@/config/brand";
-import { poses, paidBases, bases, NO_BASE_ID, NAMEPLATE_PRICE } from "@/config/products";
+import { poses, paidBases, bases, figureStyles, NO_BASE_ID, NAMEPLATE_PRICE } from "@/config/products";
 import type { Zone } from "@/config/zones";
 import { Timeline, type StepId } from "./Timeline";
 import { MiniGame } from "./MiniGame";
@@ -70,6 +70,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const [error, setError] = useState<string | null>(null);
 
   const [poseId, setPoseId] = useState(poses[0].id);
+  const [styleId, setStyleId] = useState(figureStyles[0].id);
   const [baseId, setBaseId] = useState(NO_BASE_ID);
   const [view, setView] = useState<"front" | "side">("front");
   const [addName, setAddName] = useState(false);
@@ -191,7 +192,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setView("front");
     setAddName(false);
     try {
-      const first = await postGenerate({ imageBase64: dataUri, poseId: poses[0].id, baseId: NO_BASE_ID, notes: notes.trim() || undefined });
+      const first = await postGenerate({ imageBase64: dataUri, poseId: poses[0].id, baseId: NO_BASE_ID, notes: notes.trim() || undefined, styleId });
       setDone(1);
       const restPoses = poses.slice(1);
       const restResults = await Promise.all(
@@ -256,7 +257,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       setNamedFigures(namedMap);
 
       setProgress(100);
-      setStep("pose");
+      setStep("base");
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -334,10 +335,6 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setStep("photo");
   }
 
-  function goPose() {
-    setStep("base");
-  }
-
   function goBase() {
     setStep("reveal");
   }
@@ -400,13 +397,14 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setFigures({});
     setNamedFigures({});
     setPoseId(poses[0].id);
+    setStyleId(figureStyles[0].id);
     setBaseId(NO_BASE_ID);
     setView("front");
     setAddName(false);
     setStep("name");
   }
 
-  const STEP_ORDER: StepId[] = ["email", "name", "photo", "pose", "base", "reveal", "ready"];
+  const STEP_ORDER: StepId[] = ["email", "name", "photo", "base", "reveal", "ready"];
   function goBack() {
     const idx = STEP_ORDER.indexOf(step);
     if (idx > 0) setStep(STEP_ORDER[idx - 1]);
@@ -520,7 +518,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
         {step === "name" && (
           <div className={styles.card}>
-            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 2 of 6</span></div>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 2 of 5</span></div>
             <h1>✏️ What&apos;s your pet&apos;s name?</h1>
             <p className={styles.sub}>We&apos;ll use it to personalize your preview and engrave it if you add a display base.</p>
             <form onSubmit={confirmName} className={styles.form}>
@@ -542,7 +540,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
         {step === "photo" && !generating && (
           <div className={styles.card}>
-            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 3 of 6</span></div>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 3 of 5</span></div>
             <h1>📸 Upload a photo of {petName}</h1>
             <p className={styles.sub}>Any normal snapshot works best when it&apos;s clear and front-facing.</p>
             {photo ? (
@@ -568,6 +566,19 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
                 onChange={(e) => setNotes(e.target.value)}
               />
             </label>
+
+            <div className={styles.baseChoice}>
+              {figureStyles.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  className={`${styles.baseBtn} ${styleId === s.id ? styles.baseBtnActive : ""}`}
+                  onClick={() => setStyleId(s.id)}
+                >
+                  {s.label} <small>{s.description}</small>
+                </button>
+              ))}
+            </div>
 
             {error && <div className={styles.err}>{error}</div>}
 
@@ -625,37 +636,9 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
           </div>
         )}
 
-        {step === "pose" && (
-          <div className={styles.card}>
-            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 4 of 6</span></div>
-            <h1>🐾 Pick a pose</h1>
-            <p className={styles.sub}>Both are ready — pick whichever looks most like {petName}.</p>
-            <div className={styles.poseGrid}>
-              {poses.map((p) => {
-                const img = figures[key(p.id, NO_BASE_ID, "front")];
-                return (
-                  <button
-                    key={p.id}
-                    className={`${styles.poseCard} ${poseId === p.id ? styles.poseCardActive : ""}`}
-                    onClick={() => setPoseId(p.id)}
-                  >
-                    {p.id === "sitting" && <span className={styles.popBadge}>86% pick this</span>}
-                    {img && <img src={img} alt={p.label} />}
-                    <span>{p.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-            <button className={styles.cta} onClick={goPose}>
-              Continue
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
-            </button>
-          </div>
-        )}
-
         {step === "base" && (
           <div className={styles.card}>
-            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 5 of 6</span></div>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 4 of 5</span></div>
             <h1>🏆 Add a display base?</h1>
             <p className={styles.sub}>A base with {petName}&apos;s name engraved makes it shelf-ready.</p>
 

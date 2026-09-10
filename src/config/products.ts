@@ -79,9 +79,45 @@ export interface Pose {
   prompt: string; // describe la postura para la IA
 }
 
+// Solo sentado — se quitó la elección de postura (menos pasos, menos
+// generación de IA, y era la fuente de la mayoría de bugs de consistencia).
 export const poses: Pose[] = [
-  { id: "sitting",  label: "Sitting",    price: 0, prompt: "sitting upright on its hindquarters, facing forward" },
-  { id: "standing", label: "Standing",   price: 0, prompt: "standing naturally on all four legs, facing forward" },
+  { id: "sitting", label: "Sitting", price: 0, prompt: "sitting upright on its hindquarters, facing forward" },
+];
+
+/**
+ * ESTILOS — se elige ANTES de generar (cambia cómo se esculpe la figura,
+ * no es un retoque posterior). `prompt` se añade a la descripción de la
+ * figura en el prompt de generación desde foto.
+ */
+export interface FigureStyle {
+  id: string;
+  label: string;
+  description: string;
+  prompt: string;
+}
+
+export const figureStyles: FigureStyle[] = [
+  {
+    id: "realistic",
+    label: "Realistic",
+    description: "True to life — every marking and detail.",
+    prompt: "",
+  },
+  {
+    id: "pixar",
+    label: "Pixar-style",
+    description: "Cute animated-movie look, big expressive eyes.",
+    prompt:
+      " Sculpt it in a cute Pixar/DreamWorks 3D animated movie style — big expressive eyes, soft rounded proportions, smooth stylized fur, vibrant saturated colors — while still clearly recognizable as this exact pet (same breed, colors and markings, just stylized).",
+  },
+  {
+    id: "clay",
+    label: "Claymation",
+    description: "Handcrafted stop-motion clay charm.",
+    prompt:
+      " Sculpt it in a handcrafted claymation / stop-motion clay style — a visible soft clay surface texture with gentle fingerprint-like imperfections, slightly chunky rounded proportions, a matte clay finish, like a character from a stop-motion animated film — while still clearly recognizable as this exact pet (same breed, colors and markings, just stylized).",
+  },
 ];
 
 /**

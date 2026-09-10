@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateFigurine, uploadImage } from "@/lib/kie";
 import { getZone } from "@/config/zones";
-import { poses, bases, NO_BASE_ID } from "@/config/products";
+import { poses, bases, figureStyles, NO_BASE_ID } from "@/config/products";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -27,7 +27,7 @@ const NO_BASE = "with no display base, standing directly on a clean seamless lig
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { imageBase64, imageUrl, referenceUrl, change, zone = "dogs", poseId, baseId = NO_BASE_ID, petName, notes, view } = body;
+    const { imageBase64, imageUrl, referenceUrl, change, zone = "dogs", poseId, baseId = NO_BASE_ID, petName, notes, view, styleId } = body;
 
     const z = getZone(zone);
     const animal = z?.animal ?? "pet";
@@ -102,6 +102,7 @@ export async function POST(req: NextRequest) {
       if (!src) {
         return NextResponse.json({ error: "Falta la foto (imageBase64/imageUrl) o referenceUrl" }, { status: 400 });
       }
+      const style = figureStyles.find((s) => s.id === styleId) ?? figureStyles[0];
       const viewNote =
         view === "side"
           ? ` Show the figurine from the SIDE — a full profile view, camera rotated 90° so the ${animal}'s ` +
@@ -119,7 +120,7 @@ export async function POST(req: NextRequest) {
         `If the fur is curly, matted or grows in thick corded locks (like a Puli, Komondor, or corded ` +
         `poodle-mix coat), sculpt those rope-like cords faithfully — do not smooth or simplify them into ` +
         `plain fluffy fur. The figurine is ${pose.prompt}, ${basePhrase}. The ${animal} must be perfectly ` +
-        `centered on the base, front-to-back and side-to-side.${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
+        `centered on the base, front-to-back and side-to-side.${style.prompt}${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
     }
 
     const extraRefUrls = change === "name" ? [] : baseRefUrls;
