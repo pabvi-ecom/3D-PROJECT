@@ -72,6 +72,10 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const [poseId, setPoseId] = useState(poses[0].id);
   const [styleId, setStyleId] = useState(figureStyles[0].id);
   const [styleFigures, setStyleFigures] = useState<Record<string, string>>({});
+  // Cachea las variantes (base/nombre/vista) ya generadas por estilo — si el
+  // usuario cambia de estilo y luego vuelve a uno que ya generó antes, se
+  // reutilizan en vez de volver a llamar a la IA.
+  const variantsCacheRef = useRef<Record<string, { figures: Record<string, string>; namedFigures: Record<string, string> }>>({});
   const [baseId, setBaseId] = useState(NO_BASE_ID);
   const [view, setView] = useState<"front" | "side">("front");
   const [addName, setAddName] = useState(false);
@@ -189,6 +193,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setStyleFigures({});
     setFigures({});
     setNamedFigures({});
+    variantsCacheRef.current = {};
     setGenTotal(figureStyles.length);
     setDone(0);
     setProgress(0);
@@ -223,6 +228,15 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   async function generateVariants() {
     const chosen = styleFigures[styleId];
     if (!chosen) return;
+
+    const cached = variantsCacheRef.current[styleId];
+    if (cached) {
+      setFigures(cached.figures);
+      setNamedFigures(cached.namedFigures);
+      setStep("base");
+      return;
+    }
+
     setGenerating(true);
     setError(null);
     setGenTotal(paidBases.length * 4);
@@ -271,6 +285,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       const namedMap: Record<string, string> = {};
       for (const [k, u] of namedResults) namedMap[k] = u;
       setNamedFigures(namedMap);
+      variantsCacheRef.current[styleId] = { figures: map, namedFigures: namedMap };
 
       setProgress(100);
       setStep("base");
@@ -347,7 +362,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     e.preventDefault();
     const n = nameDraft.trim();
     if (!n) return;
-    setPetName(n);
+    setPetName(n.charAt(0).toUpperCase() + n.slice(1));
     setStep("photo");
   }
 
@@ -413,6 +428,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setFigures({});
     setNamedFigures({});
     setStyleFigures({});
+    variantsCacheRef.current = {};
     setPoseId(poses[0].id);
     setStyleId(figureStyles[0].id);
     setBaseId(NO_BASE_ID);
@@ -599,7 +615,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
           <div className={`${styles.card} ${styles.genCard}`}>
             <div className={styles.genCol}>
               <span className={styles.stepTag}>Generating your preview…</span>
-              <h1>Bringing {petName} to life</h1>
+              <h1 className={styles.genTitle}>Bringing <span className={styles.petNameHighlight}>{petName}</span> to life</h1>
               <div className={styles.genStage}>
                 {photo && <img className={styles.genGhost} src={photo} alt="" />}
                 <div className={styles.genOverlay}>
@@ -652,6 +668,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
                   className={`${styles.poseCard} ${styleId === s.id ? styles.poseCardActive : ""}`}
                   onClick={() => setStyleId(s.id)}
                 >
+                  {s.popular && <span className={styles.popBadge}>70% pick this</span>}
                   {styleFigures[s.id] && <img src={styleFigures[s.id]} alt={s.label} />}
                   <span>{s.label}</span>
                 </button>

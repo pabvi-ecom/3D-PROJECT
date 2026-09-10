@@ -95,6 +95,7 @@ export interface FigureStyle {
   label: string;
   description: string;
   prompt: string;
+  popular?: boolean;
 }
 
 export const figureStyles: FigureStyle[] = [
@@ -102,6 +103,7 @@ export const figureStyles: FigureStyle[] = [
     id: "realistic",
     label: "Realistic",
     description: "True to life — every marking and detail.",
+    popular: true,
     prompt:
       " Sculpt it in a hyper-realistic, museum-quality collectible style — anatomically precise proportions, individually defined fur strands and texture (not smoothed or simplified), true-to-life fur color gradients and shading exactly as in the photo, realistic eye reflections, and fine sculpted details like whiskers, nose texture and ear folds — as if a professional figurine studio scanned and 3D-printed the real animal.",
   },
@@ -111,6 +113,20 @@ export const figureStyles: FigureStyle[] = [
     description: "Cute animated-movie look, big expressive eyes.",
     prompt:
       " Sculpt it in a cute Pixar/DreamWorks 3D animated movie style — big expressive eyes, soft rounded proportions, smooth stylized fur, vibrant saturated colors — while still clearly recognizable as this exact pet (same breed, colors and markings, just stylized).",
+  },
+  {
+    id: "superhero",
+    label: "Superhero",
+    description: "A flowing cape and mask — your pet, saving the day.",
+    prompt:
+      " Sculpt it dressed as a superhero — a flowing fabric cape draped over its back and a small mask around the eyes, in bold primary colors (deep blue and red), while keeping the pet's exact breed, fur colors and markings clearly recognizable underneath the costume.",
+  },
+  {
+    id: "royal",
+    label: "Royal",
+    description: "A tiny crown and cape fit for royalty.",
+    prompt:
+      " Sculpt it dressed in royal regalia — a small jeweled crown on its head and a soft velvet cape with a fur-trimmed collar in deep purple and gold, like a portrait of a noble, while keeping the pet's exact breed, fur colors and markings clearly recognizable underneath.",
   },
 ];
 

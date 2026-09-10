@@ -352,35 +352,32 @@ export function MiniGame({ onUnlock }: { onUnlock?: (pct: number, code: string) 
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.hud}>
-        <span>🏆 {best}</span>
-        <span>🎟️ {discountPct}%</span>
-        <span>{score}</span>
-      </div>
+      {started && !dead && (
+        <div className={styles.hud}>
+          <span>{score}</span>
+        </div>
+      )}
       <div className={styles.stage} onClick={jump}>
         <canvas ref={canvasRef} style={{ width: W, height: H }} className={styles.canvas} />
         {!started && !dead && (
           <div className={styles.overlay}>
-            <p>🎮 Play and get discounts</p>
-            <button className={styles.playBtn} onClick={jump}>Press space to play</button>
+            <p className={styles.overlayTitle}>Do you want to play while you wait?</p>
+            <button className={styles.playBtn} onClick={jump}>Play</button>
           </div>
         )}
         {dead && (
           <div className={styles.overlay}>
-            <p>Game over — score {Math.floor(stateRef.current.score)}</p>
-            {discountPct > 0 ? (
+            <p className={styles.overlayTitle}>Score {Math.floor(stateRef.current.score)} · best {best}</p>
+            {discountPct > 0 && (
               <div className={styles.discountWon}>
                 <span>🎉 You won {discountPct}% off!</span>
                 <code>{discountCode}</code>
               </div>
-            ) : (
-              <p className={styles.discountHint}>Reach score 50 for 5% off, 150 for 10% off</p>
             )}
             <button className={styles.playBtn} onClick={restart}>Play again</button>
           </div>
         )}
       </div>
-      <p className={styles.hint}>Press <kbd>Space</kbd> to jump</p>
     </div>
   );
 }

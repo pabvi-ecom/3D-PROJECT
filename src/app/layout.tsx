@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Nunito_Sans, Bricolage_Grotesque, Instrument_Sans, Caveat } from "next/font/google";
+import { Fraunces, Nunito_Sans, Bricolage_Grotesque, Instrument_Sans, Caveat, Baloo_2 } from "next/font/google";
 import "./globals.css";
 import { brand } from "@/config/brand";
 
@@ -34,6 +34,14 @@ const caveat = Caveat({
   weight: ["600", "700"],
 });
 
+// Tipografía redondeada y "gordita" tipo dibujos animados — usada en el
+// configurador (/create) para darle un aire más aesthetic/Pixar.
+const baloo = Baloo_2({
+  variable: "--font-baloo",
+  subsets: ["latin"],
+  weight: ["600", "700", "800"],
+});
+
 export const metadata: Metadata = {
   title: {
     default: `${brand.name} — Custom 3D figures of the ones you love`,
@@ -45,7 +53,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${nunito.variable} ${bricolage.variable} ${instrument.variable} ${caveat.variable}`}>
+    <html lang="en" className={`${fraunces.variable} ${nunito.variable} ${bricolage.variable} ${instrument.variable} ${caveat.variable} ${baloo.variable}`}>
       <body>{children}</body>
     </html>
   );
