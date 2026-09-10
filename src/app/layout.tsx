@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Nunito_Sans, Bricolage_Grotesque, Instrument_Sans, Caveat, Chewy, Permanent_Marker } from "next/font/google";
+import { Fraunces, Nunito_Sans, Bricolage_Grotesque, Instrument_Sans, Caveat, Bubblegum_Sans } from "next/font/google";
 import "./globals.css";
 import { brand } from "@/config/brand";
 
@@ -36,16 +36,10 @@ const caveat = Caveat({
 
 // Tipografía "bubble" hinchada tipo logo (referencia del usuario: Cutpile
 // Studio) — Chewy es la más parecida disponible en Google Fonts.
-const chewy = Chewy({
+// Tipografía "bubble" hinchada tipo logo (referencia del usuario: Cutpile
+// Studio) — Bubblegum Sans es la más inflada/redondeada de Google Fonts.
+const bubblegum = Bubblegum_Sans({
   variable: "--font-baloo",
-  subsets: ["latin"],
-  weight: ["400"],
-});
-
-// Rotulador/brush handwritten (referencia del usuario: Art Studio) — para
-// los títulos de cada paso del configurador /create.
-const marker = Permanent_Marker({
-  variable: "--font-marker",
   subsets: ["latin"],
   weight: ["400"],
 });
@@ -61,7 +55,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${nunito.variable} ${bricolage.variable} ${instrument.variable} ${caveat.variable} ${chewy.variable} ${marker.variable}`}>
+    <html lang="en" className={`${fraunces.variable} ${nunito.variable} ${bricolage.variable} ${instrument.variable} ${caveat.variable} ${bubblegum.variable}`}>
       <body>{children}</body>
     </html>
   );
