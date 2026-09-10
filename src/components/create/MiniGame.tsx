@@ -363,7 +363,7 @@ export function MiniGame({ onUnlock }: { onUnlock?: (pct: number, code: string) 
           <div className={styles.overlay}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/game/wanna-play.png" alt="Wanna play?" className={styles.overlayArt} />
-            <button className={styles.playBtn} onClick={jump}>Play</button>
+            <button className={styles.playBtn} onClick={jump}>Go</button>
           </div>
         )}
         {dead && (
