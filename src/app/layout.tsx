@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Nunito_Sans, Bricolage_Grotesque, Instrument_Sans, Caveat, Bubblegum_Sans } from "next/font/google";
+import { Fraunces, Nunito_Sans, Bricolage_Grotesque, Instrument_Sans, Caveat, Modak } from "next/font/google";
 import "./globals.css";
 import { brand } from "@/config/brand";
 
@@ -36,9 +36,9 @@ const caveat = Caveat({
 
 // Tipografía "bubble" hinchada tipo logo (referencia del usuario: Cutpile
 // Studio) — Chewy es la más parecida disponible en Google Fonts.
-// Tipografía "bubble" hinchada tipo logo (referencia del usuario: Cutpile
-// Studio) — Bubblegum Sans es la más inflada/redondeada de Google Fonts.
-const bubblegum = Bubblegum_Sans({
+// Tipografía "bubble" muy gorda/hinchada (referencia del usuario: Cutpile
+// Studio, Stolen Moon) — Modak es la más gruesa/redondeada de Google Fonts.
+const modak = Modak({
   variable: "--font-baloo",
   subsets: ["latin"],
   weight: ["400"],
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${nunito.variable} ${bricolage.variable} ${instrument.variable} ${caveat.variable} ${bubblegum.variable}`}>
+    <html lang="en" className={`${fraunces.variable} ${nunito.variable} ${bricolage.variable} ${instrument.variable} ${caveat.variable} ${modak.variable}`}>
       <body>{children}</body>
     </html>
   );

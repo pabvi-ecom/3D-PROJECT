@@ -26,12 +26,19 @@
 .genCol h1{margin-bottom:18px}
 
 .petNameHighlight{color:var(--accent)}
-.gameHint{margin:0 0 10px; text-align:center; font-family:var(--font-baloo); font-size:1.02rem; color:var(--accent-deep); background:var(--accent-soft); padding:8px 14px; border-radius:999px}
-
 .unlockedList{display:flex; flex-direction:column; gap:8px; margin-bottom:10px}
 .unlockedRow{display:flex; align-items:center; justify-content:space-between; gap:8px; background:var(--accent-soft); border-radius:12px; padding:8px 12px; font-size:.82rem; font-weight:800; color:var(--accent-deep)}
 .unlockedRow button{display:flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--line); border-radius:999px; padding:5px 10px; font-size:.76rem; font-weight:800; color:var(--ink); cursor:pointer}
 .unlockedRow code{font-weight:800; color:var(--accent-deep)}
+
+@keyframes popIn{
+  0%{transform:scale(.6); opacity:0}
+  60%{transform:scale(1.06); opacity:1}
+  100%{transform:scale(1)}
+}
+.unlockedRowWon{display:flex; align-items:center; justify-content:space-between; gap:8px; background:#E5F7EA; border:1px solid #34A853; border-radius:12px; padding:8px 12px; font-size:.82rem; font-weight:800; color:#1E7A38; animation:popIn .35s cubic-bezier(.34,1.56,.64,1)}
+.unlockedRowWon button{display:flex; align-items:center; gap:6px; background:#fff; border:1px solid #34A853; border-radius:999px; padding:5px 10px; font-size:.76rem; font-weight:800; color:#1E7A38; cursor:pointer}
+.unlockedRowWon code{font-weight:800; color:#1E7A38}
 @media(max-width:760px){
   .genCard{grid-template-columns:1fr}
 }

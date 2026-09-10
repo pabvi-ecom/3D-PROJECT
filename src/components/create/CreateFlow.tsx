@@ -637,19 +637,17 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
               </div>
             </div>
             <div className={styles.genCol}>
-              {unlockedDiscounts.length > 0 ? (
+              {unlockedDiscounts.length > 0 && (
                 <div className={styles.unlockedList}>
                   {unlockedDiscounts.map((d) => (
-                    <div key={d.code} className={styles.unlockedRow}>
-                      <span>🔓 {d.pct}% off unlocked!</span>
+                    <div key={d.code} className={styles.unlockedRowWon}>
+                      <span>🎉 {d.pct}% off unlocked!</span>
                       <button type="button" onClick={() => copyCode(d.code)}>
                         <code>{d.code}</code> {copiedCode === d.code ? "✓ Copied" : "Copy"}
                       </button>
                     </div>
                   ))}
                 </div>
-              ) : (
-                <p className={styles.gameHint}>👀 Play — you might just win a little discount</p>
               )}
               <MiniGame onUnlock={handleUnlock} />
             </div>
