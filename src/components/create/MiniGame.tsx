@@ -361,7 +361,8 @@ export function MiniGame({ onUnlock }: { onUnlock?: (pct: number, code: string) 
         <canvas ref={canvasRef} style={{ width: W, height: H }} className={styles.canvas} />
         {!started && !dead && (
           <div className={styles.overlay}>
-            <p className={styles.overlayTitle}>Do you want to play while you wait?</p>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/game/wanna-play.png" alt="Wanna play?" className={styles.overlayArt} />
             <button className={styles.playBtn} onClick={jump}>Play</button>
           </div>
         )}
