@@ -25,7 +25,6 @@
 .genCol .stepTag{margin-bottom:10px}
 .genCol h1{margin-bottom:18px}
 
-.genTitle{font-family:var(--font-baloo); font-weight:800; letter-spacing:-.01em}
 .petNameHighlight{color:var(--accent)}
 .gameHint{margin:0 0 10px; text-align:center; font-size:.86rem; font-weight:700; color:var(--accent-deep); background:var(--accent-soft); padding:8px 14px; border-radius:999px}
 
@@ -45,7 +44,7 @@
 .stepBack{flex:none; display:flex; align-items:center; justify-content:center; width:30px; height:30px; border-radius:50%; border:1.5px solid var(--line); background:var(--surface); color:var(--ink-soft); cursor:pointer; transition:border-color .15s ease, color .15s ease}
 .stepBack:hover{border-color:var(--accent); color:var(--accent)}
 
-.card h1{font-family:var(--font-display); font-weight:800; font-size:clamp(1.5rem,3.4vw,2rem); margin:0 0 8px; letter-spacing:-.02em}
+.card h1{font-family:var(--font-marker); font-weight:400; font-size:clamp(1.5rem,3.4vw,2rem); margin:0 0 8px; letter-spacing:.005em}
 .readyH1{font-size:clamp(1.25rem,2.4vw,1.55rem) !important}
 .readyH1Tight{font-size:clamp(1.1rem,2vw,1.35rem) !important; margin-top:10px !important}
 .sub{color:var(--ink-soft); margin:0 0 24px; font-size:.98rem; line-height:1.5}

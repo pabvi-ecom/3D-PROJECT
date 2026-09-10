@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Nunito_Sans, Bricolage_Grotesque, Instrument_Sans, Caveat, Chewy } from "next/font/google";
+import { Fraunces, Nunito_Sans, Bricolage_Grotesque, Instrument_Sans, Caveat, Chewy, Permanent_Marker } from "next/font/google";
 import "./globals.css";
 import { brand } from "@/config/brand";
 
@@ -42,6 +42,14 @@ const chewy = Chewy({
   weight: ["400"],
 });
 
+// Rotulador/brush handwritten (referencia del usuario: Art Studio) — para
+// los títulos de cada paso del configurador /create.
+const marker = Permanent_Marker({
+  variable: "--font-marker",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
 export const metadata: Metadata = {
   title: {
     default: `${brand.name} — Custom 3D figures of the ones you love`,
@@ -53,7 +61,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${nunito.variable} ${bricolage.variable} ${instrument.variable} ${caveat.variable} ${chewy.variable}`}>
+    <html lang="en" className={`${fraunces.variable} ${nunito.variable} ${bricolage.variable} ${instrument.variable} ${caveat.variable} ${chewy.variable} ${marker.variable}`}>
       <body>{children}</body>
     </html>
   );
