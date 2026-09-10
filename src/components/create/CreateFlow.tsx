@@ -78,6 +78,8 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const [unlockedDiscounts, setUnlockedDiscounts] = useState<{ pct: number; code: string }[]>([]);
   const [appliedDiscount, setAppliedDiscount] = useState<{ pct: number; code: string } | null>(null);
   const [discountError, setDiscountError] = useState<string | null>(null);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const [progress, setProgress] = useState(0);
@@ -456,6 +458,29 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setDiscountCode(match.code);
   }
 
+  async function goCheckout() {
+    setCheckoutLoading(true);
+    setCheckoutError(null);
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          zone: zone.slug,
+          email,
+          cart: activeCart,
+          discountCode: appliedDiscount?.code,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.url) throw new Error(json.error ?? "Couldn't start checkout");
+      window.location.href = json.url;
+    } catch (e) {
+      setCheckoutError((e as Error).message);
+      setCheckoutLoading(false);
+    }
+  }
+
   const timelineStep: StepId = generating ? "photo" : step === "reveal" ? "base" : step;
   const rv = REVIEWS[reviewIdx];
 
@@ -808,7 +833,10 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
               {discountError && <div className={styles.discountError}>{discountError}</div>}
 
               <div className={styles.tot}><span>Total</span><b>{money(finalTotal)}</b></div>
-              <button className={styles.buy} disabled>Continue to payment — coming soon</button>
+              {checkoutError && <div className={styles.discountError}>{checkoutError}</div>}
+              <button className={styles.buy} onClick={goCheckout} disabled={checkoutLoading}>
+                {checkoutLoading ? "Redirecting to payment…" : `Pay ${money(finalTotal)} →`}
+              </button>
             </div>
           </div>
         )}

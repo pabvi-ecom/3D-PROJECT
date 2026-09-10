@@ -150,6 +150,7 @@
 .summary{background:var(--accent-deep); border-radius:16px; padding:18px; margin-bottom:20px}
 .row{display:flex; justify-content:space-between; font-size:.9rem; padding:6px 0; color:#fff}
 .tot{display:flex; justify-content:space-between; font-weight:800; font-size:1.1rem; padding-top:10px; margin-top:6px; border-top:1px solid rgba(255,255,255,.25); color:#fff}
-.buy{width:100%; margin-top:14px; padding:15px; border:none; border-radius:999px; background:#fff; color:var(--accent-deep); font-weight:800; font-size:1rem; cursor:not-allowed; opacity:.85}
+.buy{width:100%; margin-top:14px; padding:15px; border:none; border-radius:999px; background:#fff; color:var(--accent-deep); font-weight:800; font-size:1rem; cursor:pointer; opacity:.95; transition:opacity .15s}
+.buy:disabled{cursor:not-allowed; opacity:.6}
 
 .linkBtn{width:100%; text-align:center; background:none; border:none; color:var(--ink-faint); font-weight:700; font-size:.88rem; padding:12px 0; cursor:pointer}
