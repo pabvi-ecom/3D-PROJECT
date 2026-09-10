@@ -332,7 +332,11 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         const resized = await resizeImage(dataUri);
         setPhoto(resized);
       } catch {
-        setPhoto(dataUri);
+        // Suele pasar con fotos HEIC de iPhone — el navegador no las puede
+        // decodificar. Mejor avisar claro que guardar una imagen rota que
+        // luego falla en silencio al generar.
+        setPhoto(null);
+        setError("We couldn't read that photo. If it's an iPhone HEIC photo, try a screenshot of it, or a JPG/PNG instead.");
       } finally {
         setReadingFile(false);
       }
@@ -578,7 +582,14 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
             <p className={styles.sub}>Any normal snapshot works best when it&apos;s clear and front-facing.</p>
             {photo ? (
               <div className={styles.photoPreview}>
-                <img src={photo} alt="" />
+                <img
+                  src={photo}
+                  alt=""
+                  onError={() => {
+                    setPhoto(null);
+                    setError("That photo couldn't be displayed. Please try a different one (JPG or PNG).");
+                  }}
+                />
                 <button className={styles.changePhoto} onClick={() => fileRef.current?.click()}>Change photo</button>
               </div>
             ) : (
