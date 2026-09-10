@@ -71,6 +71,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
   const [poseId, setPoseId] = useState(poses[0].id);
   const [styleId, setStyleId] = useState(figureStyles[0].id);
+  const [styleFigures, setStyleFigures] = useState<Record<string, string>>({});
   const [baseId, setBaseId] = useState(NO_BASE_ID);
   const [view, setView] = useState<"front" | "side">("front");
   const [addName, setAddName] = useState(false);
@@ -85,7 +86,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(0);
-  const [genTotal, setGenTotal] = useState(poses.length + poses.length * paidBases.length * 2);
+  const [genTotal, setGenTotal] = useState(figureStyles.length);
   const [phraseIdx, setPhraseIdx] = useState(0);
   const [reviewIdx, setReviewIdx] = useState(0);
 
@@ -179,12 +180,16 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showEngraved, plainFigure, comboKey, petName]);
 
-  async function generateAllPoses(dataUri: string) {
+  // Fase 1: genera las TRES variantes de estilo a la vez (sin base, sin
+  // nombre) para que el usuario elija la que más le guste — genera hype al
+  // ver varias opciones en vez de una sola.
+  async function generatePreviews(dataUri: string) {
     setGenerating(true);
     setError(null);
+    setStyleFigures({});
     setFigures({});
-    const totalGen = poses.length + poses.length * paidBases.length * 4;
-    setGenTotal(totalGen);
+    setNamedFigures({});
+    setGenTotal(figureStyles.length);
     setDone(0);
     setProgress(0);
     setPoseId(poses[0].id);
@@ -192,28 +197,44 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setView("front");
     setAddName(false);
     try {
-      const first = await postGenerate({ imageBase64: dataUri, poseId: poses[0].id, baseId: NO_BASE_ID, notes: notes.trim() || undefined, styleId });
-      setDone(1);
-      const restPoses = poses.slice(1);
-      const restResults = await Promise.all(
-        restPoses.map((p) =>
-          postGenerate({ referenceUrl: first, change: "pose", poseId: p.id }).then((url) => {
+      const results = await Promise.all(
+        figureStyles.map((s) =>
+          postGenerate({ imageBase64: dataUri, poseId: poses[0].id, baseId: NO_BASE_ID, notes: notes.trim() || undefined, styleId: s.id }).then((url) => {
             setDone((d) => d + 1);
-            return [p.id, url] as const;
+            return [s.id, url] as const;
           }),
         ),
       );
-      const noneByPose: Record<string, string> = { [poses[0].id]: first };
-      for (const [pid, url] of restResults) noneByPose[pid] = url;
+      const map: Record<string, string> = {};
+      for (const [sid, url] of results) map[sid] = url;
+      setStyleFigures(map);
+      setStyleId(figureStyles[0].id);
+      setProgress(100);
+      setStep("style");
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setGenerating(false);
+    }
+  }
 
+  // Fase 2: una vez elegido el estilo, genera las variantes de base (con/sin,
+  // frontal/lateral, grabada) a partir de esa imagen ya elegida.
+  async function generateVariants() {
+    const chosen = styleFigures[styleId];
+    if (!chosen) return;
+    setGenerating(true);
+    setError(null);
+    setGenTotal(paidBases.length * 4);
+    setDone(0);
+    setProgress(0);
+    try {
       const baseResults = await Promise.all(
-        poses.flatMap((p) =>
-          paidBases.map((b) =>
-            postGenerate({ referenceUrl: noneByPose[p.id], change: "base", baseId: b.id }).then((url) => {
-              setDone((d) => d + 1);
-              return [key(p.id, b.id, "front"), url] as const;
-            }),
-          ),
+        paidBases.map((b) =>
+          postGenerate({ referenceUrl: chosen, change: "base", baseId: b.id }).then((url) => {
+            setDone((d) => d + 1);
+            return [key(poseId, b.id, "front"), url] as const;
+          }),
         ),
       );
       // La lateral se genera encadenada desde la frontal ya generada (mismo objeto
@@ -221,34 +242,29 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       // producía un perro visualmente distinto (cara, pelaje) al de la frontal.
       const frontByCombo: Record<string, string> = Object.fromEntries(baseResults);
       const sideResults = await Promise.all(
-        poses.flatMap((p) =>
-          paidBases.map((b) =>
-            postGenerate({ referenceUrl: frontByCombo[key(p.id, b.id)], change: "view", poseId: p.id, baseId: b.id }).then((url) => {
-              setDone((d) => d + 1);
-              return [key(p.id, b.id, "side"), url] as const;
-            }),
-          ),
+        paidBases.map((b) =>
+          postGenerate({ referenceUrl: frontByCombo[key(poseId, b.id)], change: "view", poseId, baseId: b.id }).then((url) => {
+            setDone((d) => d + 1);
+            return [key(poseId, b.id, "side"), url] as const;
+          }),
         ),
       );
 
-      const map: Record<string, string> = {};
-      for (const pid of Object.keys(noneByPose)) map[key(pid, NO_BASE_ID, "front")] = noneByPose[pid];
+      const map: Record<string, string> = { [key(poseId, NO_BASE_ID, "front")]: chosen };
       for (const [k, u] of baseResults) map[k] = u;
       for (const [k, u] of sideResults) map[k] = u;
       setFigures(map);
 
       // Pre-genera TAMBIÉN las versiones grabadas (frontal + lateral) para cada
-      // postura/base — así activar "Engrave" o cambiar de vista es instantáneo,
-      // sin esperar a una generación nueva.
+      // base — así activar "Engrave" o cambiar de vista es instantáneo, sin
+      // esperar a una generación nueva.
       const namedResults = await Promise.all(
-        poses.flatMap((p) =>
-          paidBases.flatMap((b) =>
-            (["front", "side"] as const).map((v) =>
-              postGenerate({ referenceUrl: map[key(p.id, b.id, v)], change: "name", baseId: b.id, petName }).then((url) => {
-                setDone((d) => d + 1);
-                return [key(p.id, b.id, v), url] as const;
-              }),
-            ),
+        paidBases.flatMap((b) =>
+          (["front", "side"] as const).map((v) =>
+            postGenerate({ referenceUrl: map[key(poseId, b.id, v)], change: "name", baseId: b.id, petName }).then((url) => {
+              setDone((d) => d + 1);
+              return [key(poseId, b.id, v), url] as const;
+            }),
           ),
         ),
       );
@@ -396,6 +412,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setNotes("");
     setFigures({});
     setNamedFigures({});
+    setStyleFigures({});
     setPoseId(poses[0].id);
     setStyleId(figureStyles[0].id);
     setBaseId(NO_BASE_ID);
@@ -404,7 +421,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setStep("name");
   }
 
-  const STEP_ORDER: StepId[] = ["email", "name", "photo", "base", "reveal", "ready"];
+  const STEP_ORDER: StepId[] = ["email", "name", "photo", "style", "base", "reveal", "ready"];
   function goBack() {
     const idx = STEP_ORDER.indexOf(step);
     if (idx > 0) setStep(STEP_ORDER[idx - 1]);
@@ -479,7 +496,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     }
   }
 
-  const timelineStep: StepId = generating ? "photo" : step === "reveal" ? "base" : step;
+  const timelineStep: StepId = step === "reveal" ? "base" : step;
   const rv = REVIEWS[reviewIdx];
 
   return (
@@ -567,23 +584,10 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
               />
             </label>
 
-            <div className={styles.baseChoice}>
-              {figureStyles.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  className={`${styles.baseBtn} ${styleId === s.id ? styles.baseBtnActive : ""}`}
-                  onClick={() => setStyleId(s.id)}
-                >
-                  {s.label} <small>{s.description}</small>
-                </button>
-              ))}
-            </div>
-
             {error && <div className={styles.err}>{error}</div>}
 
             {photo && (
-              <button className={styles.cta} onClick={() => generateAllPoses(photo)}>
+              <button className={styles.cta} onClick={() => generatePreviews(photo)}>
                 Continue
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
               </button>
@@ -636,9 +640,33 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
           </div>
         )}
 
-        {step === "base" && (
+        {step === "style" && !generating && (
           <div className={styles.card}>
             <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 4 of 5</span></div>
+            <h1>✨ Pick your favorite</h1>
+            <p className={styles.sub}>All three are ready — choose the one that feels most like {petName}.</p>
+            <div className={styles.poseGrid}>
+              {figureStyles.map((s) => (
+                <button
+                  key={s.id}
+                  className={`${styles.poseCard} ${styleId === s.id ? styles.poseCardActive : ""}`}
+                  onClick={() => setStyleId(s.id)}
+                >
+                  {styleFigures[s.id] && <img src={styleFigures[s.id]} alt={s.label} />}
+                  <span>{s.label}</span>
+                </button>
+              ))}
+            </div>
+            <button className={styles.cta} onClick={generateVariants}>
+              Continue
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
+            </button>
+          </div>
+        )}
+
+        {step === "base" && (
+          <div className={styles.card}>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 5 of 5</span></div>
             <h1>🏆 Add a display base?</h1>
             <p className={styles.sub}>A base with {petName}&apos;s name engraved makes it shelf-ready.</p>
 

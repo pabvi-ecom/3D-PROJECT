@@ -3,9 +3,9 @@
 import { motion } from "framer-motion";
 import styles from "./Timeline.module.css";
 
-export type StepId = "email" | "name" | "photo" | "base" | "reveal" | "ready";
+export type StepId = "email" | "name" | "photo" | "style" | "base" | "reveal" | "ready";
 
-const STEPS: StepId[] = ["email", "name", "photo", "base", "ready"];
+const STEPS: StepId[] = ["email", "name", "photo", "style", "base", "ready"];
 
 export function Timeline({ current }: { current: StepId }) {
   const currentIndex = Math.max(0, STEPS.indexOf(current));
