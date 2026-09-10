@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Nunito_Sans, Bricolage_Grotesque, Instrument_Sans, Caveat, Fredoka } from "next/font/google";
+import { Fraunces, Nunito_Sans, Bricolage_Grotesque, Instrument_Sans, Caveat, Chewy } from "next/font/google";
 import "./globals.css";
 import { brand } from "@/config/brand";
 
@@ -34,12 +34,12 @@ const caveat = Caveat({
   weight: ["600", "700"],
 });
 
-// Tipografía redondeada y "gordita" tipo dibujos animados — usada en el
-// configurador (/create) para darle un aire más aesthetic/Pixar.
-const fredoka = Fredoka({
+// Tipografía "bubble" hinchada tipo logo (referencia del usuario: Cutpile
+// Studio) — Chewy es la más parecida disponible en Google Fonts.
+const chewy = Chewy({
   variable: "--font-baloo",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["400"],
 });
 
 export const metadata: Metadata = {
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${nunito.variable} ${bricolage.variable} ${instrument.variable} ${caveat.variable} ${fredoka.variable}`}>
+    <html lang="en" className={`${fraunces.variable} ${nunito.variable} ${bricolage.variable} ${instrument.variable} ${caveat.variable} ${chewy.variable}`}>
       <body>{children}</body>
     </html>
   );
