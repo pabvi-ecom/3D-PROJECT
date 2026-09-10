@@ -3,9 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./MiniGame.module.css";
 
-// 9:16 vertical — usa el hueco que sobraba debajo del canvas horizontal viejo.
-const W = 270;
-const H = 480;
+// Más ancho que alto — se ve venir mejor los obstáculos por la derecha.
+const W = 360;
+const H = 400;
 const GROUND_Y = H - 46;
 const GRAVITY = 1.3;
 const JUMP_V = -18.5;
@@ -28,6 +28,17 @@ const DISCOUNT_MILESTONES = [
   { score: 150, pct: 10, code: "PLAY10" },
 ];
 
+// Cada 15 puntos entra en un "túnel" temático — 2s sin obstáculos y con
+// otro color, para dar variedad. El tema se elige al azar entre estos.
+const TUNNEL_EVERY = 15;
+const TUNNEL_FRAMES = 120; // ~2s a 60fps
+const THEMES = [
+  { sky1: "#CFE8FF", sky2: "#EAF3FE", grass: "#5FAE6A", grassEdge: "#4C9A5B" }, // normal
+  { sky1: "#6B4FA0", sky2: "#3E2C63", grass: "#4A3170", grassEdge: "#3A2558" }, // túnel morado
+  { sky1: "#FFB37B", sky2: "#FF8C42", grass: "#C96A2E", grassEdge: "#A85423" }, // túnel atardecer
+  { sky1: "#1B2A4A", sky2: "#0E1830", grass: "#16233F", grassEdge: "#0E1830" }, // túnel noche
+];
+
 export function MiniGame({ onUnlock }: { onUnlock?: (pct: number, code: string) => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const spriteRef = useRef<HTMLImageElement | null>(null);
@@ -46,6 +57,9 @@ export function MiniGame({ onUnlock }: { onUnlock?: (pct: number, code: string) 
     dead: false,
     discountPct: 0,
     milestoneIdx: 0,
+    tunnelFrames: 0,
+    themeIdx: 0,
+    lastTunnelScore: 0,
   });
   const [score, setScore] = useState(0);
   const [best, setBest] = useState(0);
@@ -83,6 +97,9 @@ export function MiniGame({ onUnlock }: { onUnlock?: (pct: number, code: string) 
     s.dead = false;
     s.discountPct = 0;
     s.milestoneIdx = 0;
+    s.tunnelFrames = 0;
+    s.themeIdx = 0;
+    s.lastTunnelScore = 0;
     setScore(0);
     setDiscountPct(0);
     setDiscountCode("");
@@ -230,27 +247,30 @@ export function MiniGame({ onUnlock }: { onUnlock?: (pct: number, code: string) 
     function loop() {
       const s = stateRef.current;
       ctx!.clearRect(0, 0, W, H);
+      const theme = THEMES[s.themeIdx];
 
-      // cielo con degradado + sol
+      // cielo con degradado (cambia de tema dentro del túnel)
       const sky = ctx!.createLinearGradient(0, 0, 0, GROUND_Y);
-      sky.addColorStop(0, "#CFE8FF");
-      sky.addColorStop(1, "#EAF3FE");
+      sky.addColorStop(0, theme.sky1);
+      sky.addColorStop(1, theme.sky2);
       ctx!.fillStyle = sky;
       ctx!.fillRect(0, 0, W, GROUND_Y);
 
-      // nubes
-      ctx!.fillStyle = "rgba(255,255,255,.8)";
-      [[60, 70, 22], [100, 80, 16], [30, 130, 18]].forEach(([cx, cy, r]) => {
-        ctx!.beginPath();
-        ctx!.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx!.arc(cx + r * 0.9, cy + 4, r * 0.75, 0, Math.PI * 2);
-        ctx!.fill();
-      });
+      // nubes (solo en el tema normal)
+      if (s.themeIdx === 0) {
+        ctx!.fillStyle = "rgba(255,255,255,.8)";
+        [[60, 70, 22], [100, 80, 16], [30, 130, 18]].forEach(([cx, cy, r]) => {
+          ctx!.beginPath();
+          ctx!.arc(cx, cy, r, 0, Math.PI * 2);
+          ctx!.arc(cx + r * 0.9, cy + 4, r * 0.75, 0, Math.PI * 2);
+          ctx!.fill();
+        });
+      }
 
-      // césped
-      ctx!.fillStyle = "#5FAE6A";
+      // césped / suelo del túnel
+      ctx!.fillStyle = theme.grass;
       ctx!.fillRect(0, GROUND_Y, W, H - GROUND_Y);
-      ctx!.fillStyle = "#4C9A5B";
+      ctx!.fillStyle = theme.grassEdge;
       ctx!.fillRect(0, GROUND_Y, W, 4);
 
       if (started && !s.dead) {
@@ -263,18 +283,27 @@ export function MiniGame({ onUnlock }: { onUnlock?: (pct: number, code: string) 
           s.jumping = false;
         }
 
-        s.framesSinceSpawn++;
-        if (s.framesSinceSpawn >= s.nextGapFrames) {
-          s.framesSinceSpawn = 0;
-          // Alterna huecos cortos y largos — no siempre a la misma distancia.
-          const isShort = Math.random() < 0.5;
-          const base = isShort ? 55 : 110;
-          s.nextGapFrames = Math.max(46, base - s.speed * 3 + Math.random() * 26);
+        // Túnel: 2s sin obstáculos nuevos y con otro color de fondo, cada
+        // TUNNEL_EVERY puntos — variedad visual sin subir la dificultad.
+        if (s.tunnelFrames > 0) {
+          s.tunnelFrames--;
+          if (s.tunnelFrames === 0) s.themeIdx = 0;
+        }
 
-          const kind = KINDS[Math.floor(Math.random() * KINDS.length)];
-          const h = kind === "bush" ? 16 + Math.random() * 8 : kind === "cat" ? 20 : kind === "car" ? 30 : kind === "house" ? 46 : 30 + Math.random() * 14;
-          const w = kind === "bush" ? 26 + Math.random() * 10 : kind === "cat" ? 26 : kind === "car" ? 46 : kind === "house" ? 40 : 20 + Math.random() * 8;
-          s.obstacles.push({ x: W, w, h, kind });
+        if (s.tunnelFrames <= 0) {
+          s.framesSinceSpawn++;
+          if (s.framesSinceSpawn >= s.nextGapFrames) {
+            s.framesSinceSpawn = 0;
+            // Alterna huecos cortos y largos — no siempre a la misma distancia.
+            const isShort = Math.random() < 0.5;
+            const base = isShort ? 55 : 110;
+            s.nextGapFrames = Math.max(46, base - s.speed * 3 + Math.random() * 26);
+
+            const kind = KINDS[Math.floor(Math.random() * KINDS.length)];
+            const h = kind === "bush" ? 16 + Math.random() * 8 : kind === "cat" ? 20 : kind === "car" ? 30 : kind === "house" ? 46 : 30 + Math.random() * 14;
+            const w = kind === "bush" ? 26 + Math.random() * 10 : kind === "cat" ? 26 : kind === "car" ? 46 : kind === "house" ? 40 : 20 + Math.random() * 8;
+            s.obstacles.push({ x: W, w, h, kind });
+          }
         }
 
         s.obstacles.forEach((o) => (o.x -= s.speed));
@@ -284,6 +313,13 @@ export function MiniGame({ onUnlock }: { onUnlock?: (pct: number, code: string) 
         s.score += 0.06;
         const floored = Math.floor(s.score);
         setScore(floored);
+
+        if (s.tunnelFrames <= 0 && floored > 0 && floored % TUNNEL_EVERY === 0 && floored !== s.lastTunnelScore) {
+          s.tunnelFrames = TUNNEL_FRAMES;
+          s.lastTunnelScore = floored;
+          s.themeIdx = 1 + Math.floor(Math.random() * (THEMES.length - 1));
+          s.obstacles = [];
+        }
 
         // Hitos de descuento: aparece un símbolo flotando en el aire un poco
         // antes del score objetivo — hay que SALTAR y TOCARLO para cobrarlo.
