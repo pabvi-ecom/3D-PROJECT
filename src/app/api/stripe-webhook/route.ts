@@ -1,17 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import { updateRecord } from "@/lib/airtable";
 
 export const runtime = "nodejs";
 
 async function fulfill(session: Stripe.Checkout.Session) {
-  // TODO: sin base de datos todavía — de momento solo deja rastro en los
-  // logs de Vercel. Cuando haya persistencia real, aquí se guarda el
-  // pedido y se dispara el envío del archivo a JLC3DP.
+  const orderId = session.metadata?.airtable_order_id;
+  if (!orderId) {
+    console.error("[stripe-webhook] no airtable_order_id in session metadata", session.id);
+    return;
+  }
+
+  await updateRecord("Orders", orderId, {
+    "Order ID": session.id,
+    Status: "Paid",
+    "Paid At": new Date().toISOString(),
+    "Total Paid": (session.amount_total ?? 0) / 100,
+  });
+
+  // TODO: siguiente paso de la automatización — mandar cada OrderItem
+  // (metadata.airtable_item_ids) a la API de Tripo para generar el modelo
+  // 3D. Pendiente de la API key de Tripo.
+
   console.log("[stripe-webhook] order paid", {
     session_id: session.id,
+    airtable_order_id: orderId,
     email: session.customer_details?.email,
     amount_total: session.amount_total,
-    currency: session.currency,
   });
 }
 
