@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { updateRecord } from "@/lib/airtable";
+import { updateRecord, getRecord } from "@/lib/airtable";
+import { createImageToModelTask } from "@/lib/tripo";
 
 export const runtime = "nodejs";
 
@@ -18,9 +19,22 @@ async function fulfill(session: Stripe.Checkout.Session) {
     "Total Paid": (session.amount_total ?? 0) / 100,
   });
 
-  // TODO: siguiente paso de la automatización — mandar cada OrderItem
-  // (metadata.airtable_item_ids) a la API de Tripo para generar el modelo
-  // 3D. Pendiente de la API key de Tripo.
+  // Dispara la generación 3D en Tripo para cada figura del pedido — solo
+  // se lanza la tarea aquí (es async, tarda 10-120s); /api/cron/poll-tripo
+  // se encarga de comprobar el resultado y guardarlo.
+  const itemIds = (session.metadata?.airtable_item_ids ?? "").split(",").filter(Boolean);
+  for (const itemId of itemIds) {
+    try {
+      const item = await getRecord("OrderItems", itemId);
+      const figureUrl = item.fields["Figure Image URL"] as string | undefined;
+      if (!figureUrl) continue;
+      const taskId = await createImageToModelTask(figureUrl);
+      await updateRecord("OrderItems", itemId, { "Tripo Task ID": taskId, "Tripo Status": "Processing" });
+    } catch (e) {
+      console.error("[stripe-webhook] tripo dispatch failed", itemId, (e as Error).message);
+      await updateRecord("OrderItems", itemId, { "Tripo Status": "Failed" }).catch(() => {});
+    }
+  }
 
   console.log("[stripe-webhook] order paid", {
     session_id: session.id,

@@ -33,3 +33,17 @@ export async function createRecords(table: string, records: { fields: Record<str
 export async function updateRecord(table: string, id: string, fields: Record<string, unknown>): Promise<void> {
   await airtableFetch(`${table}/${id}`, { method: "PATCH", body: JSON.stringify({ fields }) });
 }
+
+export async function getRecord(table: string, id: string): Promise<{ id: string; fields: Record<string, unknown> }> {
+  return airtableFetch(`${table}/${id}`);
+}
+
+export async function listRecords(
+  table: string,
+  opts?: { filterByFormula?: string },
+): Promise<{ id: string; fields: Record<string, unknown> }[]> {
+  const params = new URLSearchParams();
+  if (opts?.filterByFormula) params.set("filterByFormula", opts.filterByFormula);
+  const json = await airtableFetch(`${table}?${params.toString()}`);
+  return json.records as { id: string; fields: Record<string, unknown> }[];
+}
