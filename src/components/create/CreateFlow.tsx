@@ -649,7 +649,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
                   ))}
                 </div>
               ) : (
-                <p className={styles.gameHint}>🎯 Get up to 10% off playing the mini-game</p>
+                <p className={styles.gameHint}>👀 Play — you might just win a little discount</p>
               )}
               <MiniGame onUnlock={handleUnlock} />
             </div>
