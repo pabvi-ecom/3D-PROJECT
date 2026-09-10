@@ -672,6 +672,16 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
             <div className={styles.stage}>
               {figure && <img src={figure} alt={`${animal} figure`} />}
+              {wantsBase && (
+                <button
+                  type="button"
+                  className={styles.rotateBtn}
+                  onClick={() => setView((v) => (v === "front" ? "side" : "front"))}
+                  aria-label="Rotate figure"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7" /><path d="M21 3v6h-6" /></svg>
+                </button>
+              )}
             </div>
 
             <div className={styles.baseChoice}>
@@ -688,11 +698,6 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
             {wantsBase && (
               <>
-                <div className={styles.baseChoice}>
-                  <button className={`${styles.baseBtn} ${view === "front" ? styles.baseBtnActive : ""}`} onClick={() => setView("front")}>Front view</button>
-                  <button className={`${styles.baseBtn} ${view === "side" ? styles.baseBtnActive : ""}`} onClick={() => setView("side")}>Side view</button>
-                </div>
-
                 <label className={styles.toggle}>
                   <input type="checkbox" checked={addName} onChange={(e) => setAddName(e.target.checked)} />
                   Engrave &quot;{petName.toUpperCase()}&quot; on the base (+{money(NAMEPLATE_PRICE)})
@@ -704,6 +709,10 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
             <button className={styles.cta} onClick={goBase} disabled={nameLoading}>
               {nameLoading ? "Engraving…" : "Continue"}
               {!nameLoading && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>}
+            </button>
+
+            <button className={styles.linkBtn} onClick={() => setStep("style")}>
+              ← Try a different style
             </button>
           </div>
         )}

@@ -102,7 +102,8 @@ export const figureStyles: FigureStyle[] = [
     id: "realistic",
     label: "Realistic",
     description: "True to life — every marking and detail.",
-    prompt: "",
+    prompt:
+      " Sculpt it in a hyper-realistic, museum-quality collectible style — anatomically precise proportions, individually defined fur strands and texture (not smoothed or simplified), true-to-life fur color gradients and shading exactly as in the photo, realistic eye reflections, and fine sculpted details like whiskers, nose texture and ear folds — as if a professional figurine studio scanned and 3D-printed the real animal.",
   },
   {
     id: "pixar",
@@ -110,13 +111,6 @@ export const figureStyles: FigureStyle[] = [
     description: "Cute animated-movie look, big expressive eyes.",
     prompt:
       " Sculpt it in a cute Pixar/DreamWorks 3D animated movie style — big expressive eyes, soft rounded proportions, smooth stylized fur, vibrant saturated colors — while still clearly recognizable as this exact pet (same breed, colors and markings, just stylized).",
-  },
-  {
-    id: "clay",
-    label: "Claymation",
-    description: "Handcrafted stop-motion clay charm.",
-    prompt:
-      " Sculpt it in a handcrafted claymation / stop-motion clay style — a visible soft clay surface texture with gentle fingerprint-like imperfections, slightly chunky rounded proportions, a matte clay finish, like a character from a stop-motion animated film — while still clearly recognizable as this exact pet (same breed, colors and markings, just stylized).",
   },
 ];
 
