@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { getZone, zoneSlugs } from "@/config/zones";
 import { brand } from "@/config/brand";
 import styles from "./success.module.css";
+import { StatusPoller } from "./StatusPoller";
 
 export function generateStaticParams() {
   return zoneSlugs.map((zone) => ({ zone }));
@@ -49,6 +50,7 @@ export default async function SuccessPage({
         </p>
         {amount != null && <div className={styles.amount}>{brand.currencySymbol}{(amount / 100).toFixed(2)} paid</div>}
         <p className={styles.sub}>Your {z.animal}&apos;s figure goes into production next — 2–4 days to your door.</p>
+        {paid && <StatusPoller />}
         <a className={styles.cta} href={`/${zone}`}>Back to {brand.name}</a>
       </div>
     </div>
