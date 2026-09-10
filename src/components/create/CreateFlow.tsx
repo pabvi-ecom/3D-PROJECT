@@ -76,6 +76,8 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const [cart, setCart] = useState<CartItem[]>([]);
   const [discountCode, setDiscountCode] = useState("");
   const [unlockedDiscounts, setUnlockedDiscounts] = useState<{ pct: number; code: string }[]>([]);
+  const [appliedDiscount, setAppliedDiscount] = useState<{ pct: number; code: string } | null>(null);
+  const [discountError, setDiscountError] = useState<string | null>(null);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
   const [progress, setProgress] = useState(0);
@@ -102,6 +104,8 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   // Los artículos a 0 unidades se quedan en el carrito (para poder volver a
   // subirlos) pero no cuentan de cara al checkout.
   const activeCart = cart.filter((it) => it.qty > 0);
+  const discountAmount = appliedDiscount ? cartTotal * (appliedDiscount.pct / 100) : 0;
+  const finalTotal = cartTotal - discountAmount;
 
   // Progreso hacia el envío gratis — cuenta lo que ya hay en el carrito MÁS
   // la figura que está a punto de añadirse (aún no está en `cart` en "reveal").
@@ -437,6 +441,21 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setTimeout(() => setCopiedCode((c) => (c === code ? null : c)), 1600);
   }
 
+  // Solo son válidos los códigos que el propio jugador desbloqueó en el
+  // minijuego durante esta sesión — no hay una lista universal de cupones.
+  function applyCode(rawCode: string) {
+    const code = rawCode.trim().toUpperCase();
+    const match = unlockedDiscounts.find((d) => d.code.toUpperCase() === code);
+    if (!match) {
+      setAppliedDiscount(null);
+      setDiscountError("That code isn't valid — play the mini-game to earn one.");
+      return;
+    }
+    setAppliedDiscount(match);
+    setDiscountError(null);
+    setDiscountCode(match.code);
+  }
+
   const timelineStep: StepId = generating ? "photo" : step === "reveal" ? "base" : step;
   const rv = REVIEWS[reviewIdx];
 
@@ -738,7 +757,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
                 {unlockedDiscounts.map((d) => (
                   <div key={d.code} className={styles.unlockedRow}>
                     <span>🎟️ {d.pct}% off code ready</span>
-                    <button type="button" onClick={() => { setDiscountCode(d.code); copyCode(d.code); }}>
+                    <button type="button" onClick={() => { applyCode(d.code); copyCode(d.code); }}>
                       <code>{d.code}</code> {copiedCode === d.code ? "✓ Copied" : "Use"}
                     </button>
                   </div>
@@ -767,17 +786,28 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
                 </div>
               ))}
 
-              <label className={styles.discountRow}>
-                <input
-                  type="text"
-                  placeholder="Discount code"
-                  value={discountCode}
-                  onChange={(e) => setDiscountCode(e.target.value)}
-                />
-                <button type="button" className={styles.discountBtn}>Apply</button>
-              </label>
+              {appliedDiscount ? (
+                <div className={styles.row}>
+                  <span>Code {appliedDiscount.code} ({appliedDiscount.pct}% off)</span>
+                  <span>−{money(discountAmount)}</span>
+                </div>
+              ) : (
+                <label className={styles.discountRow}>
+                  <input
+                    type="text"
+                    placeholder="Discount code"
+                    value={discountCode}
+                    onChange={(e) => {
+                      setDiscountCode(e.target.value);
+                      setDiscountError(null);
+                    }}
+                  />
+                  <button type="button" className={styles.discountBtn} onClick={() => applyCode(discountCode)}>Apply</button>
+                </label>
+              )}
+              {discountError && <div className={styles.discountError}>{discountError}</div>}
 
-              <div className={styles.tot}><span>Total</span><b>{money(cartTotal)}</b></div>
+              <div className={styles.tot}><span>Total</span><b>{money(finalTotal)}</b></div>
               <button className={styles.buy} disabled>Continue to payment — coming soon</button>
             </div>
           </div>
