@@ -115,18 +115,18 @@ export const figureStyles: FigureStyle[] = [
       " Sculpt it in a cute Pixar/DreamWorks 3D animated movie style — big expressive eyes, soft rounded proportions, smooth stylized fur, vibrant saturated colors — while still clearly recognizable as this exact pet (same breed, colors and markings, just stylized).",
   },
   {
-    id: "superhero",
-    label: "Superhero",
-    description: "A flowing cape and mask — your pet, saving the day.",
+    id: "santa",
+    label: "Santa Claus",
+    description: "A little Santa hat and coat, ready for the holidays.",
     prompt:
-      " Sculpt it dressed as a superhero — a flowing fabric cape draped over its back and a small mask around the eyes, in bold primary colors (deep blue and red), while keeping the pet's exact breed, fur colors and markings clearly recognizable underneath the costume.",
+      " Sculpt it dressed as Santa Claus — a plush red-and-white Santa hat with a fuzzy white pom-pom, and a little red coat trimmed in white fur with a black belt, while keeping the pet's exact breed, fur colors and markings clearly recognizable underneath the costume.",
   },
   {
-    id: "royal",
-    label: "Royal",
-    description: "A tiny crown and cape fit for royalty.",
+    id: "halloween",
+    label: "Halloween",
+    description: "A playful pumpkin costume for spooky season.",
     prompt:
-      " Sculpt it dressed in royal regalia — a small jeweled crown on its head and a soft velvet cape with a fur-trimmed collar in deep purple and gold, like a portrait of a noble, while keeping the pet's exact breed, fur colors and markings clearly recognizable underneath.",
+      " Sculpt it dressed in a playful Halloween pumpkin costume — a soft orange pumpkin-shaped body wrap with a little green stem hat and painted jack-o'-lantern face details on the fabric, while keeping the pet's exact breed, fur colors and markings clearly recognizable underneath the costume.",
   },
 ];
 
