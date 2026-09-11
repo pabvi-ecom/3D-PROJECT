@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import styles from "./CreateFlow.module.css";
 import { brand } from "@/config/brand";
@@ -530,7 +531,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         <span className={styles.headerSpacer} />
       </header>
 
-      <main className={`${styles.main} ${generating ? styles.mainWide : ""}`}>
+      <main className={`${styles.main} ${generating ? styles.mainWider : ""}`}>
         {step === "email" && (
           <div className={styles.card}>
             <span className={styles.stepTag}>Before we start</span>
@@ -623,7 +624,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         )}
 
         {generating && (
-          <div className={`${styles.card} ${styles.genCard}`}>
+          <div className={`${styles.card} ${styles.genCard} ${styles.genCard3}`}>
             <div className={styles.genCol}>
               <span className={styles.stepTag}>Generating your preview…</span>
               <h1 className={styles.genTitle}>Bringing <span className={styles.petNameHighlight}>{petName}</span> to life</h1>
@@ -662,6 +663,27 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
               )}
               <MiniGame onUnlock={handleUnlock} />
             </div>
+            <motion.div
+              className={styles.reviewScrollCol}
+              initial={{ opacity: 0, y: 60 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <div className={styles.reviewScrollWrap}>
+                <div className={styles.reviewScrollList}>
+                  {[...REVIEWS, ...REVIEWS].map((r, i) => (
+                    <div className={styles.reviewScrollCard} key={`${r.name}-${i}`}>
+                      <img src={r.src} alt="" />
+                      <div>
+                        <span className={styles.reviewScrollStars}>★★★★★</span>
+                        <p>&ldquo;{r.text}&rdquo;</p>
+                        <span>{r.name} · {r.breed}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
           </div>
         )}
 
