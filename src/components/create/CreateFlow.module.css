@@ -21,7 +21,7 @@
 .mainWide{max-width:940px}
 .mainWider{max-width:1180px}
 
-.genWrap{display:flex; align-items:flex-start; justify-content:center; gap:24px}
+.genWrap{display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:center; gap:24px}
 .genCard{display:grid; grid-template-columns:1fr 1fr; gap:clamp(20px,3vw,36px); align-items:start; flex:1; min-width:0}
 .genCol{min-width:0}
 .genCol .stepTag{margin-bottom:10px}

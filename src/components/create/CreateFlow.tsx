@@ -53,13 +53,39 @@ function itemTotal(it: CartItem): number {
 
 // Widget flotante tipo "historia" — una review a la vez, entra rápido desde
 // abajo, se queda quieta (con un balanceo sutil) y a los 4s sale disparada
-// hacia arriba; la siguiente entra justo después.
+// hacia arriba; la siguiente entra justo después. Todas las fotos se
+// precargan al montar para que nunca entre una imagen a medio cargar
+// (eso es lo que hacía que a veces "no apareciera" la foto).
 function ReviewStory() {
   const [idx, setIdx] = useState(0);
+  const [ready, setReady] = useState(false);
+
   useEffect(() => {
+    let cancelled = false;
+    Promise.all(
+      REVIEWS.map(
+        (r) =>
+          new Promise<void>((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve();
+            img.onerror = () => resolve();
+            img.src = r.src;
+          }),
+      ),
+    ).then(() => !cancelled && setReady(true));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!ready) return;
     const t = setInterval(() => setIdx((i) => (i + 1) % REVIEWS.length), 4400);
     return () => clearInterval(t);
-  }, []);
+  }, [ready]);
+
+  if (!ready) return <div className={styles.reviewFloatViewport} />;
+
   const r = REVIEWS[idx];
   return (
     <div className={styles.reviewFloatViewport}>
@@ -67,15 +93,15 @@ function ReviewStory() {
         <motion.div
           key={idx}
           className={styles.reviewFloatCard}
-          initial={{ y: "115%", opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: "-115%", opacity: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          initial={{ y: "115%", opacity: 0, scale: 0.8, rotate: -4 }}
+          animate={{ y: 0, opacity: 1, scale: 1, rotate: 0 }}
+          exit={{ y: "-120%", opacity: 0, scale: 0.9, rotate: 3 }}
+          transition={{ type: "spring", stiffness: 340, damping: 28, opacity: { duration: 0.25 } }}
         >
           <motion.div
             className={styles.reviewFloatInner}
-            animate={{ y: [0, -5, 0, 3, 0] }}
-            transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+            animate={{ y: [0, -5, 0, 3, 0], rotate: [0, -0.6, 0, 0.6, 0] }}
+            transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: 0.35 }}
           >
             <img src={r.src} alt="" />
             <div className={styles.reviewFloatCaption}>
