@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import styles from "./CreateFlow.module.css";
 import { brand } from "@/config/brand";
@@ -49,6 +49,45 @@ function itemTotal(it: CartItem): number {
   let sum = 0;
   for (let i = 1; i <= it.qty; i++) sum += unitPriceAt(it, i);
   return sum;
+}
+
+// Widget flotante tipo "historia" — una review a la vez, entra rápido desde
+// abajo, se queda quieta (con un balanceo sutil) y a los 4s sale disparada
+// hacia arriba; la siguiente entra justo después.
+function ReviewStory() {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    const t = setInterval(() => setIdx((i) => (i + 1) % REVIEWS.length), 4400);
+    return () => clearInterval(t);
+  }, []);
+  const r = REVIEWS[idx];
+  return (
+    <div className={styles.reviewFloatViewport}>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={idx}
+          className={styles.reviewFloatCard}
+          initial={{ y: "115%", opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: "-115%", opacity: 0 }}
+          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <motion.div
+            className={styles.reviewFloatInner}
+            animate={{ y: [0, -5, 0, 3, 0] }}
+            transition={{ duration: 3.2, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+          >
+            <img src={r.src} alt="" />
+            <div className={styles.reviewFloatCaption}>
+              <span className={styles.reviewFloatStars}>★★★★★</span>
+              <p>&ldquo;{r.text}&rdquo;</p>
+              <span>{r.name} · {r.breed}</span>
+            </div>
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>
+    </div>
+  );
 }
 
 export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: string }) {
@@ -624,7 +663,8 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         )}
 
         {generating && (
-          <div className={`${styles.card} ${styles.genCard} ${styles.genCard3}`}>
+          <div className={styles.genWrap}>
+          <div className={`${styles.card} ${styles.genCard}`}>
             <div className={styles.genCol}>
               <span className={styles.stepTag}>Generating your preview…</span>
               <h1 className={styles.genTitle}>Bringing <span className={styles.petNameHighlight}>{petName}</span> to life</h1>
@@ -663,27 +703,10 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
               )}
               <MiniGame onUnlock={handleUnlock} />
             </div>
-            <motion.div
-              className={styles.reviewScrollCol}
-              initial={{ opacity: 0, y: 60 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              <div className={styles.reviewScrollWrap}>
-                <div className={styles.reviewScrollList}>
-                  {[...REVIEWS, ...REVIEWS].map((r, i) => (
-                    <div className={styles.reviewScrollCard} key={`${r.name}-${i}`}>
-                      <img src={r.src} alt="" />
-                      <div>
-                        <span className={styles.reviewScrollStars}>★★★★★</span>
-                        <p>&ldquo;{r.text}&rdquo;</p>
-                        <span>{r.name} · {r.breed}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </motion.div>
+          </div>
+          <div className={styles.reviewFloatCol}>
+            <ReviewStory />
+          </div>
           </div>
         )}
 
