@@ -13,6 +13,9 @@ import styles from "./PassThrough.module.css";
 // delay = cuándo arrancar el segundo vídeo: justo cuando el primero EMPIEZA a
 // salir (no cuando ya ha salido del todo), para que se sientan como el mismo perro.
 const DELAY_MS = 2300;
+// Solo escritorio: el usuario pidió que el segundo vídeo tarde un poco más
+// en arrancar ahí (no tocar el timing en móvil).
+const DESKTOP_EXTRA_DELAY_MS = 1800;
 
 export function PassThrough({ onCta }: { onCta: () => void }) {
   const sectionRef = useRef(null);
@@ -31,12 +34,15 @@ export function PassThrough({ onCta }: { onCta: () => void }) {
     const arrive = arriveRef.current;
     if (!leave || !arrive) return;
 
+    const isDesktop = window.matchMedia("(min-width: 821px)").matches;
+    const delay = isDesktop ? DELAY_MS + DESKTOP_EXTRA_DELAY_MS : DELAY_MS;
+
     leave.currentTime = 0;
     arrive.currentTime = 0;
     leave.play().catch(() => {});
     const arriveTimer = setTimeout(() => {
       arrive.play().catch(() => {});
-    }, DELAY_MS);
+    }, delay);
 
     return () => {
       clearTimeout(arriveTimer);
