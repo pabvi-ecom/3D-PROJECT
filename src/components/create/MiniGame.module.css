@@ -1,6 +1,6 @@
 .wrap{display:flex; flex-direction:column; align-items:center; gap:8px}
 
-.hud{display:flex; justify-content:center; width:360px; max-width:100%; font-family:var(--font-bricolage); font-weight:800; font-size:1.3rem; color:var(--accent)}
+.hud{display:flex; justify-content:center; width:360px; max-width:100%; font-family:var(--font-bricolage); font-weight:600; font-size:1.2rem; color:var(--accent)}
 
 .stage{position:relative; width:360px; max-width:100%; border:1.5px solid var(--line); border-radius:20px; overflow:hidden; background:var(--surface-2); cursor:pointer}
 
