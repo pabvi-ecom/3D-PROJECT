@@ -147,6 +147,8 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
   const [step, setStep] = useState<StepId>("email");
   const [email, setEmail] = useState("");
+  const [leadId, setLeadId] = useState<string | null>(null);
+  const savedFigureRef = useRef<string | null>(null);
   const [emailDraft, setEmailDraft] = useState("");
   const [petName, setPetName] = useState(initialName ?? "");
   const [nameDraft, setNameDraft] = useState(initialName ?? "");
@@ -449,7 +451,12 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email: v, zone: zone.slug }),
-    }).catch(() => {});
+    })
+      .then((r) => r.json())
+      .then((json) => {
+        if (typeof json.id === "string") setLeadId(json.id);
+      })
+      .catch(() => {});
     setStep(initialName ? "photo" : "name");
   }
 
@@ -550,11 +557,24 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     confetti({ particleCount: 90, spread: 75, startVelocity: 42, origin: { x: 0.5, y: 0.35 }, colors });
     const t1 = setTimeout(() => confetti({ particleCount: 50, angle: 60, spread: 65, startVelocity: 38, origin: { x: 0, y: 0.4 }, colors }), 150);
     const t2 = setTimeout(() => confetti({ particleCount: 50, angle: 120, spread: 65, startVelocity: 38, origin: { x: 1, y: 0.4 }, colors }), 150);
+
+    // Guarda la figura ya generada en Airtable (Leads) en cuanto el cliente
+    // la ve — así queda registrada aunque no llegue a comprar, y sirve de
+    // fuente para Tripo más adelante. Solo una vez por figura.
+    if (leadId && figure && savedFigureRef.current !== figure) {
+      savedFigureRef.current = figure;
+      fetch("/api/lead-figure", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ leadId, figureUrl: figure, petName }),
+      }).catch(() => {});
+    }
+
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [step]);
+  }, [step, leadId, figure, petName]);
 
   // El jugador tocó el símbolo de descuento en el minijuego — se desbloquea
   // arriba (fuera del propio juego), con su propio confeti.

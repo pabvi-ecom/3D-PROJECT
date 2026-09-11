@@ -14,12 +14,12 @@ export async function POST(req: NextRequest) {
     if (typeof email !== "string" || !email.includes("@")) {
       return NextResponse.json({ error: "Invalid email" }, { status: 400 });
     }
-    await createRecord("Leads", {
+    const id = await createRecord("Leads", {
       Email: email,
       Zone: typeof zone === "string" ? zone : "",
       "Pet Name": typeof petName === "string" ? petName : "",
     });
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, id });
   } catch (e) {
     console.error("[/api/lead]", (e as Error).message);
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
