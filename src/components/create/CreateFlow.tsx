@@ -51,6 +51,31 @@ function itemTotal(it: CartItem): number {
   return sum;
 }
 
+// Duraciones FIJAS (nada de física "spring" indeterminada) — con spring a
+// veces la transición se quedaba a medias y AnimatePresence nunca llegaba a
+// montar la siguiente foto, dejando el hueco vacío. Entrada con "pop" +
+// desenfoque, salida bastante más rápida (sale disparada hacia arriba).
+const POP_EASE: [number, number, number, number] = [0.34, 1.56, 0.64, 1];
+const reviewCardVariants = {
+  enter: { y: "115%", opacity: 0, scale: 0.75, rotate: -6, filter: "blur(6px)" },
+  center: {
+    y: 0,
+    opacity: 1,
+    scale: 1,
+    rotate: 0,
+    filter: "blur(0px)",
+    transition: { y: { duration: 0.55, ease: POP_EASE }, scale: { duration: 0.55, ease: POP_EASE }, rotate: { duration: 0.55, ease: POP_EASE }, opacity: { duration: 0.3 }, filter: { duration: 0.4 } },
+  },
+  exit: {
+    y: "-130%",
+    opacity: 0,
+    scale: 0.92,
+    rotate: 4,
+    filter: "blur(2px)",
+    transition: { duration: 0.32, ease: [0.55, 0, 0.85, 0.35] as [number, number, number, number] },
+  },
+};
+
 // Widget flotante tipo "historia" — una review a la vez, entra rápido desde
 // abajo, se queda quieta (con un balanceo sutil) y a los 4s sale disparada
 // hacia arriba; la siguiente entra justo después. Todas las fotos se
@@ -93,15 +118,15 @@ function ReviewStory() {
         <motion.div
           key={idx}
           className={styles.reviewFloatCard}
-          initial={{ y: "115%", opacity: 0, scale: 0.8, rotate: -4 }}
-          animate={{ y: 0, opacity: 1, scale: 1, rotate: 0 }}
-          exit={{ y: "-120%", opacity: 0, scale: 0.9, rotate: 3 }}
-          transition={{ type: "spring", stiffness: 340, damping: 28, opacity: { duration: 0.25 } }}
+          variants={reviewCardVariants}
+          initial="enter"
+          animate="center"
+          exit="exit"
         >
           <motion.div
             className={styles.reviewFloatInner}
             animate={{ y: [0, -5, 0, 3, 0], rotate: [0, -0.6, 0, 0.6, 0] }}
-            transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: 0.35 }}
+            transition={{ duration: 3.4, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
           >
             <img src={r.src} alt="" />
             <div className={styles.reviewFloatCaption}>
