@@ -1,20 +1,16 @@
 .page{min-height:100vh; background:#F5F5F7; padding:32px clamp(16px,4vw,48px) 80px; font-family:system-ui,-apple-system,sans-serif; color:#1D1D1F}
 
-.header{display:flex; align-items:baseline; gap:14px; margin-bottom:24px}
+.header{display:flex; align-items:center; justify-content:space-between; gap:14px; margin-bottom:28px; flex-wrap:wrap}
 .header h1{font-size:1.6rem; margin:0}
-.count{color:#6E6E73; font-size:.92rem}
 
-.orderList{display:flex; flex-direction:column; gap:20px; max-width:1100px}
-.orderCard{background:#fff; border:1px solid #E8E8ED; border-radius:18px; padding:20px 22px; box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.tabs{display:flex; gap:8px}
+.tab, .tabActive{border:none; border-radius:999px; padding:9px 18px; font-weight:700; font-size:.88rem; cursor:pointer}
+.tab{background:#fff; color:#6E6E73; border:1px solid #E8E8ED}
+.tabActive{background:#1D1D1F; color:#fff}
 
-.orderHead{display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:16px; padding-bottom:14px; border-bottom:1px solid #E8E8ED}
-.orderHead b{font-size:1.02rem; display:block}
 .sub{font-size:.8rem; color:#86868B; display:block; margin-top:2px}
-.orderMeta{text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:4px}
-.total{font-weight:800; font-size:1.05rem}
-.coupon{font-size:.72rem; font-weight:800; color:#0071E3; background:#E8F1FC; padding:2px 8px; border-radius:999px}
 
-.itemGrid{display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:14px}
+.itemGrid{display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:16px; max-width:1200px}
 .itemCard{border:1px solid #E8E8ED; border-radius:14px; overflow:hidden; display:flex; flex-direction:column}
 .itemStage{width:100%; aspect-ratio:1/1; background:#F5F5F7; display:flex; align-items:center; justify-content:center; overflow:hidden}
 .itemStage img{width:100%; height:100%; object-fit:cover}
@@ -29,6 +25,10 @@
 .itemActions a:hover{background:#E8F1FC}
 .modelLink{background:#0071E3; color:#fff !important; border-color:#0071E3 !important}
 .modelLink:hover{opacity:.9; background:#0071E3 !important}
+
+.produceBtn{background:#1D1D1F; color:#fff; border:none; border-radius:8px; padding:9px 10px; font-size:.8rem; font-weight:700; cursor:pointer}
+.produceBtn:disabled{opacity:.5; cursor:not-allowed}
+.errText{font-size:.72rem; color:#D33}
 
 .empty{color:#86868B; padding:40px; text-align:center}
 
