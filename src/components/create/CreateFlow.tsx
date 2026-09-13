@@ -295,7 +295,10 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setView("front");
     setAddName(false);
     try {
-      const results = await Promise.all(
+      // allSettled: si un estilo falla (ej. el filtro de seguridad de Gemini
+      // marca esa generación en concreto), no tira abajo los demás — el
+      // usuario aún puede elegir entre los que sí salieron bien.
+      const settled = await Promise.allSettled(
         figureStyles.map((s) =>
           postGenerate({ imageBase64: dataUri, poseId: poses[0].id, baseId: NO_BASE_ID, notes: notes.trim() || undefined, styleId: s.id }).then((url) => {
             setDone((d) => d + 1);
@@ -304,9 +307,13 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         ),
       );
       const map: Record<string, string> = {};
-      for (const [sid, url] of results) map[sid] = url;
+      for (const r of settled) if (r.status === "fulfilled") map[r.value[0]] = r.value[1];
+      if (Object.keys(map).length === 0) {
+        const firstError = settled.find((r): r is PromiseRejectedResult => r.status === "rejected");
+        throw new Error((firstError?.reason as Error)?.message ?? "Couldn't generate");
+      }
       setStyleFigures(map);
-      setStyleId(figureStyles[0].id);
+      setStyleId(Object.keys(map)[0]);
       setProgress(100);
       setStep("style");
     } catch (e) {
@@ -785,16 +792,16 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
           <div className={styles.card}>
             <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 4 of 5</span></div>
             <h1>✨ Pick your favorite</h1>
-            <p className={styles.sub}>All three are ready — choose the one that feels most like {petName}.</p>
+            <p className={styles.sub}>Pick the one that feels most like {petName}.</p>
             <div className={styles.poseGrid}>
-              {figureStyles.map((s) => (
+              {figureStyles.filter((s) => styleFigures[s.id]).map((s) => (
                 <button
                   key={s.id}
                   className={`${styles.poseCard} ${styleId === s.id ? styles.poseCardActive : ""}`}
                   onClick={() => setStyleId(s.id)}
                 >
                   {s.popular && <span className={styles.popBadge}>70% pick this</span>}
-                  {styleFigures[s.id] && <img src={styleFigures[s.id]} alt={s.label} />}
+                  <img src={styleFigures[s.id]} alt={s.label} />
                   <span>{s.label}</span>
                 </button>
               ))}

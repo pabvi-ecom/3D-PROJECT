@@ -124,7 +124,20 @@ export async function POST(req: NextRequest) {
     }
 
     const extraRefUrls = change === "name" ? [] : baseRefUrls;
-    const url = await generateFigurine(src, prompt, extraRefUrls);
+    // El filtro de seguridad de Gemini a veces marca una imagen como
+    // "sensible" en un falso positivo (foto normal, nada raro) — un segundo
+    // intento con el mismo input suele pasar sin problema, así que
+    // reintentamos una vez antes de rendirnos.
+    let url: string;
+    try {
+      url = await generateFigurine(src, prompt, extraRefUrls);
+    } catch (e) {
+      if ((e as Error).message.includes("flagged as sensitive")) {
+        url = await generateFigurine(src, prompt, extraRefUrls);
+      } else {
+        throw e;
+      }
+    }
     return NextResponse.json({ url });
   } catch (e) {
     // Log técnico para depurar en Vercel; al cliente solo un mensaje corto y amable.
@@ -132,7 +145,9 @@ export async function POST(req: NextRequest) {
     console.error("[/api/generate]", msg);
     const friendly = msg.startsWith("KIE_TIMEOUT")
       ? "This is taking longer than usual. Please try again in a moment."
-      : "We couldn't quite see your pet clearly. Try a photo with more detail or better lighting.";
+      : msg.includes("flagged as sensitive")
+        ? "Our AI safety filter had trouble with this photo. Try a different one, or the same one again."
+        : "We couldn't quite see your pet clearly. Try a photo with more detail or better lighting.";
     return NextResponse.json({ error: friendly }, { status: 500 });
   }
 }
