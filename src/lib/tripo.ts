@@ -20,6 +20,13 @@ export async function createImageToModelTask(imageUrl: string): Promise<string> 
     body: JSON.stringify({
       file: { type: "jpg", url: imageUrl },
       model: MODEL_VERSION,
+      // Máxima calidad: más polígonos y textura detallada (a coste de más
+      // tiempo/créditos). Si Tripo rechaza algún campo, se ve enseguida en
+      // el error de esta misma llamada — ver logs.
+      face_limit: 30000,
+      texture: true,
+      pbr: true,
+      texture_quality: "detailed",
     }),
   });
   const json = await res.json();
