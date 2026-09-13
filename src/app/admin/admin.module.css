@@ -8,6 +8,10 @@
 .tab{background:#fff; color:#6E6E73; border:1px solid #E8E8ED}
 .tabActive{background:#1D1D1F; color:#fff}
 
+.refreshBtn{width:38px; height:38px; border-radius:50%; border:1px solid #E8E8ED; background:#fff; font-size:1.1rem; cursor:pointer; color:#1D1D1F}
+.refreshBtn:hover{border-color:#0071E3; color:#0071E3}
+.refreshBtn:disabled{opacity:.5; cursor:not-allowed}
+
 .sub{font-size:.8rem; color:#86868B; display:block; margin-top:2px}
 
 .itemGrid{display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:16px; max-width:1200px}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import styles from "./admin.module.css";
 
 export type Card = {
@@ -87,8 +88,16 @@ function CardView({ card }: { card: Card }) {
 }
 
 export function AdminDashboard({ orders, leads }: { orders: Card[]; leads: Card[] }) {
+  const router = useRouter();
   const [tab, setTab] = useState<"orders" | "leads">("orders");
+  const [refreshing, setRefreshing] = useState(false);
   const list = tab === "orders" ? orders : leads;
+
+  function refresh() {
+    setRefreshing(true);
+    router.refresh();
+    setTimeout(() => setRefreshing(false), 600);
+  }
 
   return (
     <div className={styles.page}>
@@ -100,6 +109,9 @@ export function AdminDashboard({ orders, leads }: { orders: Card[]; leads: Card[
           </button>
           <button className={tab === "leads" ? styles.tabActive : styles.tab} onClick={() => setTab("leads")}>
             Not purchased ({leads.length})
+          </button>
+          <button className={styles.refreshBtn} onClick={refresh} disabled={refreshing} aria-label="Refresh">
+            {refreshing ? "…" : "↻"}
           </button>
         </div>
       </header>
