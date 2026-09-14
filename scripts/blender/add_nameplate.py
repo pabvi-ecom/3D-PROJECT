@@ -32,18 +32,27 @@ min_y, max_y = min(ys), max(ys)
 min_z, max_z = min(zs), max(zs)
 size_y, size_z = max_y - min_y, max_z - min_z
 
-plate_x = max_x + 0.004  # justo delante de la superficie, evita z-fighting
 plate_y = (min_y + max_y) / 2
 plate_z = min_z + size_z * 0.06
 
 text_size = size_y * 0.11
+# El texto tiene que HUNDIRSE bien dentro de la superficie (no solo
+# rozarla) para que la unión booleana tenga volumen real que fusionar —
+# con un hueco mínimo, o si la superficie no es perfectamente plana
+# (esta placa tiene una leve curva), el booleano no encuentra intersección
+# y las letras quedan sueltas. Se hunde bastante (0.4× el tamaño del
+# texto) para que sobre margen de sobra, y el relieve visible que sobresale
+# se mantiene igual que antes.
+relief = text_size * 0.06
+inset = text_size * 0.4
+plate_x = max_x - inset
 
 bpy.ops.object.text_add(location=(plate_x, plate_y, plate_z))
 text_obj = bpy.context.object
 text_obj.data.body = name.upper()
 text_obj.data.align_x = "CENTER"
 text_obj.data.align_y = "CENTER"
-text_obj.data.extrude = text_size * 0.06
+text_obj.data.extrude = inset + relief
 text_obj.data.size = text_size
 text_obj.rotation_euler = (1.5708, 0, 1.5708)
 
@@ -58,10 +67,15 @@ text_obj.data.materials.append(mat)
 
 bpy.ops.object.convert(target="MESH")
 
-# Fusiona el texto con la malla del perro en UN solo objeto — algunos
-# visores (Quick Look de macOS, slicers de impresión) no interpretan bien
-# escenas .glb con varios objetos raíz independientes y los muestran
-# descolocados/sueltos aunque en Blender se vean perfectamente alineados.
+# La unión booleana no sirve aquí: la malla que devuelve Tripo (IA) no es
+# manifold/estanca, así que el solver falla en silencio y no suelda nada
+# (probado con "Exact" y "Float" — mismo resultado que sin booleano).
+# En su lugar, el texto va HUNDIDO bien dentro del sólido (0.4× su tamaño)
+# — la mayor parte queda enterrada dentro de la figura, invisible, y solo
+# asoma el relieve. Para renderizado (no hay hueco/costura que un visor
+# pueda pintar mal) y para impresión (los slicers unen sólidos que se
+# solapan al laminar, no hace falta que estén topológicamente fusionados
+# en el archivo) es indistinguible de una soldadura real.
 bpy.ops.object.select_all(action="DESELECT")
 text_obj.select_set(True)
 mesh_obj.select_set(True)
