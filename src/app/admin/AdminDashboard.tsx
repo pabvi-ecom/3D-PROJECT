@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./admin.module.css";
 
@@ -29,6 +29,56 @@ function CardView({ card }: { card: Card }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    // Si se recarga la página mientras algo seguía procesando en segundo
+    // plano (calidad "extreme" puede tardar varios minutos), retoma solo.
+    if (status === "Processing") {
+      setLoading(true);
+      pollStatus();
+    }
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function pollStatus() {
+    let tries = 0;
+    pollRef.current = setInterval(async () => {
+      tries++;
+      try {
+        const res = await fetch("/api/admin/check-3d", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ table: card.table, id: card.id }),
+        });
+        const json = await res.json();
+        if (!res.ok) throw new Error(json.error ?? "Check failed");
+        if (json.status === "Ready") {
+          setStatus("Ready");
+          setModelUrl(json.modelUrl);
+          setLoading(false);
+          if (pollRef.current) clearInterval(pollRef.current);
+        } else if (json.status === "Failed") {
+          setStatus("Failed");
+          setLoading(false);
+          if (pollRef.current) clearInterval(pollRef.current);
+        }
+        // "Processing" — sigue esperando, se reintenta en el siguiente tick.
+      } catch (e) {
+        setError((e as Error).message);
+      }
+      // Tope de seguridad — calidad "extreme" puede tardar varios minutos,
+      // pero si pasa de 10 min algo va mal, dejamos de insistir solos.
+      if (tries > 120 && pollRef.current) {
+        clearInterval(pollRef.current);
+        setLoading(false);
+        setError("Taking unusually long — check back later or try again.");
+      }
+    }, 5000);
+  }
 
   // Tripo devuelve siempre el mismo nombre de archivo genérico — sin esto,
   // dos descargas del mismo perro (antigua/nueva) son indistinguibles en la
@@ -71,16 +121,12 @@ function CardView({ card }: { card: Card }) {
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Failed");
-      if (json.status === "Ready") {
-        setStatus("Ready");
-        setModelUrl(json.modelUrl);
-      } else {
-        setStatus("Processing");
-      }
+      // Lanzada — el dashboard va comprobando el resultado solo, cada 5s,
+      // sin depender de que esta misma petición aguante varios minutos.
+      pollStatus();
     } catch (e) {
       setStatus("Failed");
       setError((e as Error).message);
-    } finally {
       setLoading(false);
     }
   }
@@ -114,7 +160,7 @@ function CardView({ card }: { card: Card }) {
             </button>
           )}
           <button className={styles.produceBtn} onClick={produce} disabled={loading || !card.figureUrl}>
-            {loading ? "Generating… (~1-2 min)" : modelUrl || prevModelUrl ? "🔁 Regenerate" : "🧊 Produce 3D model"}
+            {loading ? "Generating… (can take a few min)" : modelUrl || prevModelUrl ? "🔁 Regenerate" : "🧊 Produce 3D model"}
           </button>
         </div>
       </div>
