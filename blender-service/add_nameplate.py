@@ -53,5 +53,15 @@ text_obj.data.materials.append(mat)
 
 bpy.ops.object.convert(target="MESH")
 
+# Fusiona el texto con la malla del perro en UN solo objeto — algunos
+# visores (Quick Look de macOS, slicers de impresión) no interpretan bien
+# escenas .glb con varios objetos raíz independientes y los muestran
+# descolocados/sueltos aunque en Blender se vean perfectamente alineados.
+bpy.ops.object.select_all(action="DESELECT")
+text_obj.select_set(True)
+mesh_obj.select_set(True)
+bpy.context.view_layer.objects.active = mesh_obj
+bpy.ops.object.join()
+
 bpy.ops.export_scene.gltf(filepath=out_path, export_format="GLB", use_selection=False)
 print(f"OK -> {out_path}")

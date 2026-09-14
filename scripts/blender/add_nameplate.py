@@ -1,8 +1,8 @@
 """
-Automatiza: coge un .glb generado por Tripo (perro + base + placa borrosa) y
-pega encima de la placa un texto 3D real y nítido con el nombre — no depende
-de coordenadas fijas, las calcula a partir de la geometría del propio modelo
-(siempre: base abajo, placa en la cara frontal = +X, centrada en Y).
+Coge un .glb generado por Tripo (perro + base + placa en blanco) y pega
+encima un texto 3D real y nítido con el nombre — la posición se calcula a
+partir de la geometría del propio modelo (siempre: base abajo, placa en la
+cara frontal = +X, centrada en Y), no son coordenadas fijas por figura.
 
 Uso:
   blender --background --python add_nameplate.py -- input.glb "NOMBRE" output.glb
@@ -25,16 +25,13 @@ zs = [c.z for c in corners]
 min_x, max_x = min(xs), max(xs)
 min_y, max_y = min(ys), max(ys)
 min_z, max_z = min(zs), max(zs)
-size_x, size_y, size_z = max_x - min_x, max_y - min_y, max_z - min_z
+size_y, size_z = max_y - min_y, max_z - min_z
 
-# La placa siempre está: cara más frontal (+X), centrada en Y, en la franja
-# baja de la base (aprox el primer 12% de la altura total, justo donde
-# vimos la placa en el render de referencia).
 plate_x = max_x + 0.004  # justo delante de la superficie, evita z-fighting
 plate_y = (min_y + max_y) / 2
 plate_z = min_z + size_z * 0.06
 
-text_size = size_y * 0.11  # el texto ocupa ~lo ancho que suele ser la placa
+text_size = size_y * 0.11
 
 bpy.ops.object.text_add(location=(plate_x, plate_y, plate_z))
 text_obj = bpy.context.object
@@ -43,7 +40,7 @@ text_obj.data.align_x = "CENTER"
 text_obj.data.align_y = "CENTER"
 text_obj.data.extrude = text_size * 0.06
 text_obj.data.size = text_size
-text_obj.rotation_euler = (1.5708, 0, 1.5708)  # texto de pie, mirando hacia +X
+text_obj.rotation_euler = (1.5708, 0, 1.5708)
 
 mat = bpy.data.materials.new(name="nameplate_gold")
 mat.use_nodes = True
@@ -56,10 +53,15 @@ text_obj.data.materials.append(mat)
 
 bpy.ops.object.convert(target="MESH")
 
+# Fusiona el texto con la malla del perro en UN solo objeto — algunos
+# visores (Quick Look de macOS, slicers de impresión) no interpretan bien
+# escenas .glb con varios objetos raíz independientes y los muestran
+# descolocados/sueltos aunque en Blender se vean perfectamente alineados.
 bpy.ops.object.select_all(action="DESELECT")
-mesh_obj.select_set(True)
 text_obj.select_set(True)
+mesh_obj.select_set(True)
 bpy.context.view_layer.objects.active = mesh_obj
+bpy.ops.object.join()
 
 bpy.ops.export_scene.gltf(filepath=out_path, export_format="GLB", use_selection=False)
 print(f"OK -> {out_path}")
