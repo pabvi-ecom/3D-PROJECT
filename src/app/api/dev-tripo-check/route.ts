@@ -35,5 +35,14 @@ export async function GET() {
     style_field: await probe({ style: "not-a-real-style-xyz" }),
   };
 
-  return NextResponse.json({ balances, probes });
+  // ¿Existe un endpoint multi-vista (varias fotos: frontal+lateral) que dé
+  // mejor reconstrucción de las partes que la cámara no ve (la espalda)?
+  const multiviewRes = await fetch(`${BASE}/generation/multiview-to-model`, {
+    method: "POST",
+    headers: headers(),
+    body: JSON.stringify({ files: [{ type: "jpg", url: "https://example.com/a.jpg" }], model: "v3.1-20260211" }),
+  });
+  const multiview = await multiviewRes.json().catch(() => ({ raw: "not json" }));
+
+  return NextResponse.json({ balances, probes, multiview });
 }
