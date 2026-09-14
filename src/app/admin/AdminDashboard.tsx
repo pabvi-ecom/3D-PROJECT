@@ -67,8 +67,10 @@ function CardView({ card }: { card: Card }) {
           if (pollRef.current) clearInterval(pollRef.current);
         }
         // "Processing" — sigue esperando, se reintenta en el siguiente tick.
-      } catch (e) {
-        setError((e as Error).message);
+      } catch {
+        // Fallo puntual de red en un tick del sondeo — no es un error real,
+        // el siguiente tick (5s después) lo reintenta solo. No hay que
+        // asustar con un mensaje de error por esto.
       }
       // Tope de seguridad — calidad "extreme" puede tardar varios minutos,
       // pero si pasa de 10 min algo va mal, dejamos de insistir solos.
