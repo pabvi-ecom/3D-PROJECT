@@ -72,15 +72,14 @@ function CardView({ card }: { card: Card }) {
         </span>
         {error && <span className={styles.errText}>{error}</span>}
         <div className={styles.itemActions}>
-          {modelUrl ? (
+          {modelUrl && !loading && (
             <a href={modelUrl} target="_blank" rel="noreferrer" className={styles.modelLink}>
               ⬇️ 3D model
             </a>
-          ) : (
-            <button className={styles.produceBtn} onClick={produce} disabled={loading || !card.figureUrl}>
-              {loading ? "Generating… (~1-2 min)" : "🧊 Produce 3D model"}
-            </button>
           )}
+          <button className={styles.produceBtn} onClick={produce} disabled={loading || !card.figureUrl}>
+            {loading ? "Generating… (~1-2 min)" : modelUrl ? "🔁 Regenerate" : "🧊 Produce 3D model"}
+          </button>
         </div>
       </div>
     </div>
