@@ -21,6 +21,7 @@ type CartItemIn = {
   firstUnitDiscountPct: number;
   qty: number;
   figureUrl: string | null;
+  figureUrlPlain: string | null;
 };
 
 // La misma lógica de precios por unidad que en el cliente (CreateFlow.tsx)
@@ -98,7 +99,10 @@ export async function POST(req: NextRequest) {
           Engraved: it.hasNameplate,
           Qty: it.qty,
           "Unit Price": it.unitPrice,
-          "Figure Image URL": it.figureUrl ?? "",
+          // La versión SIN nombre grabado — es la que se manda a Tripo. El
+          // texto de la placa se añade aparte (real, nítido), nunca la
+          // reconstrucción borrosa que hace la IA a partir de la foto.
+          "Figure Image URL": it.figureUrlPlain ?? it.figureUrl ?? "",
           ...(it.figureUrl ? { "Original Photo": [{ url: it.figureUrl }] } : {}),
           "Tripo Status": "Not started",
         },

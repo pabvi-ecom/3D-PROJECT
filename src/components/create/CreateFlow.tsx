@@ -31,6 +31,10 @@ type CartItem = {
   id: string;
   petName: string;
   figureUrl: string | null;
+  // Versión SIN nombre grabado (placa en blanco) — es la que se manda a
+  // Tripo/producción. El texto de la placa se añade aparte (real, nítido),
+  // nunca la que reconstruye la IA desde la foto (sale borroso).
+  figureUrlPlain: string | null;
   poseLabel: string;
   baseLabel: string;
   hasNameplate: boolean;
@@ -484,6 +488,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       id: `${Date.now()}-${Math.random()}`,
       petName,
       figureUrl: figure,
+      figureUrlPlain: plainFigure,
       poseLabel: pose.label,
       baseLabel: base.label,
       hasNameplate: wantsBase && addName,
@@ -567,13 +572,16 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
     // Guarda la figura ya generada en Airtable (Leads) en cuanto el cliente
     // la ve — así queda registrada aunque no llegue a comprar, y sirve de
-    // fuente para Tripo más adelante. Solo una vez por figura.
-    if (leadId && figure && savedFigureRef.current !== figure) {
-      savedFigureRef.current = figure;
+    // fuente para Tripo más adelante. Siempre la versión SIN nombre grabado
+    // (placa en blanco) — el texto se añade aparte, nítido, no la
+    // reconstrucción borrosa de la IA. Solo una vez por figura.
+    const figureForBackend = plainFigure ?? figure;
+    if (leadId && figureForBackend && savedFigureRef.current !== figureForBackend) {
+      savedFigureRef.current = figureForBackend;
       fetch("/api/lead-figure", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ leadId, figureUrl: figure, petName }),
+        body: JSON.stringify({ leadId, figureUrl: figureForBackend, petName }),
       }).catch(() => {});
     }
 
@@ -581,7 +589,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [step, leadId, figure, petName]);
+  }, [step, leadId, figure, plainFigure, petName]);
 
   // El jugador tocó el símbolo de descuento en el minijuego — se desbloquea
   // arriba (fuera del propio juego), con su propio confeti.
