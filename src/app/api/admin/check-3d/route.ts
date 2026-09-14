@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getRecord, updateRecord } from "@/lib/airtable";
 import { getTask } from "@/lib/tripo";
+import { addNameplate } from "@/lib/blender";
 
 export const runtime = "nodejs";
-export const maxDuration = 30;
+export const maxDuration = 280; // el paso de Blender (nombre en la placa) puede tardar
 
 /**
  * POST /api/admin/check-3d { table, id }
@@ -29,9 +30,18 @@ export async function POST(req: NextRequest) {
     const taskId = record.fields["Tripo Task ID"] as string | undefined;
     if (!taskId) return NextResponse.json({ error: "No task in progress" }, { status: 400 });
 
+    // El dashboard sondea cada 5s — si el paso de Blender tarda más que
+    // eso, evita relanzarlo por cada tick mientras sigue en curso.
+    if (record.fields["Tripo Status"] === "Finishing") {
+      return NextResponse.json({ status: "Processing" });
+    }
+
     const task = await getTask(taskId);
     if (task.status === "success") {
-      const modelUrl = task.output?.model_url ?? "";
+      const rawUrl = task.output?.model_url ?? "";
+      const petName = (record.fields["Pet Name"] as string) ?? "";
+      await updateRecord(table, id, { "Tripo Status": "Finishing" });
+      const modelUrl = rawUrl ? await addNameplate(rawUrl, petName) : rawUrl;
       await updateRecord(table, id, { "Tripo Status": "Ready", "Model File URL": modelUrl });
       return NextResponse.json({ status: "Ready", modelUrl });
     }

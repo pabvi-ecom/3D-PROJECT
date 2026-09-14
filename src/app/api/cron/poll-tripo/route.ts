@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { listRecords, updateRecord } from "@/lib/airtable";
 import { getTask } from "@/lib/tripo";
+import { addNameplate } from "@/lib/blender";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 280; // el paso de Blender (nombre en la placa) puede tardar
 
 /**
  * Cron (ver vercel.json) — revisa las figuras cuyo modelo 3D está en
@@ -22,9 +23,12 @@ export async function GET() {
     try {
       const task = await getTask(taskId);
       if (task.status === "success") {
+        const rawUrl = task.output?.model_url ?? "";
+        const petName = (item.fields["Pet Name"] as string) ?? "";
+        const finalUrl = rawUrl ? await addNameplate(rawUrl, petName) : rawUrl;
         await updateRecord("OrderItems", item.id, {
           "Tripo Status": "Ready",
-          "Model File URL": task.output?.model_url ?? "",
+          "Model File URL": finalUrl,
         });
         updated++;
       } else if (task.status === "failed" || task.status === "cancelled") {
