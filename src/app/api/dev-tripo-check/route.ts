@@ -10,26 +10,30 @@ function headers() {
   return { Authorization: `Bearer ${process.env.TRIPO_API_KEY}`, "Content-Type": "application/json" };
 }
 
-export async function GET() {
-  const balanceRes = await fetch(`${BASE}/user/balance`, { headers: headers() });
-  const balanceJson = await balanceRes.json().catch(() => ({ raw: "not json" }));
-
-  // Petición deliberadamente inválida (texture_quality con un valor que no
-  // debería existir, url de imagen falsa) — el mensaje de error de Tripo
-  // debería confirmar los nombres/valores de campo reales.
-  const probeRes = await fetch(`${BASE}/generation/image-to-model`, {
+async function probe(body: Record<string, unknown>) {
+  const res = await fetch(`${BASE}/generation/image-to-model`, {
     method: "POST",
     headers: headers(),
-    body: JSON.stringify({
-      file: { type: "jpg", url: "https://example.com/does-not-exist.jpg" },
-      model: "v3.1-20260211",
-      face_limit: 30000,
-      texture: true,
-      pbr: true,
-      texture_quality: "this-is-not-a-real-value-xyz",
-    }),
+    body: JSON.stringify({ file: { type: "jpg", url: "https://example.com/does-not-exist.jpg" }, model: "v3.1-20260211", ...body }),
   });
-  const probeJson = await probeRes.json().catch(() => ({ raw: "not json" }));
+  return res.json().catch(() => ({ raw: "not json" }));
+}
 
-  return NextResponse.json({ balance: balanceJson, probe: probeJson });
+export async function GET() {
+  const balancePaths = ["/user/balance", "/balance", "/account/balance", "/user/account"];
+  const balances: Record<string, unknown> = {};
+  for (const p of balancePaths) {
+    const r = await fetch(`${BASE}${p}`, { headers: headers() });
+    balances[p] = await r.json().catch(() => ({ raw: "not json" }));
+  }
+
+  const probes = {
+    face_limit_absurd: await probe({ face_limit: 99999999 }),
+    quality_extreme: await probe({ texture_quality: "extreme" }),
+    quality_field: await probe({ quality: "ultra-xyz" }),
+    auto_size: await probe({ auto_size: "not-a-bool-xyz" }),
+    style_field: await probe({ style: "not-a-real-style-xyz" }),
+  };
+
+  return NextResponse.json({ balances, probes });
 }
