@@ -7,8 +7,10 @@
 const SERVICE_URL = process.env.BLENDER_SERVICE_URL;
 const SHARED_SECRET = process.env.BLENDER_SHARED_SECRET;
 
-export async function addNameplate(modelUrl: string, name: string): Promise<string> {
-  if (!SERVICE_URL || !name.trim()) return modelUrl;
+export type NameplateResult = { modelUrl: string; stlUrl: string | null };
+
+export async function addNameplate(modelUrl: string, name: string): Promise<NameplateResult> {
+  if (!SERVICE_URL || !name.trim()) return { modelUrl, stlUrl: null };
   try {
     const res = await fetch(`${SERVICE_URL}/produce`, {
       method: "POST",
@@ -19,11 +21,11 @@ export async function addNameplate(modelUrl: string, name: string): Promise<stri
     const json = await res.json();
     if (!res.ok || !json.model_url) {
       console.error("[blender] addNameplate falló, usando modelo sin nombre", json.error ?? res.status);
-      return modelUrl;
+      return { modelUrl, stlUrl: null };
     }
-    return json.model_url as string;
+    return { modelUrl: json.model_url as string, stlUrl: (json.stl_url as string) ?? null };
   } catch (e) {
     console.error("[blender] addNameplate error, usando modelo sin nombre", (e as Error).message);
-    return modelUrl;
+    return { modelUrl, stlUrl: null };
   }
 }

@@ -53,12 +53,20 @@ def produce():
 
         client = storage.Client()
         bucket = client.bucket(BUCKET)
-        blob_name = f"{uuid.uuid4()}.glb"
-        blob = bucket.blob(blob_name)
-        blob.upload_from_filename(out_path, content_type="model/gltf-binary")
 
-        public_url = f"https://storage.googleapis.com/{BUCKET}/{blob_name}"
-        return jsonify({"ok": True, "model_url": public_url})
+        job_id = str(uuid.uuid4())
+        blob = bucket.blob(f"{job_id}.glb")
+        blob.upload_from_filename(out_path, content_type="model/gltf-binary")
+        glb_url = f"https://storage.googleapis.com/{BUCKET}/{job_id}.glb"
+
+        stl_url = None
+        stl_path = out_path.rsplit(".", 1)[0] + ".stl"
+        if os.path.exists(stl_path):
+            stl_blob = bucket.blob(f"{job_id}.stl")
+            stl_blob.upload_from_filename(stl_path, content_type="model/stl")
+            stl_url = f"https://storage.googleapis.com/{BUCKET}/{job_id}.stl"
+
+        return jsonify({"ok": True, "model_url": glb_url, "stl_url": stl_url})
 
 
 if __name__ == "__main__":

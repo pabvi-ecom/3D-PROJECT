@@ -4,6 +4,11 @@ encima un texto 3D real y nítido con el nombre — la posición se calcula a
 partir de la geometría del propio modelo (siempre: base abajo, placa en la
 cara frontal = +X, centrada en Y), no son coordenadas fijas por figura.
 
+También exporta un .stl junto al .glb — es lo que de verdad acepta el
+proveedor de impresión (JLC3DP no admite .glb), y además se ve bien en
+CUALQUIER visor (Quick Look incluido) porque es un formato mucho más
+simple, sin materiales ni nodos que puedan interpretarse mal.
+
 Uso:
   blender --background --python add_nameplate.py -- input.glb "NOMBRE" output.glb
 """
@@ -65,3 +70,9 @@ bpy.ops.object.join()
 
 bpy.ops.export_scene.gltf(filepath=out_path, export_format="GLB", use_selection=False)
 print(f"OK -> {out_path}")
+
+stl_path = out_path.rsplit(".", 1)[0] + ".stl"
+bpy.ops.object.select_all(action="DESELECT")
+mesh_obj.select_set(True)
+bpy.ops.wm.stl_export(filepath=stl_path, export_selected_objects=True)
+print(f"OK -> {stl_path}")

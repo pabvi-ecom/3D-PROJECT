@@ -25,10 +25,11 @@ export async function GET() {
       if (task.status === "success") {
         const rawUrl = task.output?.model_url ?? "";
         const petName = (item.fields["Pet Name"] as string) ?? "";
-        const finalUrl = rawUrl ? await addNameplate(rawUrl, petName) : rawUrl;
+        const { modelUrl, stlUrl } = rawUrl ? await addNameplate(rawUrl, petName) : { modelUrl: rawUrl, stlUrl: null };
         await updateRecord("OrderItems", item.id, {
           "Tripo Status": "Ready",
-          "Model File URL": finalUrl,
+          "Model File URL": modelUrl,
+          "Model STL URL": stlUrl ?? "",
         });
         updated++;
       } else if (task.status === "failed" || task.status === "cancelled") {

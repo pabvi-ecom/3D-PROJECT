@@ -12,6 +12,7 @@ export type Card = {
   figureUrl: string;
   tripoStatus: string;
   modelUrl: string;
+  stlUrl: string;
   purchased: boolean;
 };
 
@@ -25,6 +26,7 @@ const STATUS_COLOR: Record<string, string> = {
 function CardView({ card }: { card: Card }) {
   const [status, setStatus] = useState(card.tripoStatus || "Not started");
   const [modelUrl, setModelUrl] = useState(card.modelUrl);
+  const [stlUrl, setStlUrl] = useState(card.stlUrl);
   const [prevModelUrl, setPrevModelUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,6 +61,7 @@ function CardView({ card }: { card: Card }) {
         if (json.status === "Ready") {
           setStatus("Ready");
           setModelUrl(json.modelUrl);
+          setStlUrl(json.stlUrl ?? "");
           setLoading(false);
           if (pollRef.current) clearInterval(pollRef.current);
         } else if (json.status === "Failed") {
@@ -94,8 +97,9 @@ function CardView({ card }: { card: Card }) {
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       const stamp = new Date().toISOString().slice(0, 16).replace(/[-:]/g, "").replace("T", "-");
+      const ext = url.toLowerCase().endsWith(".stl") ? "stl" : "glb";
       a.href = blobUrl;
-      a.download = `${(card.petName || "figure").replace(/\s+/g, "-")}-${label}-${stamp}.glb`;
+      a.download = `${(card.petName || "figure").replace(/\s+/g, "-")}-${label}-${stamp}.${ext}`;
       a.click();
       URL.revokeObjectURL(blobUrl);
     } catch {
@@ -114,6 +118,7 @@ function CardView({ card }: { card: Card }) {
     if (modelUrl) {
       setPrevModelUrl(modelUrl);
       setModelUrl("");
+      setStlUrl("");
     }
     try {
       const res = await fetch("/api/admin/produce-3d", {
@@ -151,9 +156,14 @@ function CardView({ card }: { card: Card }) {
         </span>
         {error && <span className={styles.errText}>{error}</span>}
         <div className={styles.itemActions}>
+          {stlUrl && !loading && (
+            <button className={styles.modelLink} onClick={() => downloadModel(stlUrl, "latest-stl")} disabled={downloadingKey === "latest-stl"}>
+              {downloadingKey === "latest-stl" ? "Downloading…" : "⬇️ Latest (.stl — para imprimir)"}
+            </button>
+          )}
           {modelUrl && !loading && (
-            <button className={styles.modelLink} onClick={() => downloadModel(modelUrl, "latest")} disabled={downloadingKey === "latest"}>
-              {downloadingKey === "latest" ? "Downloading…" : "⬇️ Latest"}
+            <button className={styles.modelLinkGhost} onClick={() => downloadModel(modelUrl, "latest-glb")} disabled={downloadingKey === "latest-glb"}>
+              {downloadingKey === "latest-glb" ? "Downloading…" : "⬇️ Latest (.glb — con color)"}
             </button>
           )}
           {prevModelUrl && (

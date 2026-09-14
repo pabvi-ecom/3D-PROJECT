@@ -41,9 +41,9 @@ export async function POST(req: NextRequest) {
       const rawUrl = task.output?.model_url ?? "";
       const petName = (record.fields["Pet Name"] as string) ?? "";
       await updateRecord(table, id, { "Tripo Status": "Finishing" });
-      const modelUrl = rawUrl ? await addNameplate(rawUrl, petName) : rawUrl;
-      await updateRecord(table, id, { "Tripo Status": "Ready", "Model File URL": modelUrl });
-      return NextResponse.json({ status: "Ready", modelUrl });
+      const { modelUrl, stlUrl } = rawUrl ? await addNameplate(rawUrl, petName) : { modelUrl: rawUrl, stlUrl: null };
+      await updateRecord(table, id, { "Tripo Status": "Ready", "Model File URL": modelUrl, "Model STL URL": stlUrl ?? "" });
+      return NextResponse.json({ status: "Ready", modelUrl, stlUrl });
     }
     if (task.status === "failed" || task.status === "cancelled") {
       await updateRecord(table, id, { "Tripo Status": "Failed" });

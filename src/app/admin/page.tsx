@@ -12,6 +12,7 @@ type ItemFields = {
   "Figure Image URL"?: string;
   "Tripo Status"?: string;
   "Model File URL"?: string;
+  "Model STL URL"?: string;
 };
 type LeadFields = {
   Email?: string;
@@ -19,6 +20,7 @@ type LeadFields = {
   "Figure Image URL"?: string;
   "Tripo Status"?: string;
   "Model File URL"?: string;
+  "Model STL URL"?: string;
 };
 
 async function buildData() {
@@ -44,6 +46,7 @@ async function buildData() {
       figureUrl: it.fields["Figure Image URL"] ?? "",
       tripoStatus: it.fields["Tripo Status"] ?? "Not started",
       modelUrl: it.fields["Model File URL"] ?? "",
+      stlUrl: it.fields["Model STL URL"] ?? "",
       purchased: true,
     }));
 
@@ -57,6 +60,7 @@ async function buildData() {
       figureUrl: l.fields["Figure Image URL"] ?? "",
       tripoStatus: l.fields["Tripo Status"] ?? "Not started",
       modelUrl: l.fields["Model File URL"] ?? "",
+      stlUrl: l.fields["Model STL URL"] ?? "",
       purchased: false,
     }))
     .reverse();
