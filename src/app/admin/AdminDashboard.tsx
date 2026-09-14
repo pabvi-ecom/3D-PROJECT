@@ -25,13 +25,44 @@ const STATUS_COLOR: Record<string, string> = {
 function CardView({ card }: { card: Card }) {
   const [status, setStatus] = useState(card.tripoStatus || "Not started");
   const [modelUrl, setModelUrl] = useState(card.modelUrl);
+  const [prevModelUrl, setPrevModelUrl] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
+
+  // Tripo devuelve siempre el mismo nombre de archivo genérico — sin esto,
+  // dos descargas del mismo perro (antigua/nueva) son indistinguibles en la
+  // carpeta de Descargas. Se descarga como blob para poder ponerle nuestro
+  // propio nombre (el link cross-origin no respeta el atributo download).
+  async function downloadModel(url: string, label: string) {
+    setDownloadingKey(label);
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      const stamp = new Date().toISOString().slice(0, 16).replace(/[-:]/g, "").replace("T", "-");
+      a.href = blobUrl;
+      a.download = `${(card.petName || "figure").replace(/\s+/g, "-")}-${label}-${stamp}.glb`;
+      a.click();
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(url, "_blank");
+    } finally {
+      setDownloadingKey(null);
+    }
+  }
 
   async function produce() {
     setLoading(true);
     setError(null);
     setStatus("Processing");
+    // Al regenerar, el link viejo se guarda aparte (con su propia etiqueta)
+    // en vez de desaparecer sin más — así se pueden comparar los dos.
+    if (modelUrl) {
+      setPrevModelUrl(modelUrl);
+      setModelUrl("");
+    }
     try {
       const res = await fetch("/api/admin/produce-3d", {
         method: "POST",
@@ -73,12 +104,17 @@ function CardView({ card }: { card: Card }) {
         {error && <span className={styles.errText}>{error}</span>}
         <div className={styles.itemActions}>
           {modelUrl && !loading && (
-            <a href={modelUrl} target="_blank" rel="noreferrer" className={styles.modelLink}>
-              ⬇️ 3D model
-            </a>
+            <button className={styles.modelLink} onClick={() => downloadModel(modelUrl, "latest")} disabled={downloadingKey === "latest"}>
+              {downloadingKey === "latest" ? "Downloading…" : "⬇️ Latest"}
+            </button>
+          )}
+          {prevModelUrl && (
+            <button className={styles.modelLinkGhost} onClick={() => downloadModel(prevModelUrl, "previous")} disabled={downloadingKey === "previous"}>
+              {downloadingKey === "previous" ? "Downloading…" : "⬇️ Previous version"}
+            </button>
           )}
           <button className={styles.produceBtn} onClick={produce} disabled={loading || !card.figureUrl}>
-            {loading ? "Generating… (~1-2 min)" : modelUrl ? "🔁 Regenerate" : "🧊 Produce 3D model"}
+            {loading ? "Generating… (~1-2 min)" : modelUrl || prevModelUrl ? "🔁 Regenerate" : "🧊 Produce 3D model"}
           </button>
         </div>
       </div>

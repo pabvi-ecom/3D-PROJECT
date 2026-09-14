@@ -25,10 +25,13 @@
 .badge{display:inline-block; width:fit-content; color:#fff; font-size:.68rem; font-weight:800; padding:3px 9px; border-radius:999px; margin-top:4px}
 
 .itemActions{display:flex; flex-direction:column; gap:6px; margin-top:8px}
-.itemActions a{font-size:.8rem; font-weight:700; color:#0071E3; text-decoration:none; padding:7px 10px; border:1px solid #0071E3; border-radius:8px; text-align:center}
-.itemActions a:hover{background:#E8F1FC}
-.modelLink{background:#0071E3; color:#fff !important; border-color:#0071E3 !important}
-.modelLink:hover{opacity:.9; background:#0071E3 !important}
+.modelLink{font-size:.8rem; font-weight:700; text-decoration:none; padding:7px 10px; border-radius:8px; text-align:center; cursor:pointer; background:#0071E3; color:#fff; border:1px solid #0071E3}
+.modelLink:hover{opacity:.9}
+.modelLink:disabled{opacity:.5; cursor:not-allowed}
+
+.modelLinkGhost{font-size:.76rem; font-weight:700; text-decoration:none; padding:6px 10px; border-radius:8px; text-align:center; cursor:pointer; background:#fff; color:#6E6E73; border:1px dashed #D2D2D7}
+.modelLinkGhost:hover{border-color:#86868B; color:#1D1D1F}
+.modelLinkGhost:disabled{opacity:.5; cursor:not-allowed}
 
 .produceBtn{background:#1D1D1F; color:#fff; border:none; border-radius:8px; padding:9px 10px; font-size:.8rem; font-weight:700; cursor:pointer}
 .produceBtn:disabled{opacity:.5; cursor:not-allowed}
