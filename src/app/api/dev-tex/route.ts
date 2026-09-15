@@ -9,9 +9,7 @@ async function probe(body: Record<string, unknown>) {
 }
 export async function GET() {
   return NextResponse.json({
-    texture_resolution: await probe({ texture_resolution: "bad-xyz" }),
-    texture_size: await probe({ texture_size: "bad-xyz" }),
-    texture_alignment: await probe({ texture_alignment: "bad-xyz" }),
-    resolution: await probe({ resolution: "bad-xyz" }),
+    ts_absurd: await probe({ texture_size: 99999 }),
+    ts_8192: await probe({ texture_size: 8192 }),
   });
 }
