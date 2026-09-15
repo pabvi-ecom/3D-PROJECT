@@ -35,26 +35,34 @@ size_y, size_z = max_y - min_y, max_z - min_z
 plate_y = (min_y + max_y) / 2
 plate_z = min_z + size_z * 0.06
 
-text_size = size_y * 0.11
-# El texto tiene que HUNDIRSE bien dentro de la superficie (no solo
-# rozarla) para que la unión booleana tenga volumen real que fusionar —
-# con un hueco mínimo, o si la superficie no es perfectamente plana
-# (esta placa tiene una leve curva), el booleano no encuentra intersección
-# y las letras quedan sueltas. Se hunde bastante (0.4× el tamaño del
-# texto) para que sobre margen de sobra, y el relieve visible que sobresale
-# se mantiene igual que antes.
-relief = text_size * 0.06
-inset = text_size * 0.4
-plate_x = max_x - inset
+text_size = size_y * 0.10
+# Relieve FINO (no un bloque grueso). El texto se hunde solo un poco en la
+# superficie para que no quede hueco visible, y sobresale poco — como el
+# grabado en relieve de una placa real, no un tornillo saliendo.
+relief = text_size * 0.05   # cuánto sobresale
+embed = text_size * 0.12    # cuánto se hunde (suficiente para no dejar hueco)
+plate_x = max_x - embed
 
 bpy.ops.object.text_add(location=(plate_x, plate_y, plate_z))
 text_obj = bpy.context.object
 text_obj.data.body = name.upper()
 text_obj.data.align_x = "CENTER"
 text_obj.data.align_y = "CENTER"
-text_obj.data.extrude = inset + relief
+text_obj.data.extrude = embed + relief
 text_obj.data.size = text_size
 text_obj.rotation_euler = (1.5708, 0, 1.5708)
+
+# La base es REDONDA — si el texto es ancho, sus extremos se salen por el
+# lateral curvo (efecto "tornillo"). Se limita a ~40% del ancho del modelo
+# (la zona central plana de la placa), escalándolo si hace falta.
+bpy.context.view_layer.update()
+tb = [text_obj.matrix_world @ mathutils.Vector(c) for c in text_obj.bound_box]
+text_w = max(v.y for v in tb) - min(v.y for v in tb)
+max_w = size_y * 0.42
+if text_w > max_w:
+    s = max_w / text_w
+    text_obj.data.size = text_size * s
+    text_obj.data.extrude = embed + relief
 
 mat = bpy.data.materials.new(name="nameplate_gold")
 mat.use_nodes = True

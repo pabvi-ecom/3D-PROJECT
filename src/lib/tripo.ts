@@ -1,5 +1,9 @@
 const BASE = "https://openapi.tripo3d.ai/v3";
-const MODEL_VERSION = "v3.1-20260211";
+// P2 = modelo "Ultra" (el más nuevo de Tripo, agosto 2026). Da bastante más
+// detalle de superficie (pelo, músculo) que v3.1. Cuesta ~130 créditos vs
+// ~50, pero la figura es un producto premium. P2 limita face_limit a 50000
+// (topología mejor, no fuerza bruta de polígonos).
+const MODEL_VERSION = "P2-20260801";
 
 function headers() {
   const key = process.env.TRIPO_API_KEY;
@@ -20,9 +24,9 @@ export async function createImageToModelTask(imageUrl: string): Promise<string> 
     body: JSON.stringify({
       file: { type: "jpg", url: imageUrl },
       model: MODEL_VERSION,
-      // Máxima calidad real confirmada contra la API (texture_quality
-      // acepta standard/detailed/extreme — "extreme" es el techo).
-      face_limit: 200000,
+      // texture_quality "extreme" es el techo. face_limit 50000 = máximo que
+      // acepta P2 (su tope).
+      face_limit: 50000,
       texture: true,
       pbr: true,
       texture_quality: "extreme",
