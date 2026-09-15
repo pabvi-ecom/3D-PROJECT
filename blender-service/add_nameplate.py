@@ -23,25 +23,35 @@ bpy.ops.wm.read_factory_settings(use_empty=True)
 bpy.ops.import_scene.gltf(filepath=in_path)
 
 mesh_obj = [o for o in bpy.data.objects if o.type == "MESH"][0]
-corners = [mesh_obj.matrix_world @ mathutils.Vector(c) for c in mesh_obj.bound_box]
-xs = [c.x for c in corners]
-ys = [c.y for c in corners]
-zs = [c.z for c in corners]
+mw = mesh_obj.matrix_world
+verts = [mw @ v.co for v in mesh_obj.data.vertices]
+xs = [v.x for v in verts]
+ys = [v.y for v in verts]
+zs = [v.z for v in verts]
 min_x, max_x = min(xs), max(xs)
 min_y, max_y = min(ys), max(ys)
 min_z, max_z = min(zs), max(zs)
-size_y, size_z = max_y - min_y, max_z - min_z
+size_x, size_y, size_z = max_x - min_x, max_y - min_y, max_z - min_z
 
-plate_y = (min_y + max_y) / 2
-plate_z = min_z + size_z * 0.06
+# DETECTA la placa en vez de adivinar su altura: la placa es la parte que
+# más sobresale hacia delante (+X) en la franja BAJA del modelo (la base,
+# aprox el 22% inferior). Se cogen los vértices de esa franja que están
+# cerca del frente y su centroide da el centro real de la placa — funciona
+# igual sea cual sea el modelo (v3.1, P2…) y la altura a la que caiga.
+base_top = min_z + size_z * 0.22
+base_verts = [v for v in verts if v.z <= base_top]
+base_front_x = max(v.x for v in base_verts)
+plate_verts = [v for v in base_verts if v.x >= base_front_x - size_x * 0.03]
+plate_y = sum(v.y for v in plate_verts) / len(plate_verts)
+plate_z = sum(v.z for v in plate_verts) / len(plate_verts)
+plate_front_x = base_front_x
 
-text_size = size_y * 0.10
-# Relieve FINO (no un bloque grueso). El texto se hunde solo un poco en la
-# superficie para que no quede hueco visible, y sobresale poco — como el
-# grabado en relieve de una placa real, no un tornillo saliendo.
-relief = text_size * 0.05   # cuánto sobresale
-embed = text_size * 0.12    # cuánto se hunde (suficiente para no dejar hueco)
-plate_x = max_x - embed
+text_size = size_y * 0.09
+# Casi sin relieve: el texto va PEGADO a la placa (sobresale mínimamente) y
+# hundido lo justo para soldar. Nada de bloque grueso ni tornillo.
+relief = text_size * 0.045  # sobresale poco, pero legible (grabado, no bloque)
+embed = text_size * 0.15    # hundido lo justo para no dejar hueco
+plate_x = plate_front_x - embed
 
 bpy.ops.object.text_add(location=(plate_x, plate_y, plate_z))
 text_obj = bpy.context.object
@@ -53,12 +63,12 @@ text_obj.data.size = text_size
 text_obj.rotation_euler = (1.5708, 0, 1.5708)
 
 # La base es REDONDA — si el texto es ancho, sus extremos se salen por el
-# lateral curvo (efecto "tornillo"). Se limita a ~40% del ancho del modelo
-# (la zona central plana de la placa), escalándolo si hace falta.
+# lateral curvo. Se limita a ~38% del ancho del modelo (zona central plana
+# de la placa), escalándolo si hace falta.
 bpy.context.view_layer.update()
 tb = [text_obj.matrix_world @ mathutils.Vector(c) for c in text_obj.bound_box]
 text_w = max(v.y for v in tb) - min(v.y for v in tb)
-max_w = size_y * 0.42
+max_w = size_y * 0.38
 if text_w > max_w:
     s = max_w / text_w
     text_obj.data.size = text_size * s
