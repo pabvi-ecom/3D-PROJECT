@@ -572,16 +572,15 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
     // Guarda la figura ya generada en Airtable (Leads) en cuanto el cliente
     // la ve — así queda registrada aunque no llegue a comprar, y sirve de
-    // fuente para Tripo más adelante. Siempre la versión SIN nombre grabado
-    // (placa en blanco) — el texto se añade aparte, nítido, no la
-    // reconstrucción borrosa de la IA. Solo una vez por figura.
-    const figureForBackend = plainFigure ?? figure;
-    if (leadId && figureForBackend && savedFigureRef.current !== figureForBackend) {
-      savedFigureRef.current = figureForBackend;
+    // fuente para Tripo. Se guarda LA QUE VE EL CLIENTE (con el nombre
+    // grabado si eligió placa): Tripo P2+8K reconstruye la placa nítida
+    // directamente de esa imagen, sin retoques posteriores.
+    if (leadId && figure && savedFigureRef.current !== figure) {
+      savedFigureRef.current = figure;
       fetch("/api/lead-figure", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ leadId, figureUrl: figureForBackend, petName }),
+        body: JSON.stringify({ leadId, figureUrl: figure, petName }),
       }).catch(() => {});
     }
 

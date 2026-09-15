@@ -99,10 +99,9 @@ export async function POST(req: NextRequest) {
           Engraved: it.hasNameplate,
           Qty: it.qty,
           "Unit Price": it.unitPrice,
-          // La versión SIN nombre grabado — es la que se manda a Tripo. El
-          // texto de la placa se añade aparte (real, nítido), nunca la
-          // reconstrucción borrosa que hace la IA a partir de la foto.
-          "Figure Image URL": it.figureUrlPlain ?? it.figureUrl ?? "",
+          // La imagen que ve el cliente (con nombre grabado si eligió placa)
+          // — Tripo P2+8K reconstruye la placa nítida directamente de ella.
+          "Figure Image URL": it.figureUrl ?? "",
           ...(it.figureUrl ? { "Original Photo": [{ url: it.figureUrl }] } : {}),
           "Tripo Status": "Not started",
         },

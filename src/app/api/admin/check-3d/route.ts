@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getRecord, updateRecord } from "@/lib/airtable";
 import { getTask } from "@/lib/tripo";
-import { addNameplate } from "@/lib/blender";
+import { processModel } from "@/lib/model-store";
 
 export const runtime = "nodejs";
-export const maxDuration = 280; // el paso de Blender (nombre en la placa) puede tardar
+export const maxDuration = 180;
 
 /**
  * POST /api/admin/check-3d { table, id }
@@ -30,18 +30,19 @@ export async function POST(req: NextRequest) {
     const taskId = record.fields["Tripo Task ID"] as string | undefined;
     if (!taskId) return NextResponse.json({ error: "No task in progress" }, { status: 400 });
 
-    // El dashboard sondea cada 5s — si el paso de Blender tarda más que
-    // eso, evita relanzarlo por cada tick mientras sigue en curso.
+    // El dashboard sondea cada 5s — si guardar/convertir tarda más, evita
+    // relanzarlo por cada tick mientras sigue en curso.
     if (record.fields["Tripo Status"] === "Finishing") {
       return NextResponse.json({ status: "Processing" });
     }
 
     const task = await getTask(taskId);
     if (task.status === "success") {
+      // El nombre ya viene grabado (Tripo lo reconstruye de la imagen).
+      // Solo se guarda permanente + se genera el STL para el proveedor.
       const rawUrl = task.output?.model_url ?? "";
-      const petName = (record.fields["Pet Name"] as string) ?? "";
       await updateRecord(table, id, { "Tripo Status": "Finishing" });
-      const { modelUrl, stlUrl } = rawUrl ? await addNameplate(rawUrl, petName) : { modelUrl: rawUrl, stlUrl: null };
+      const { modelUrl, stlUrl } = rawUrl ? await processModel(rawUrl) : { modelUrl: rawUrl, stlUrl: null };
       await updateRecord(table, id, { "Tripo Status": "Ready", "Model File URL": modelUrl, "Model STL URL": stlUrl ?? "" });
       return NextResponse.json({ status: "Ready", modelUrl, stlUrl });
     }

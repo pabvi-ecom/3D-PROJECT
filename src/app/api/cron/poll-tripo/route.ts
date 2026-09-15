@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { listRecords, updateRecord } from "@/lib/airtable";
 import { getTask } from "@/lib/tripo";
-import { addNameplate } from "@/lib/blender";
+import { processModel } from "@/lib/model-store";
 
 export const runtime = "nodejs";
-export const maxDuration = 280; // el paso de Blender (nombre en la placa) puede tardar
+export const maxDuration = 180; // guardar permanente + generar STL tarda un poco
 
 /**
  * Cron (ver vercel.json) — revisa las figuras cuyo modelo 3D está en
@@ -23,9 +23,10 @@ export async function GET() {
     try {
       const task = await getTask(taskId);
       if (task.status === "success") {
+        // El nombre ya viene grabado (Tripo lo reconstruye de la imagen).
+        // Solo se guarda permanente + se genera el STL para el proveedor.
         const rawUrl = task.output?.model_url ?? "";
-        const petName = (item.fields["Pet Name"] as string) ?? "";
-        const { modelUrl, stlUrl } = rawUrl ? await addNameplate(rawUrl, petName) : { modelUrl: rawUrl, stlUrl: null };
+        const { modelUrl, stlUrl } = rawUrl ? await processModel(rawUrl) : { modelUrl: rawUrl, stlUrl: null };
         await updateRecord("OrderItems", item.id, {
           "Tripo Status": "Ready",
           "Model File URL": modelUrl,
