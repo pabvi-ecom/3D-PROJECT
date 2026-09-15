@@ -33,24 +33,46 @@ min_y, max_y = min(ys), max(ys)
 min_z, max_z = min(zs), max(zs)
 size_x, size_y, size_z = max_x - min_x, max_y - min_y, max_z - min_z
 
-# DETECTA la placa en vez de adivinar su altura: la placa es la parte que
-# más sobresale hacia delante (+X) en la franja BAJA del modelo (la base,
-# aprox el 22% inferior). Se cogen los vértices de esa franja que están
-# cerca del frente y su centroide da el centro real de la placa — funciona
-# igual sea cual sea el modelo (v3.1, P2…) y la altura a la que caiga.
+# DETECTA la placa (no adivina): la placa metálica es la que MÁS sobresale
+# hacia delante (+X) en la franja BAJA del modelo (base, 22% inferior). Se
+# aíslan solo los vértices de esa placa saliente (tolerancia estrecha para
+# no coger el resto de la base) y de ahí sale su centro Y/Z y su ANCHO real.
 base_top = min_z + size_z * 0.22
 base_verts = [v for v in verts if v.z <= base_top]
 base_front_x = max(v.x for v in base_verts)
-plate_verts = [v for v in base_verts if v.x >= base_front_x - size_x * 0.03]
-plate_y = sum(v.y for v in plate_verts) / len(plate_verts)
-plate_z = sum(v.z for v in plate_verts) / len(plate_verts)
+
+# La placa metálica sobresale más que la madera. En vez de coger solo la
+# franja más saliente (queda fina y descentra el texto), se divide la base
+# en 40 franjas horizontales; en cada franja se mira cuánto sobresale. Las
+# franjas donde sobresale casi como el máximo = la altura real de la placa.
+NB = 40
+bin_h = (base_top - min_z) / NB
+bin_max_x = [-1e9] * NB
+for v in base_verts:
+    i = min(NB - 1, int((v.z - min_z) / bin_h))
+    if v.x > bin_max_x[i]:
+        bin_max_x[i] = v.x
+plate_bins = [i for i in range(NB) if bin_max_x[i] >= base_front_x - size_x * 0.02]
+plate_h = (max(plate_bins) - min(plate_bins) + 1) * bin_h
+# +15% para compensar que las franjas bajas cogen algo del borde de madera
+# y el centro geométrico queda un poco por debajo del centro visual.
+plate_z = min_z + (min(plate_bins) + max(plate_bins) + 1) / 2 * bin_h + plate_h * 0.15
+
+plate_z_lo = min_z + min(plate_bins) * bin_h
+plate_z_hi = min_z + (max(plate_bins) + 1) * bin_h
+pv = [v for v in base_verts if plate_z_lo <= v.z <= plate_z_hi and v.x >= base_front_x - size_x * 0.02]
+pys = [v.y for v in pv]
+plate_w = max(pys) - min(pys)
+plate_y = (min(pys) + max(pys)) / 2
 plate_front_x = base_front_x
 
-text_size = size_y * 0.09
+# Tamaño del texto relativo a la ALTURA de la placa (que ocupe ~40% de su
+# alto), con un mínimo por si la detección de altura sale corta.
+text_size = max(plate_h * 0.4, size_y * 0.07)
 # Casi sin relieve: el texto va PEGADO a la placa (sobresale mínimamente) y
 # hundido lo justo para soldar. Nada de bloque grueso ni tornillo.
-relief = text_size * 0.045  # sobresale poco, pero legible (grabado, no bloque)
-embed = text_size * 0.15    # hundido lo justo para no dejar hueco
+relief = text_size * 0.04   # sobresale poco, pero legible (grabado, no bloque)
+embed = text_size * 0.18    # hundido lo justo para no dejar hueco
 plate_x = plate_front_x - embed
 
 bpy.ops.object.text_add(location=(plate_x, plate_y, plate_z))
@@ -62,13 +84,12 @@ text_obj.data.extrude = embed + relief
 text_obj.data.size = text_size
 text_obj.rotation_euler = (1.5708, 0, 1.5708)
 
-# La base es REDONDA — si el texto es ancho, sus extremos se salen por el
-# lateral curvo. Se limita a ~38% del ancho del modelo (zona central plana
-# de la placa), escalándolo si hace falta.
+# Ajusta el texto al ancho REAL de la placa detectada (70% de su ancho) —
+# así los extremos nunca llegan al borde curvo de la base y no sobresalen.
 bpy.context.view_layer.update()
 tb = [text_obj.matrix_world @ mathutils.Vector(c) for c in text_obj.bound_box]
 text_w = max(v.y for v in tb) - min(v.y for v in tb)
-max_w = size_y * 0.38
+max_w = plate_w * 0.70
 if text_w > max_w:
     s = max_w / text_w
     text_obj.data.size = text_size * s
