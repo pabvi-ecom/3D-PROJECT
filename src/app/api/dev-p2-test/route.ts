@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     body: JSON.stringify({
       file: { type: "png", url: SRC },
       model,
-      face_limit: 200000,
+      face_limit: 50000,
       texture: true,
       pbr: true,
       texture_quality: "extreme",
