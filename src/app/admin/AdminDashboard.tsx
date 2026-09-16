@@ -225,8 +225,28 @@ export function AdminDashboard({ orders, leads }: { orders: Card[]; leads: Card[
       {zoomUrl && (
         <div className={styles.lightbox} onClick={() => setZoomUrl(null)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={zoomUrl} alt="" />
+          <img src={zoomUrl} alt="" onClick={(e) => e.stopPropagation()} />
           <button className={styles.lightboxClose} onClick={() => setZoomUrl(null)} aria-label="Close">×</button>
+          <button
+            className={styles.lightboxDownload}
+            onClick={async (e) => {
+              e.stopPropagation();
+              try {
+                const res = await fetch(zoomUrl);
+                const blob = await res.blob();
+                const u = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = u;
+                a.download = `figure-${Date.now()}.png`;
+                a.click();
+                URL.revokeObjectURL(u);
+              } catch {
+                window.open(zoomUrl, "_blank");
+              }
+            }}
+          >
+            ⬇️ Download image
+          </button>
         </div>
       )}
     </div>

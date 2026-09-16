@@ -25,6 +25,8 @@
 .lightbox img{max-width:92vw; max-height:92vh; object-fit:contain; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.5)}
 .lightboxClose{position:fixed; top:20px; right:26px; width:44px; height:44px; border-radius:50%; border:none; background:rgba(255,255,255,.15); color:#fff; font-size:1.8rem; line-height:1; cursor:pointer}
 .lightboxClose:hover{background:rgba(255,255,255,.28)}
+.lightboxDownload{position:fixed; bottom:28px; left:50%; transform:translateX(-50%); background:#0071E3; color:#fff; border:none; border-radius:999px; padding:12px 24px; font-size:.92rem; font-weight:700; cursor:pointer; box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.lightboxDownload:hover{opacity:.9}
 .noImg{color:#86868B; font-size:.8rem}
 
 .itemBody{padding:12px; display:flex; flex-direction:column; gap:4px}

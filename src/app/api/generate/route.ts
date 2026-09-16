@@ -5,9 +5,20 @@ import { getZone } from "@/config/zones";
 import { poses, bases, figureStyles, NO_BASE_ID } from "@/config/products";
 
 // Proveedor de generación de imágenes: "openai" (gpt-image-1, más realista)
-// o "kie" (nano-banana, más barato). Se cambia con la env IMAGE_PROVIDER
-// sin tocar código.
-const generateFigurine = process.env.IMAGE_PROVIDER === "openai" ? generateOpenAI : generateKie;
+// o "kie" (nano-banana, más barato). Se cambia con la env IMAGE_PROVIDER.
+// Con "openai", si falla (ej. sin créditos aún en OpenAI, o error puntual)
+// hace fallback automático a Kie — así la web nunca se queda sin generar.
+async function generateFigurine(imageUrl: string, prompt: string, extraRefUrls: string[] = []): Promise<string> {
+  if (process.env.IMAGE_PROVIDER === "openai") {
+    try {
+      return await generateOpenAI(imageUrl, prompt, extraRefUrls);
+    } catch (e) {
+      console.error("[/api/generate] OpenAI falló, fallback a Kie:", (e as Error).message);
+      return generateKie(imageUrl, prompt, extraRefUrls);
+    }
+  }
+  return generateKie(imageUrl, prompt, extraRefUrls);
+}
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
