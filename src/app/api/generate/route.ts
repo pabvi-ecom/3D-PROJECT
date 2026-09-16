@@ -129,15 +129,15 @@ export async function POST(req: NextRequest) {
             `with only a thin sliver of it facing toward the camera — it must NOT still be facing the ` +
             `viewer flat-on like in a front view.`
           : "";
+      // Prompt CORTO y directo — gpt-image-1 rinde mucho mejor así que con un
+      // muro de texto (con el prompt largo salían figuras genéricas que no se
+      // parecían a la mascota). Probado: identidad clavada + estilo aplicado.
       prompt =
-        `Look ONLY at the ${animal} in this photo and turn just that ${animal} into a cute, full-color ` +
-        `collectible 3D printed figurine, keeping its exact breed, fur colors and markings. ` +
-        `Completely ignore and exclude any people, hands, other animals, furniture, boats, or background ` +
-        `objects in the photo — the figurine must show ONLY the ${animal} itself, sculpted alone. ` +
-        `If the fur is curly, matted or grows in thick corded locks (like a Puli, Komondor, or corded ` +
-        `poodle-mix coat), sculpt those rope-like cords faithfully — do not smooth or simplify them into ` +
-        `plain fluffy fur. The figurine is ${pose.prompt}, ${basePhrase}. The ${animal} must be perfectly ` +
-        `centered on the base, front-to-back and side-to-side.${style.prompt}${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
+        `Turn the ${animal} in this photo into a full-color collectible 3D printed resin figurine, ` +
+        `keeping its EXACT breed, fur colors, markings and proportions identical to the photo. ` +
+        `Sculpt only the ${animal} (ignore any people, hands, other animals or background). ` +
+        `The figurine is ${pose.prompt}, ${basePhrase}, centered on the base.` +
+        `${style.prompt}${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
     }
 
     const extraRefUrls = change === "name" ? [] : baseRefUrls;
