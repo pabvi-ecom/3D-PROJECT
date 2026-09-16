@@ -80,13 +80,21 @@ export async function runTask(
  * Kie NO acepta base64 directo en la generación; hay que subir primero.
  */
 export async function uploadImage(dataUri: string, fileName = "upload.png"): Promise<string> {
+  // Nombre SIEMPRE único — si no, dos subidas con el mismo nombre (varias
+  // fotos de clientes, o varias imágenes generadas) colisionan en la misma
+  // URL y el CDN devuelve la primera cacheada para todas. Era la causa de
+  // que las figuras salieran iguales / no se parecieran a la foto subida.
+  const dot = fileName.lastIndexOf(".");
+  const ext = dot >= 0 ? fileName.slice(dot) : ".png";
+  const stem = dot >= 0 ? fileName.slice(0, dot) : fileName;
+  const uniqueName = `${stem}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}${ext}`;
   const res = await fetch(KIE_UPLOAD, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${key()}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ base64Data: dataUri, uploadPath: "sculptly/uploads", fileName }),
+    body: JSON.stringify({ base64Data: dataUri, uploadPath: "sculptly/uploads", fileName: uniqueName }),
   });
   const json = await res.json();
   const url = json?.data?.downloadUrl;

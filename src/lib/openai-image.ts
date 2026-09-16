@@ -52,5 +52,8 @@ export async function generateFigurine(imageUrl: string, prompt: string, extraRe
   if (!b64) throw new Error("OPENAI_FAIL: respuesta sin imagen");
 
   // Subir el resultado para tener una URL pública (Tripo la necesita).
-  return uploadImage(`data:image/png;base64,${b64}`, "openai-figure.png");
+  // Nombre ÚNICO por imagen — si no, todas se suben al mismo archivo y el
+  // CDN devuelve la primera cacheada para todas (salían idénticas).
+  const unique = `openai-${Date.now()}-${Math.random().toString(36).slice(2, 10)}.png`;
+  return uploadImage(`data:image/png;base64,${b64}`, unique);
 }
