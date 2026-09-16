@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { generateFigurine as generateKie, uploadImage } from "@/lib/kie";
-import { generateFigurine as generateOpenAI, describePet, generateFromText } from "@/lib/openai-image";
+import { generateFigurine as generateOpenAI } from "@/lib/openai-image";
 import { getZone } from "@/config/zones";
 import { poses, bases, figureStyles, NO_BASE_ID } from "@/config/products";
 
@@ -129,33 +129,17 @@ export async function POST(req: NextRequest) {
             `with only a thin sliver of it facing toward the camera — it must NOT still be facing the ` +
             `viewer flat-on like in a front view.`
           : "";
-      if (process.env.IMAGE_PROVIDER === "openai") {
-        // Enfoque pedido por el usuario: NO pasar la foto del perro como
-        // referencia de imagen (mezclaba referencias). En su lugar se
-        // describe el perro con visión y se genera SOLO desde texto; la
-        // única imagen de referencia es la base (si la hay).
-        try {
-          const desc = await describePet(src);
-          const prompt =
-            `A full-color collectible 3D printed resin figurine of this exact pet: ${desc} ` +
-            `The figurine is ${pose.prompt}, ${basePhrase}, centered on the base. ` +
-            `Sculpt the pet exactly as described — same breed, size, coat, colors and markings.` +
-            `${style.prompt}${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
-          // Solo la base como referencia de imagen (nunca el perro).
-          const url = await generateFromText(prompt, baseRefUrls);
-          return NextResponse.json({ url });
-        } catch (e) {
-          console.error("[/api/generate] OpenAI describe/generate falló, fallback a Kie:", (e as Error).message);
-          // Fallback a Kie con el prompt clásico (sí usa la foto).
-        }
-      }
-      // Prompt CORTO y directo — gpt-image-1 rinde mucho mejor así que con un
-      // muro de texto. (Ruta clásica / Kie: sí pasa la foto como referencia.)
+      // Prompt CORTO y directo. Se PASA la foto del perro como referencia
+      // (edición imagen-a-imagen) — es lo que preserva la identidad; generar
+      // solo desde texto daba animales aleatorios (salió hasta un conejo).
+      // La foto de cada cliente ya va a una URL única (fix de nombres), así
+      // que no se mezclan referencias entre sesiones.
       prompt =
-        `Turn the ${animal} in this photo into a full-color collectible 3D printed resin figurine, ` +
-        `keeping its EXACT breed, fur colors, markings and proportions identical to the photo. ` +
+        `Turn the ${animal} in the FIRST image into a full-color collectible 3D printed resin figurine, ` +
+        `keeping its EXACT breed, body shape, fur colors, markings and proportions identical to that photo. ` +
+        `It must be unmistakably the SAME individual ${animal} as in the first image. ` +
         `Sculpt only the ${animal} (ignore any people, hands, other animals or background). ` +
-        `The figurine is ${pose.prompt}, ${basePhrase}, centered on the base.` +
+        `The figurine is ${pose.prompt}, ${basePhrase}.` +
         `${style.prompt}${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
     }
 
