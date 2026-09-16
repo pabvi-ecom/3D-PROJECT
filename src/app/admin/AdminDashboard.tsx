@@ -23,7 +23,7 @@ const STATUS_COLOR: Record<string, string> = {
   Failed: "#D33",
 };
 
-function CardView({ card }: { card: Card }) {
+function CardView({ card, onZoom }: { card: Card; onZoom: (url: string) => void }) {
   const [status, setStatus] = useState(card.tripoStatus || "Not started");
   const [modelUrl, setModelUrl] = useState(card.modelUrl);
   const [stlUrl, setStlUrl] = useState(card.stlUrl);
@@ -143,7 +143,12 @@ function CardView({ card }: { card: Card }) {
       <div className={styles.itemStage}>
         {card.figureUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={card.figureUrl} alt={card.petName} />
+          <img
+            src={card.figureUrl}
+            alt={card.petName}
+            className={styles.zoomable}
+            onClick={() => onZoom(card.figureUrl)}
+          />
         ) : (
           <span className={styles.noImg}>No image</span>
         )}
@@ -184,6 +189,7 @@ export function AdminDashboard({ orders, leads }: { orders: Card[]; leads: Card[
   const router = useRouter();
   const [tab, setTab] = useState<"orders" | "leads">("orders");
   const [refreshing, setRefreshing] = useState(false);
+  const [zoomUrl, setZoomUrl] = useState<string | null>(null);
   const list = tab === "orders" ? orders : leads;
 
   function refresh() {
@@ -211,10 +217,18 @@ export function AdminDashboard({ orders, leads }: { orders: Card[]; leads: Card[
 
       <div className={styles.itemGrid}>
         {list.map((c) => (
-          <CardView key={c.id} card={c} />
+          <CardView key={c.id} card={c} onZoom={setZoomUrl} />
         ))}
         {list.length === 0 && <p className={styles.empty}>Nothing here yet.</p>}
       </div>
+
+      {zoomUrl && (
+        <div className={styles.lightbox} onClick={() => setZoomUrl(null)}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={zoomUrl} alt="" />
+          <button className={styles.lightboxClose} onClick={() => setZoomUrl(null)} aria-label="Close">×</button>
+        </div>
+      )}
     </div>
   );
 }
