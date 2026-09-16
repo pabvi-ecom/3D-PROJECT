@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateFigurine, uploadImage } from "@/lib/kie";
+import { generateFigurine as generateKie, uploadImage } from "@/lib/kie";
+import { generateFigurine as generateOpenAI } from "@/lib/openai-image";
 import { getZone } from "@/config/zones";
 import { poses, bases, figureStyles, NO_BASE_ID } from "@/config/products";
+
+// Proveedor de generación de imágenes: "openai" (gpt-image-1, más realista)
+// o "kie" (nano-banana, más barato). Se cambia con la env IMAGE_PROVIDER
+// sin tocar código.
+const generateFigurine = process.env.IMAGE_PROVIDER === "openai" ? generateOpenAI : generateKie;
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
