@@ -149,12 +149,14 @@ export const NO_BASE_ID = "none";
 export const bases: Base[] = [
   { id: "none", label: "No base", price: 0, prompt: "" },
   {
-    id: "grass",
-    label: "Grass top",
+    id: "marble",
+    label: "Marble pedestal",
     price: 10,
+    // La base SIEMPRE debe ser como la imagen de referencia (marble-ref.png):
+    // pedestal ovalado de mármol/travertino beige, borde escalonado.
     prompt:
-      "on a round dark wood display base with a lush, realistic short green grass top filling the whole surface, a polished dark wood rim, and a small blank brushed-gold nameplate on the front edge",
-    refImage: "/bases/grass-ref.png",
+      "on the exact display base shown in the LAST reference image — a smooth oval polished beige marble/travertine pedestal with a raised flat oval top and a wider stepped rounded rim below it, natural cream-and-tan stone veining, satin finish. Replicate that base's shape, proportions, material and color precisely. Add a small blank brushed-gold nameplate centered on the front face of the lower rim",
+    refImage: "/bases/marble-ref.png",
   },
 ];
 
