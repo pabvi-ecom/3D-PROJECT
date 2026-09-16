@@ -138,8 +138,9 @@ export async function POST(req: NextRequest) {
         `Turn the ${animal} in the FIRST image into a full-color collectible 3D printed resin figurine, ` +
         `keeping its EXACT breed, body shape, fur colors, markings and proportions identical to that photo. ` +
         `It must be unmistakably the SAME individual ${animal} as in the first image. ` +
-        `Sculpt only the ${animal} (ignore any people, hands, other animals or background). ` +
-        `The figurine is ${pose.prompt}, ${basePhrase}.` +
+        `Sculpt only the ${animal} itself — exclude any people, hands, other animals, background, and any ` +
+        `props, toys, hearts, accessories or held objects that are not part of the ${animal}'s own body ` +
+        `(a plain everyday collar may stay). The figurine is ${pose.prompt}, ${basePhrase}.` +
         `${style.prompt}${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
     }
 
