@@ -153,9 +153,10 @@ export const bases: Base[] = [
     label: "Marble pedestal",
     price: 10,
     // La base SIEMPRE debe ser como la imagen de referencia (marble-ref.png):
-    // pedestal ovalado de mármol/travertino beige, borde escalonado.
+    // pedestal ovalado de mármol/travertino beige, borde escalonado. El
+    // nombre va GRABADO en la piedra (no en placa de metal).
     prompt:
-      "on the exact display base shown in the LAST reference image — a smooth oval polished beige marble/travertine pedestal with a raised flat oval top and a wider stepped rounded rim below it, natural cream-and-tan stone veining, satin finish. Replicate that base's shape, proportions, material and color precisely. Add a small blank brushed-gold nameplate centered on the front face of the lower rim",
+      "on the exact display base shown in the LAST reference image — a smooth oval polished beige marble/travertine pedestal with a raised flat oval top and a wider stepped rounded rim below it, natural cream-and-tan stone veining, satin finish. Replicate that base's shape, proportions, material and color precisely. The front face of the lower marble rim is smooth and blank, ready for a name to be engraved directly into the stone (no metal plaque)",
     refImage: "/bases/marble-ref.png",
   },
 ];

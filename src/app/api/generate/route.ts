@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     const basePhrase = base.prompt || NO_BASE;
     const baseRefUrls = base.refImage ? [new URL(base.refImage, req.nextUrl.origin).toString()] : [];
     const baseRefNote = base.refImage
-      ? " The LAST reference image shows the exact base to replicate — match its material, color and shape precisely, but keep the nameplate on it blank."
+      ? " The LAST reference image shows the exact base to replicate — match its material, color and shape precisely, with the front of the marble rim left smooth and blank (no name yet)."
       : "";
     let src: string | undefined;
     let prompt: string;
@@ -91,19 +91,16 @@ export async function POST(req: NextRequest) {
           `physical object from that new camera position — same object, same pose, same base, different photo ` +
           `angle only.${baseRefNote} ${STUDIO}`;
       } else if (change === "name") {
-        // Mantener figura y base idénticas; grabar el nombre en la placa (antes en blanco).
-        const engraved = typeof petName === "string" && petName.trim() ? petName.trim().toUpperCase() : "";
+        // Grabar el nombre DIRECTAMENTE en el mármol de la base (no en placa).
+        const engraved = typeof petName === "string" && petName.trim() ? petName.trim() : "";
         prompt =
-          `This is a full-color 3D printed figurine of a ${animal} on a display base with a blank brushed-gold ` +
-          `nameplate. Keep the ${animal} figurine, its pose, its base, the nameplate's exact position/angle ` +
-          `and the camera angle EXACTLY the same — do NOT rotate or flatten the plate to face the camera, ` +
-          `keep it at whatever angle it is already shown at in this image (if the base is seen from the side, ` +
-          `the plate is seen edge-on too, mostly foreshortened, and that must stay that way). ` +
-          `Change ONLY the nameplate: engrave the name "${engraved}" into it as recessed, engraved lettering ` +
-          `in a dark oxidized bronze/charcoal tone (NOT shiny gold, NOT the same color as the plate — it must ` +
-          `read as carved-in, darker than the brushed-gold metal around it), in an elegant serif font. ` +
-          `The text MUST be perfectly horizontally and vertically centered on whatever portion of the ` +
-          `nameplate is visible in THIS view — never offset to one side. ${STUDIO}`;
+          `This is a full-color 3D printed figurine of a ${animal} on a polished beige marble pedestal base. ` +
+          `Keep the ${animal} figurine, its pose, the base and the camera angle EXACTLY the same. ` +
+          `Change ONLY the front face of the marble rim: engrave the name "${engraved}" directly into the ` +
+          `stone, as clean crisp recessed serif lettering in a soft warm brown/taupe tone that reads as ` +
+          `carved into the marble (slightly darker than the beige stone around it), like the name engraved ` +
+          `on a real marble memorial base. Capitalize only the first letter. The text must be perfectly ` +
+          `horizontally centered on the front of the base and follow its curve. ${STUDIO}`;
       } else {
         // Mantener el perro y la postura idénticos, cambiar SOLO la base.
         prompt =
