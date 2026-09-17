@@ -132,12 +132,16 @@ export async function POST(req: NextRequest) {
       // La foto de cada cliente ya va a una URL única (fix de nombres), así
       // que no se mezclan referencias entre sesiones.
       prompt =
-        `Turn the ${animal} in the FIRST image into a full-color collectible 3D printed resin figurine, ` +
-        `keeping its EXACT breed, body shape, fur colors, markings and proportions identical to that photo. ` +
-        `It must be unmistakably the SAME individual ${animal} as in the first image. ` +
+        `Turn the ${animal} in the FIRST image into a full-color collectible 3D printed resin figurine of ` +
+        `THAT SPECIFIC individual ${animal}. Preserve its EXACT face, head shape, expression, eye shape and ` +
+        `spacing, snout, ear shape, body build and proportions, and its REAL fur — including any long, ` +
+        `scruffy, fluffy, uneven, messy or shaggy fur and the exact colors and placement of every marking. ` +
+        `Do NOT groom, smooth, slim, "purebred-ify" or idealize it — it must look like this real, specific ` +
+        `${animal}, not a generic clean one. If the photo is dark, backlit or the eyes are squinting, ` +
+        `reconstruct the pet in clear even studio lighting but keep the same identity and features. ` +
         `Sculpt only the ${animal} itself — exclude any people, hands, other animals, background, and any ` +
-        `props, toys, hearts, accessories or held objects that are not part of the ${animal}'s own body ` +
-        `(a plain everyday collar may stay). The figurine is ${pose.prompt}, ${basePhrase}.` +
+        `props, toys, hearts, accessories or held objects that are not part of its body (a plain everyday ` +
+        `collar may stay). The figurine is ${pose.prompt}, ${basePhrase}.` +
         `${style.prompt}${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
     }
 
