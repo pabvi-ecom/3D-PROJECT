@@ -132,16 +132,28 @@ export async function POST(req: NextRequest) {
       // La foto de cada cliente ya va a una URL única (fix de nombres), así
       // que no se mezclan referencias entre sesiones.
       prompt =
-        `Turn the ${animal} in the FIRST image into a full-color collectible 3D printed resin figurine of ` +
-        `THAT SPECIFIC individual ${animal}. Preserve its EXACT face, head shape, expression, eye shape and ` +
+        `Create a HYPER-PHOTOREALISTIC studio portrait of the EXACT SAME individual ${animal} shown in the ` +
+        `FIRST image — indistinguishable from a real high-end DSLR photograph of that real pet, with real fur ` +
+        `texture, real depth of field and natural skin/nose/eye detail. It must look like a real living ${animal}, ` +
+        `NOT a plastic toy, NOT a cartoon, NOT a smooth stylized figurine. ` +
+        `Preserve its EXACT face, head shape, expression, eye shape and ` +
         `spacing, snout, ear shape, body build and proportions, and its REAL fur — including any long, ` +
         `scruffy, fluffy, uneven, messy or shaggy fur and the exact colors and placement of every marking. ` +
+        `CRITICAL — the MUZZLE / SNOUT LENGTH: look at the real photo and measure how far the nose tip ` +
+        `sticks out from the eyes, then reproduce that SAME long-to-short ratio exactly. This is a ` +
+        `long-muzzled dog unless the photo clearly shows a flat face; keep the full length of the snout — ` +
+        `a long, protruding nose bridge must stay long and protruding. Do NOT shorten, flatten, round, ` +
+        `pug-ify, push in or "cute-ify" the muzzle, and do NOT turn a long-nosed dog into a flat-faced or ` +
+        `snub-nosed one — that single change destroys the likeness and is the most common failure. ` +
         `Do NOT groom, smooth, slim, "purebred-ify" or idealize it — it must look like this real, specific ` +
         `${animal}, not a generic clean one. If the photo is dark, backlit or the eyes are squinting, ` +
         `reconstruct the pet in clear even studio lighting but keep the same identity and features. ` +
-        `Sculpt only the ${animal} itself — exclude any people, hands, other animals, background, and any ` +
+        `Render it at TRUE natural adult ${animal} proportions — the real leg length, body length, chest ` +
+        `depth, head size and snout length of this specific pet, each correctly proportioned to the others. ` +
+        `Do NOT make it chubby, overweight, squat, short-legged, miniature, chibi, big-headed or toy-like. ` +
+        `Show only the ${animal} itself — exclude any people, hands, other animals, background, and any ` +
         `props, toys, hearts, accessories or held objects that are not part of its body (a plain everyday ` +
-        `collar may stay). The figurine is ${pose.prompt}, ${basePhrase}.` +
+        `collar may stay). Show the full body of the ${animal} ${pose.prompt}, ${basePhrase}.` +
         `${style.prompt}${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
     }
 
