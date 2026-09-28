@@ -4,12 +4,18 @@ import { generateFigurine as generateOpenAI } from "@/lib/openai-image";
 import { getZone } from "@/config/zones";
 import { poses, bases, figureStyles, NO_BASE_ID } from "@/config/products";
 
-// Proveedor de generación de imágenes: "openai" (gpt-image-1, más realista)
-// o "kie" (nano-banana, más barato). Se cambia con la env IMAGE_PROVIDER.
-// Con "openai", si falla (ej. sin créditos aún en OpenAI, o error puntual)
-// hace fallback automático a Kie — así la web nunca se queda sin generar.
+// Proveedor de generación de imágenes.
+// Por defecto usamos Kie (google/nano-banana-edit): es un EDITOR real de imagen,
+// preserva la identidad del perro entre pasos (sin base -> base -> nombre) y no
+// recorta orejas/patas. gpt-image-1 de OpenAI reinventaba la imagen entera cada
+// vez (perro distinto + recortes), por eso lo dejamos como opt-in explícito.
+// Para volver a OpenAI: env IMAGE_PROVIDER="openai" (cae a Kie si OpenAI falla).
 async function generateFigurine(imageUrl: string, prompt: string, extraRefUrls: string[] = []): Promise<string> {
-  if (process.env.IMAGE_PROVIDER === "openai") {
+  // NOTA: openai solo si USE_OPENAI_IMAGE="1". La env IMAGE_PROVIDER quedó fijada
+  // a "openai" en Vercel y daba malos resultados; usamos este flag nuevo para
+  // forzar Kie sin depender de reeditar IMAGE_PROVIDER. Para volver a openai:
+  // añadir env USE_OPENAI_IMAGE="1".
+  if (process.env.USE_OPENAI_IMAGE === "1") {
     try {
       return await generateOpenAI(imageUrl, prompt, extraRefUrls);
     } catch (e) {
