@@ -23,7 +23,11 @@ async function generateFigurine(imageUrl: string, prompt: string, extraRefUrls: 
 export const runtime = "nodejs";
 export const maxDuration = 120;
 
-const STUDIO = "Studio product photo, soft light, plain seamless light background, photorealistic, centered.";
+const STUDIO =
+  "Studio product photo, soft light, plain seamless light background, photorealistic, centered. " +
+  "Frame the FULL body with comfortable empty margin on all four sides — the ENTIRE subject (and its " +
+  "base, if any) must be fully inside the frame. NEVER crop or cut off the ears, paws, tail, top of the " +
+  "head or any edge. This is a full-body shot, not a close-up or a zoomed-in crop. High resolution, sharp.";
 const NO_BASE = "with no display base, standing directly on a clean seamless light studio surface";
 
 /**
@@ -92,21 +96,31 @@ export async function POST(req: NextRequest) {
           `angle only.${baseRefNote} ${STUDIO}`;
       } else if (change === "name") {
         // Grabar el nombre DIRECTAMENTE en el mármol de la base (no en placa).
-        const engraved = typeof petName === "string" && petName.trim() ? petName.trim() : "";
+        const engraved = (typeof petName === "string" && petName.trim() ? petName.trim() : "").toUpperCase();
         prompt =
           `This is a full-color 3D printed figurine of a ${animal} on a polished beige marble pedestal base. ` +
           `Keep the ${animal} figurine, its pose, the base and the camera angle EXACTLY the same. ` +
           `Change ONLY the front face of the marble rim: engrave the name "${engraved}" directly into the ` +
-          `stone, as clean crisp recessed serif lettering in a soft warm brown/taupe tone that reads as ` +
-          `carved into the marble (slightly darker than the beige stone around it), like the name engraved ` +
-          `on a real marble memorial base. Capitalize only the first letter. The text must be perfectly ` +
+          `stone. Render ALL letters in UPPERCASE. Use a clean, OPEN, evenly-spaced sans-serif or humanist ` +
+          `capital typeface with generous letter-spacing and letters of uniform height (no letter should ` +
+          `rise taller than the others). Keep the lettering SMALL and understated — roughly one third of the ` +
+          `height of the marble rim, not oversized. It must read as physically CARVED/RECESSED into the ` +
+          `stone: crisp engraved grooves with subtle inner shadow, in a soft warm brown/taupe tone slightly ` +
+          `darker than the beige marble around it, like a real engraved marble memorial base. The text must be perfectly ` +
           `horizontally centered on the front of the base and follow its curve. ${STUDIO}`;
       } else {
         // Mantener el perro y la postura idénticos, cambiar SOLO la base.
+        // El perro de la PRIMERA imagen es la verdad absoluta: hay que copiarlo
+        // fiel (misma cara/morro/orejas/pelo), no reinterpretarlo — si no, "parece
+        // otro perro" al cambiar de base.
         prompt =
-          `This is a full-color 3D printed figurine of a ${animal}. ` +
-          `Keep the ${animal} figurine EXACTLY the same — identical sculpt, pose, proportions, ` +
-          `fur colors and markings. Change ONLY the display base: the figurine is now ${basePhrase}. ` +
+          `The FIRST image shows a finished ${animal} figurine. That EXACT dog is the ground truth: ` +
+          `reproduce it PIXEL-FAITHFULLY — same face, same head shape, same muzzle length, same ear ` +
+          `shape and position, same eyes, same body proportions, same fur texture and the exact same ` +
+          `colors and markings in the same places. It must be recognizably the SAME individual dog, as ` +
+          `if compositing the very same rendered dog onto a new base. Do NOT re-imagine, re-sculpt, ` +
+          `restyle, recolor, groom or "improve" the dog in any way, and do NOT change its pose. ` +
+          `Change ONLY the display base: the figurine is now ${basePhrase}. ` +
           `The ${animal} must be perfectly centered on top of the base, front-to-back and side-to-side — ` +
           `not offset toward any edge.${baseRefNote} ${STUDIO}`;
       }
