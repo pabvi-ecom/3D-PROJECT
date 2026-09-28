@@ -27,7 +27,7 @@ async function generateFigurine(imageUrl: string, prompt: string, extraRefUrls: 
 }
 
 export const runtime = "nodejs";
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 const STUDIO =
   "Studio product photo, soft light, plain seamless light background, photorealistic, centered. " +
