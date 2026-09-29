@@ -40,3 +40,9 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .blender-shared-secret
+
+# binarios de trabajo sueltos (modelos 3D / imagenes generadas) — no van al repo
+*.glb
+*.stl
+ChatGPT Image*.png
+public/examples/ChatGPT Image*.png
