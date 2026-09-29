@@ -765,7 +765,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
                 className={styles.notesInput}
                 placeholder="e.g. &quot;no tail&quot;, one blue eye…"
                 maxLength={200}
-                rows={2}
+                rows={1}
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
               />

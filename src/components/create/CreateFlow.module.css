@@ -103,15 +103,15 @@
 
 .uploadBox{width:100%; display:flex; flex-direction:column; align-items:center; gap:12px; padding:48px 20px; border:2px dashed var(--line); border-radius:18px; background:var(--surface-2); color:var(--ink-soft); font-weight:700; cursor:pointer}
 
-.photoPreview{position:relative; width:100%; max-width:440px; margin:0 auto 8px; border-radius:18px; overflow:hidden; background:var(--surface-2)}
-.photoPreview img{width:100%; max-height:340px; object-fit:contain; display:block; margin:0 auto}
+.photoPreview{position:relative; width:100%; max-width:420px; aspect-ratio:4/5; margin:0 auto 8px; border-radius:18px; overflow:hidden; background:var(--surface-2)}
+.photoPreview img{width:100%; height:100%; object-fit:cover; display:block}
 .changePhoto{position:absolute; bottom:10px; right:10px; background:rgba(255,255,255,.92); border:none; border-radius:999px; padding:8px 14px; font-weight:700; font-size:.8rem; cursor:pointer; color:var(--ink)}
 .uploadBox:hover{border-color:var(--accent); color:var(--accent-deep)}
 
 .err{margin-top:16px; color:#b3261e; font-weight:700; font-size:.9rem}
 
 .notesLabel{display:block; margin-top:18px; font-size:.86rem; font-weight:700; color:var(--ink-soft); text-align:center}
-.notesInput{display:block; width:100%; max-width:420px; margin:8px auto 0; border:1.5px solid var(--line); border-radius:22px; padding:12px 18px; font-family:inherit; font-size:.92rem; font-weight:500; color:var(--ink); resize:none; outline:none}
+.notesInput{display:block; width:100%; max-width:360px; margin:8px auto 0; border:1.5px solid var(--line); border-radius:999px; padding:9px 16px; font-family:inherit; font-size:.88rem; line-height:1.3; font-weight:500; color:var(--ink); resize:none; outline:none; white-space:nowrap; overflow:hidden}
 .notesInput:focus{border-color:var(--accent)}
 
 /* Prompt de calidad dentro del paso foto */
