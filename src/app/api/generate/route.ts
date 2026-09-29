@@ -125,8 +125,10 @@ export async function POST(req: NextRequest) {
           `The FIRST image shows a finished ${animal} figurine. That EXACT dog and its base/pose are the ` +
           `ground truth: reproduce them PIXEL-FAITHFULLY — same face, head shape, muzzle, ears, eyes, body ` +
           `proportions, fur texture, colors and markings, same base, same pose. Do NOT re-imagine, re-sculpt, ` +
-          `recolor or restyle the dog or the base. Add ONLY this accessory to the pet:${acc.prompt} ` +
-          `Nothing else about the figurine changes.${baseRefNote} ${STUDIO}`;
+          `recolor or restyle the dog or the base. If the marble base already has a NAME ENGRAVED on its ` +
+          `front rim, you MUST keep that exact engraved name unchanged, same letters, position and carved ` +
+          `look — do not remove, blur or alter it. Add ONLY this accessory to the pet:${acc.prompt} ` +
+          `Nothing else about the figurine changes. ${STUDIO}`;
       } else {
         // Mantener el perro y la postura idénticos, cambiar SOLO la base.
         // El perro de la PRIMERA imagen es la verdad absoluta: hay que copiarlo
@@ -190,7 +192,10 @@ export async function POST(req: NextRequest) {
         `${style.prompt}${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
     }
 
-    const extraRefUrls = change === "name" ? [] : baseRefUrls;
+    // El grabado del nombre y los accesorios editan una imagen YA compuesta
+    // (perro + base) — no necesitan la referencia de base, que además pediría
+    // dejar el canto en blanco y borraría el nombre.
+    const extraRefUrls = change === "name" || change === "accessory" ? [] : baseRefUrls;
     // El filtro de seguridad de Gemini a veces marca una imagen como
     // "sensible" en un falso positivo (foto normal, nada raro) — un segundo
     // intento con el mismo input suele pasar sin problema, así que
