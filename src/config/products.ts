@@ -98,7 +98,15 @@ export interface FigureStyle {
   popular?: boolean;
 }
 
+// Orden pensado para la UI: Realistic va EN MEDIO (es el mas elegido).
 export const figureStyles: FigureStyle[] = [
+  {
+    id: "pixar",
+    label: "Pixar style",
+    description: "Animated-movie look, big eyes.",
+    prompt:
+      " Make it in a cute Pixar/DreamWorks 3D animated-movie style — big expressive eyes, soft rounded proportions, smooth stylized fur — still clearly the same pet (same breed, colors and markings).",
+  },
   {
     id: "realistic",
     label: "Realistic",
@@ -106,13 +114,6 @@ export const figureStyles: FigureStyle[] = [
     popular: true,
     // Vacío: el prompt base ya pide figura de resina realista fiel a la foto.
     prompt: "",
-  },
-  {
-    id: "pixar",
-    label: "Pixar style",
-    description: "Animated-movie look, big eyes.",
-    prompt:
-      " Make it in a cute Pixar/DreamWorks 3D animated-movie style — big expressive eyes, soft rounded proportions, smooth stylized fur — still clearly the same pet (same breed, colors and markings).",
   },
   {
     id: "chibi",

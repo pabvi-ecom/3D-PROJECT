@@ -166,7 +166,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const [error, setError] = useState<string | null>(null);
 
   const [poseId, setPoseId] = useState(poses[0].id);
-  const [styleId, setStyleId] = useState(figureStyles[0].id);
+  const [styleId, setStyleId] = useState("realistic");
   const [styleFigures, setStyleFigures] = useState<Record<string, string>>({});
   // Cachea las variantes (base/nombre/vista) ya generadas por estilo — si el
   // usuario cambia de estilo y luego vuelve a uno que ya generó antes, se
@@ -231,10 +231,12 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
   const PHRASES = [
     `Sculpting your ${animal}…`,
-    "Trying every pose…",
+    "Loading textures…",
+    "Building fine definition…",
     "Capturing every marking and color…",
     "Getting the proportions just right…",
-    "The best keepsake, almost ready…",
+    "Polishing the details…",
+    "Almost there — rendering the final image…",
   ];
 
   useEffect(() => {
@@ -248,14 +250,16 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     return () => clearInterval(t);
   }, [generating]);
 
+  // Progreso SIMULADO por tiempo: sube constante desde el principio (no se
+  // clava al 20%), y al acercarse al 97% frena pero nunca se detiene del todo.
+  // Al terminar la generación, las funciones ponen el progreso a 100.
   useEffect(() => {
     if (!generating) return;
-    const target = Math.min(96, ((done + 0.85) / genTotal) * 100);
     const t = setInterval(() => {
-      setProgress((p) => (p < target ? p + (target - p) * 0.12 : p));
-    }, 320);
+      setProgress((p) => (p >= 97 ? 97 : p + (97 - p) * 0.014 + 0.18));
+    }, 300);
     return () => clearInterval(t);
-  }, [generating, done, genTotal]);
+  }, [generating]);
 
   async function postGenerate(body: Record<string, unknown>): Promise<string> {
     const res = await fetch("/api/generate", {
@@ -334,7 +338,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         throw new Error((firstError?.reason as Error)?.message ?? "Couldn't generate");
       }
       setStyleFigures(map);
-      setStyleId(Object.keys(map)[0]);
+      setStyleId(map["realistic"] ? "realistic" : Object.keys(map)[0]);
       setProgress(100);
       setStep("style");
     } catch (e) {
@@ -596,7 +600,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setAccessoryId(NO_ACCESSORY_ID);
     variantsCacheRef.current = {};
     setPoseId(poses[0].id);
-    setStyleId(figureStyles[0].id);
+    setStyleId("realistic");
     setBaseId(NO_BASE_ID);
     setView("front");
     setAddName(false);
@@ -686,8 +690,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     }
   }
 
-  const timelineStep: StepId = step === "quality" ? "photo" : ["accessory", "reveal"].includes(step) ? "base" : step;
-  const rv = REVIEWS[reviewIdx];
+  const timelineStep: StepId = ["accessory", "reveal"].includes(step) ? "base" : step;
 
   return (
     <div className={styles.page}>
@@ -770,10 +773,10 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
             )}
 
             <label className={styles.notesLabel}>
-              Anything about {petName} we can&apos;t tell from the photo?
+              Anything we can&apos;t tell from the photo?
               <textarea
                 className={styles.notesInput}
-                placeholder="e.g. &quot;no tail&quot;, missing a leg, one blue eye…"
+                placeholder="e.g. &quot;no tail&quot;, one blue eye…"
                 maxLength={200}
                 rows={2}
                 value={notes}
@@ -784,63 +787,38 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
             {error && <div className={styles.err}>{error}</div>}
 
             {photo && (
-              <button className={styles.cta} onClick={() => setStep("quality")}>
-                Continue
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
-              </button>
+              <>
+                <p className={styles.qualityPrompt}>Choose your quality</p>
+                <div className={styles.qualityGrid}>
+                  <button className={styles.qualityCard} onClick={() => generatePreviews(photo)}>
+                    <span className={styles.qualityName}>HD</span>
+                    <span className={styles.qualityMeta}>Ready in ~45 seconds</span>
+                  </button>
+                  <button className={`${styles.qualityCard} ${styles.qualityCardBest}`} onClick={() => generatePreviews(photo)}>
+                    <span className={styles.popBadge}>Best quality</span>
+                    <span className={styles.qualityName}>Full HD 4K</span>
+                    <span className={styles.qualityMeta}>Ready in ~90 seconds</span>
+                  </button>
+                </div>
+              </>
             )}
-          </div>
-        )}
-
-        {step === "quality" && !generating && (
-          <div className={styles.card}>
-            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 3 of 6</span></div>
-            <h1>🎚️ Choose your quality</h1>
-            <p className={styles.sub}>Both look great — higher quality just takes a little longer.</p>
-            <div className={styles.qualityGrid}>
-              <button className={styles.qualityCard} onClick={() => photo && generatePreviews(photo)}>
-                <span className={styles.qualityName}>HD</span>
-                <span className={styles.qualityMeta}>Ready in ~45 seconds</span>
-              </button>
-              <button className={`${styles.qualityCard} ${styles.qualityCardBest}`} onClick={() => photo && generatePreviews(photo)}>
-                <span className={styles.popBadge}>Best quality</span>
-                <span className={styles.qualityName}>Full HD 4K</span>
-                <span className={styles.qualityMeta}>Ready in ~90 seconds</span>
-              </button>
-            </div>
           </div>
         )}
 
         {generating && (
           <div className={styles.genWrap}>
-          <div className={`${styles.card} ${styles.genCard}`}>
-            <div className={styles.genCol}>
+            <div className={styles.genPanel}>
               <span className={styles.stepTag}>Generating your preview…</span>
               <h1 className={styles.genTitle}>Bringing <span className={styles.petNameHighlight}>{petName}</span> to life</h1>
-              <div className={styles.genStage}>
-                {photo && <img className={styles.genGhost} src={photo} alt="" />}
-                <div className={styles.genOverlay}>
-                  <div className={styles.spinner} />
-                  <p className={styles.progPhrase}>{PHRASES[phraseIdx % PHRASES.length]}</p>
-                  <div className={styles.progTrack}>
-                    <div className={styles.progFill} style={{ width: `${progress}%` }} />
-                  </div>
-                  <span className={styles.progPct}>{Math.round(progress)}%</span>
-                </div>
+              <div className={styles.progTrackBig}>
+                <div className={styles.progFill} style={{ width: `${progress}%` }} />
               </div>
-              <div className={styles.review}>
-                <img src={rv.src} alt="" />
-                <div className={styles.reviewBody}>
-                  <div className={styles.reviewStars}>★★★★★</div>
-                  <div className={styles.reviewText}>&ldquo;{rv.text}&rdquo;</div>
-                  <div className={styles.reviewName}>{rv.name} · {rv.breed}</div>
-                </div>
-              </div>
+              <span className={styles.progPct}>{Math.round(progress)}%</span>
+              <p className={styles.progPhraseBig}>{PHRASES[phraseIdx % PHRASES.length]}</p>
             </div>
-            <div className={styles.genCol}>
+            <div className={styles.genReviewSide}>
               <ReviewStory />
             </div>
-          </div>
           </div>
         )}
 

@@ -21,7 +21,17 @@
 .mainWide{max-width:940px}
 .mainWider{max-width:1180px}
 
-.genWrap{display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:center; gap:24px}
+.genWrap{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:28px}
+
+/* Panel de carga: tarjeta blanca centrada, sin foto de fondo */
+.genPanel{background:var(--surface); border:1px solid var(--line); border-radius:24px; box-shadow:var(--shadow); padding:clamp(28px,4vw,48px); max-width:520px; width:100%; display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px}
+.genPanel .genTitle{margin:2px 0 6px}
+.progTrackBig{width:100%; max-width:360px; height:12px; background:var(--line-2); border-radius:99px; overflow:hidden; margin-top:6px}
+.progTrackBig > *{height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-deep)); border-radius:99px; transition:width .3s ease}
+.progPhraseBig{font-weight:700; color:var(--ink-soft); margin:2px 0 0; font-size:.98rem; min-height:1.4em}
+/* Reseña rotando FUERA del recuadro, mas comedida */
+.genReviewSide{width:220px; flex:none}
+@media (max-width:760px){ .genReviewSide{display:none} }
 .genCard{display:grid; grid-template-columns:1fr 1fr; gap:clamp(20px,3vw,36px); align-items:start; flex:1; min-width:0}
 .genCol{min-width:0}
 .genCol .stepTag{margin-bottom:10px}
@@ -101,9 +111,12 @@
 
 .err{margin-top:16px; color:#b3261e; font-weight:700; font-size:.9rem}
 
-.notesLabel{display:block; margin-top:18px; font-size:.86rem; font-weight:700; color:var(--ink-soft)}
-.notesInput{display:block; width:100%; margin-top:8px; border:1.5px solid var(--line); border-radius:12px; padding:12px 14px; font-family:inherit; font-size:.92rem; font-weight:500; color:var(--ink); resize:none; outline:none}
+.notesLabel{display:block; margin-top:18px; font-size:.86rem; font-weight:700; color:var(--ink-soft); text-align:center}
+.notesInput{display:block; width:100%; max-width:420px; margin:8px auto 0; border:1.5px solid var(--line); border-radius:22px; padding:12px 18px; font-family:inherit; font-size:.92rem; font-weight:500; color:var(--ink); resize:none; outline:none}
 .notesInput:focus{border-color:var(--accent)}
+
+/* Prompt de calidad dentro del paso foto */
+.qualityPrompt{margin:22px 0 10px; text-align:center; font-weight:800; color:var(--ink)}
 
 .genStage{position:relative; border-radius:18px; overflow:hidden; aspect-ratio:1/1; background:var(--surface-2); margin-bottom:20px}
 .genGhost{width:100%; height:100%; object-fit:cover; opacity:.25; filter:grayscale(.3)}
@@ -131,7 +144,7 @@
 /* Rejilla de estilos: 3 en linea, nombre display + descripcion corta */
 .styleGrid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:22px}
 .styleCard{position:relative; display:flex; flex-direction:column; align-items:center; text-align:center; gap:6px; padding:10px 10px 14px; border:2px solid var(--line); border-radius:16px; background:var(--surface); cursor:pointer}
-.styleCard img{width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:12px; background:var(--surface-2)}
+.styleCard img{width:100%; aspect-ratio:1/1; object-fit:contain; border-radius:12px; background:var(--surface-2)}
 .styleCardActive{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
 .styleName{font-family:var(--font-display); font-weight:700; font-size:1.02rem; letter-spacing:-.01em; margin-top:4px}
 .styleDesc{color:var(--ink-soft); font-size:.76rem; line-height:1.3; font-weight:500}
