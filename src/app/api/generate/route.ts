@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateFigurine as generateKie, uploadImage } from "@/lib/kie";
 import { generateFigurine as generateOpenAI } from "@/lib/openai-image";
 import { getZone } from "@/config/zones";
-import { poses, bases, figureStyles, NO_BASE_ID } from "@/config/products";
+import { poses, bases, figureStyles, accessories, NO_BASE_ID } from "@/config/products";
 
 // Proveedor de generación de imágenes.
 // Por defecto usamos Kie (google/nano-banana-edit): es un EDITOR real de imagen,
@@ -54,7 +54,7 @@ const NO_BASE = "with no display base, standing directly on a clean seamless lig
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { imageBase64, imageUrl, referenceUrl, change, zone = "dogs", poseId, baseId = NO_BASE_ID, petName, notes, view, styleId } = body;
+    const { imageBase64, imageUrl, referenceUrl, change, zone = "dogs", poseId, baseId = NO_BASE_ID, petName, notes, view, styleId, accessoryId } = body;
 
     const z = getZone(zone);
     const animal = z?.animal ?? "pet";
@@ -114,6 +114,17 @@ export async function POST(req: NextRequest) {
           `stone: crisp engraved grooves with subtle inner shadow, in a soft warm brown/taupe tone slightly ` +
           `darker than the beige marble around it, like a real engraved marble memorial base. The text must be perfectly ` +
           `horizontally centered on the front of the base and follow its curve. ${STUDIO}`;
+      } else if (change === "accessory") {
+        // Añadir un accesorio (disfraz/hueso) SOBRE la figura ya generada.
+        // La imagen previa (con o sin base) es la verdad: mismo perro, misma
+        // base, misma pose — solo se añade el accesorio.
+        const acc = accessories.find((a) => a.id === accessoryId) ?? accessories[0];
+        prompt =
+          `The FIRST image shows a finished ${animal} figurine. That EXACT dog and its base/pose are the ` +
+          `ground truth: reproduce them PIXEL-FAITHFULLY — same face, head shape, muzzle, ears, eyes, body ` +
+          `proportions, fur texture, colors and markings, same base, same pose. Do NOT re-imagine, re-sculpt, ` +
+          `recolor or restyle the dog or the base. Add ONLY this accessory to the pet:${acc.prompt} ` +
+          `Nothing else about the figurine changes.${baseRefNote} ${STUDIO}`;
       } else {
         // Mantener el perro y la postura idénticos, cambiar SOLO la base.
         // El perro de la PRIMERA imagen es la verdad absoluta: hay que copiarlo

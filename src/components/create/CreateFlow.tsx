@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import confetti from "canvas-confetti";
 import styles from "./CreateFlow.module.css";
 import { brand } from "@/config/brand";
-import { poses, paidBases, bases, figureStyles, NO_BASE_ID, NAMEPLATE_PRICE } from "@/config/products";
+import { poses, paidBases, bases, figureStyles, accessories, paidAccessories, NO_BASE_ID, NO_ACCESSORY_ID, NAMEPLATE_PRICE } from "@/config/products";
 import type { Zone } from "@/config/zones";
 import { Timeline, type StepId } from "./Timeline";
 import { MiniGame } from "./MiniGame";
@@ -176,6 +176,10 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const [baseId, setBaseId] = useState(NO_BASE_ID);
   const [view, setView] = useState<"front" | "side">("front");
   const [addName, setAddName] = useState(false);
+  const [accessoryId, setAccessoryId] = useState(NO_ACCESSORY_ID);
+  // Imagen con accesorio aplicado, por combinacion base|accesorio.
+  const [accessoryFigures, setAccessoryFigures] = useState<Record<string, string>>({});
+  const [stepLoading, setStepLoading] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [discountCode, setDiscountCode] = useState("");
   const [unlockedDiscounts, setUnlockedDiscounts] = useState<{ pct: number; code: string }[]>([]);
@@ -195,15 +199,21 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
   const pose = poses.find((p) => p.id === poseId) ?? poses[0];
   const base = bases.find((b) => b.id === baseId) ?? bases[0];
+  const accessory = accessories.find((a) => a.id === accessoryId) ?? accessories[0];
   const wantsBase = baseId !== NO_BASE_ID;
-  const currentView = wantsBase ? view : "front";
-  const comboKey = key(poseId, baseId, currentView);
-  const plainFigure = figures[comboKey] ?? null;
-  // El grabado del nombre solo se muestra en vista frontal — en lateral la IA
-  // no coloca el texto en el ángulo correcto de forma fiable (queda a medias).
-  const showEngraved = wantsBase && addName && currentView === "front";
-  const figure = showEngraved ? (namedFigures[comboKey] ?? null) : plainFigure;
-  const total = FIGURE_PRICE + pose.price + base.price + (wantsBase && addName ? NAMEPLATE_PRICE : 0);
+  const hasAccessory = accessoryId !== NO_ACCESSORY_ID;
+  // Clave de la combinacion base|accesorio (siempre vista frontal).
+  const accKey = `${baseId}|${accessoryId}`;
+  // Imagen base (con o sin pedestal). Sin base = la figura del estilo elegido.
+  const baseFigure = wantsBase ? (figures[key(poseId, baseId, "front")] ?? null) : (styleFigures[styleId] ?? null);
+  // Con accesorio aplicado (si no, la imagen base).
+  const accessorized = hasAccessory ? (accessoryFigures[accKey] ?? null) : baseFigure;
+  // El grabado del nombre requiere base.
+  const showEngraved = wantsBase && addName;
+  const figure = showEngraved ? (namedFigures[accKey] ?? null) : accessorized;
+  const plainFigure = accessorized;
+  const total =
+    FIGURE_PRICE + pose.price + base.price + accessory.price + (wantsBase && addName ? NAMEPLATE_PRICE : 0);
   const money = (n: number) => `${brand.currencySymbol}${n.toFixed(2)}`;
   const cartTotal = cart.reduce((sum, it) => sum + itemTotal(it), 0);
   // Los artículos a 0 unidades se quedan en el carrito (para poder volver a
@@ -265,13 +275,15 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     return json.url as string;
   }
 
+  // Graba el nombre en la base a partir de la imagen actual (con accesorio si
+  // lo hay). Solo cuando el usuario activa "grabar" y aún no está generada.
   useEffect(() => {
-    if (!showEngraved || !plainFigure || namedFigures[comboKey] || nameLoading) return;
+    if (!showEngraved || !accessorized || namedFigures[accKey] || nameLoading) return;
     let cancelled = false;
     setNameLoading(true);
-    postGenerate({ referenceUrl: plainFigure, change: "name", baseId, petName })
+    postGenerate({ referenceUrl: accessorized, change: "name", baseId, petName })
       .then((url) => {
-        if (!cancelled) setNamedFigures((m) => ({ ...m, [comboKey]: url }));
+        if (!cancelled) setNamedFigures((m) => ({ ...m, [accKey]: url }));
       })
       .catch((e) => !cancelled && setError((e as Error).message))
       .finally(() => !cancelled && setNameLoading(false));
@@ -279,7 +291,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showEngraved, plainFigure, comboKey, petName]);
+  }, [showEngraved, accessorized, accKey, petName]);
 
   // Fase 1: genera las TRES variantes de estilo a la vez (sin base, sin
   // nombre) para que el usuario elija la que más le guste — genera hype al
@@ -290,6 +302,8 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setStyleFigures({});
     setFigures({});
     setNamedFigures({});
+    setAccessoryFigures({});
+    setAccessoryId(NO_ACCESSORY_ID);
     variantsCacheRef.current = {};
     setGenTotal(figureStyles.length);
     setDone(0);
@@ -327,77 +341,55 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     }
   }
 
-  // Fase 2: una vez elegido el estilo, genera las variantes de base (con/sin,
-  // frontal/lateral, grabada) a partir de esa imagen ya elegida.
-  async function generateVariants() {
+  // Fase 2 (on-demand): al seleccionar una base de pago, genera esa imagen
+  // encadenada desde la figura del estilo elegido. Se cachea en `figures`.
+  async function ensureBaseImage(id: string) {
+    if (id === NO_BASE_ID) return;
+    const k = key(poseId, id, "front");
+    if (figures[k]) return;
     const chosen = styleFigures[styleId];
     if (!chosen) return;
-
-    const cached = variantsCacheRef.current[styleId];
-    if (cached) {
-      setFigures(cached.figures);
-      setNamedFigures(cached.namedFigures);
-      setStep("base");
-      return;
-    }
-
-    setGenerating(true);
+    setStepLoading(true);
     setError(null);
-    setGenTotal(paidBases.length * 4);
-    setDone(0);
-    setProgress(0);
     try {
-      const baseResults = await Promise.all(
-        paidBases.map((b) =>
-          postGenerate({ referenceUrl: chosen, change: "base", baseId: b.id }).then((url) => {
-            setDone((d) => d + 1);
-            return [key(poseId, b.id, "front"), url] as const;
-          }),
-        ),
-      );
-      // La lateral se genera encadenada desde la frontal ya generada (mismo objeto
-      // físico, la cámara "orbita") — generarla independiente desde la foto original
-      // producía un perro visualmente distinto (cara, pelaje) al de la frontal.
-      const frontByCombo: Record<string, string> = Object.fromEntries(baseResults);
-      const sideResults = await Promise.all(
-        paidBases.map((b) =>
-          postGenerate({ referenceUrl: frontByCombo[key(poseId, b.id)], change: "view", poseId, baseId: b.id }).then((url) => {
-            setDone((d) => d + 1);
-            return [key(poseId, b.id, "side"), url] as const;
-          }),
-        ),
-      );
-
-      const map: Record<string, string> = { [key(poseId, NO_BASE_ID, "front")]: chosen };
-      for (const [k, u] of baseResults) map[k] = u;
-      for (const [k, u] of sideResults) map[k] = u;
-      setFigures(map);
-
-      // Pre-genera TAMBIÉN las versiones grabadas (frontal + lateral) para cada
-      // base — así activar "Engrave" o cambiar de vista es instantáneo, sin
-      // esperar a una generación nueva.
-      const namedResults = await Promise.all(
-        paidBases.flatMap((b) =>
-          (["front", "side"] as const).map((v) =>
-            postGenerate({ referenceUrl: map[key(poseId, b.id, v)], change: "name", baseId: b.id, petName }).then((url) => {
-              setDone((d) => d + 1);
-              return [key(poseId, b.id, v), url] as const;
-            }),
-          ),
-        ),
-      );
-      const namedMap: Record<string, string> = {};
-      for (const [k, u] of namedResults) namedMap[k] = u;
-      setNamedFigures(namedMap);
-      variantsCacheRef.current[styleId] = { figures: map, namedFigures: namedMap };
-
-      setProgress(100);
-      setStep("base");
+      const url = await postGenerate({ referenceUrl: chosen, change: "base", baseId: id });
+      setFigures((m) => ({ ...m, [k]: url }));
     } catch (e) {
       setError((e as Error).message);
+      setBaseId(NO_BASE_ID);
     } finally {
-      setGenerating(false);
+      setStepLoading(false);
     }
+  }
+
+  function selectBase(id: string) {
+    setBaseId(id);
+    setAddName(false);
+    // La base cambia la imagen -> resetea accesorio (sus imágenes dependían de la base anterior).
+    setAccessoryId(NO_ACCESSORY_ID);
+    ensureBaseImage(id);
+  }
+
+  // Fase 3 (on-demand): al entrar al paso de accesorios, genera las 3 opciones
+  // en paralelo a partir de la imagen actual (con o sin base). "Sin accesorio"
+  // se muestra al instante; las demás van cargando.
+  async function goToAccessory() {
+    setAccessoryId(NO_ACCESSORY_ID);
+    setStep("accessory");
+    const src = wantsBase ? figures[key(poseId, baseId, "front")] : styleFigures[styleId];
+    if (!src) return;
+    const missing = paidAccessories.filter((a) => !accessoryFigures[`${baseId}|${a.id}`]);
+    if (missing.length === 0) return;
+    setStepLoading(true);
+    setError(null);
+    await Promise.allSettled(
+      missing.map((a) =>
+        postGenerate({ referenceUrl: src, change: "accessory", baseId, accessoryId: a.id }).then((url) =>
+          setAccessoryFigures((m) => ({ ...m, [`${baseId}|${a.id}`]: url })),
+        ),
+      ),
+    );
+    setStepLoading(false);
   }
 
   // Las fotos de móvil pueden pesar varios MB — en base64 crecen ~33% más y
@@ -479,7 +471,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setStep("photo");
   }
 
-  function goBase() {
+  function goReveal() {
     setStep("reveal");
   }
 
@@ -490,7 +482,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       figureUrl: figure,
       figureUrlPlain: plainFigure,
       poseLabel: pose.label,
-      baseLabel: base.label,
+      baseLabel: hasAccessory ? `${base.label} · ${accessory.label}` : base.label,
       hasNameplate: wantsBase && addName,
       unitPrice: total,
       firstUnitDiscountPct,
@@ -542,6 +534,8 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setFigures({});
     setNamedFigures({});
     setStyleFigures({});
+    setAccessoryFigures({});
+    setAccessoryId(NO_ACCESSORY_ID);
     variantsCacheRef.current = {};
     setPoseId(poses[0].id);
     setStyleId(figureStyles[0].id);
@@ -551,7 +545,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setStep("name");
   }
 
-  const STEP_ORDER: StepId[] = ["email", "name", "photo", "style", "base", "reveal", "ready"];
+  const STEP_ORDER: StepId[] = ["email", "name", "photo", "style", "base", "accessory", "engrave", "reveal", "ready"];
   function goBack() {
     const idx = STEP_ORDER.indexOf(step);
     if (idx > 0) setStep(STEP_ORDER[idx - 1]);
@@ -641,7 +635,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     }
   }
 
-  const timelineStep: StepId = step === "reveal" ? "base" : step;
+  const timelineStep: StepId = ["accessory", "engrave", "reveal"].includes(step) ? "base" : step;
   const rv = REVIEWS[reviewIdx];
 
   return (
@@ -813,7 +807,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
                 </button>
               ))}
             </div>
-            <button className={styles.cta} onClick={generateVariants}>
+            <button className={styles.cta} onClick={() => setStep("base")}>
               Continue
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
             </button>
@@ -822,53 +816,99 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
         {step === "base" && (
           <div className={styles.card}>
-            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 5 of 5</span></div>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 5 of 7</span></div>
             <h1>🏆 Add a display base?</h1>
-            <p className={styles.sub}>A base with {petName}&apos;s name engraved makes it shelf-ready.</p>
+            <p className={styles.sub}>A marble base makes it shelf-ready.</p>
 
             <div className={styles.stage}>
-              {figure && <img src={figure} alt={`${animal} figure`} />}
-              {wantsBase && (
-                <button
-                  type="button"
-                  className={styles.rotateBtn}
-                  onClick={() => setView((v) => (v === "front" ? "side" : "front"))}
-                  aria-label="Rotate figure"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7" /><path d="M21 3v6h-6" /></svg>
-                </button>
-              )}
+              {baseFigure && <img src={baseFigure} alt={`${animal} figure`} />}
+              {stepLoading && <div className={styles.stageLoading}>Adding the base…</div>}
             </div>
 
             <div className={styles.baseChoice}>
-              <button className={`${styles.baseBtn} ${!wantsBase ? styles.baseBtnActive : ""}`} onClick={() => { setBaseId(NO_BASE_ID); setView("front"); }}>
+              <button className={`${styles.baseBtn} ${!wantsBase ? styles.baseBtnActive : ""}`} onClick={() => selectBase(NO_BASE_ID)}>
                 No base
               </button>
               {paidBases.map((b) => (
-                <button key={b.id} className={`${styles.baseBtn} ${baseId === b.id ? styles.baseBtnActive : ""}`} onClick={() => { setBaseId(b.id); setView("front"); }}>
+                <button key={b.id} className={`${styles.baseBtn} ${baseId === b.id ? styles.baseBtnActive : ""}`} onClick={() => selectBase(b.id)}>
                   <span className={styles.popBadge}>94% pick this</span>
                   {b.label} <small>+{money(b.price)}</small>
                 </button>
               ))}
             </div>
 
-            {wantsBase && (
-              <>
-                <label className={styles.toggle}>
-                  <input type="checkbox" checked={addName} onChange={(e) => setAddName(e.target.checked)} />
-                  Engrave &quot;{petName.toUpperCase()}&quot; on the base (+{money(NAMEPLATE_PRICE)})
-                  <span className={styles.popBadgeInline}>99% pick this</span>
-                </label>
-              </>
-            )}
-
-            <button className={styles.cta} onClick={goBase} disabled={nameLoading}>
-              {nameLoading ? "Engraving…" : "Continue"}
-              {!nameLoading && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>}
+            <button className={styles.cta} onClick={goToAccessory} disabled={stepLoading || (wantsBase && !baseFigure)}>
+              Continue
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
             </button>
 
             <button className={styles.linkBtn} onClick={() => setStep("style")}>
               ← Try a different style
+            </button>
+          </div>
+        )}
+
+        {step === "accessory" && (
+          <div className={styles.card}>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 6 of 7</span></div>
+            <h1>✨ Add an accessory?</h1>
+            <p className={styles.sub}>Dress {petName} up — or keep it as is.</p>
+
+            <div className={styles.stage}>
+              {accessorized ? <img src={accessorized} alt={`${animal} figure`} /> : <div className={styles.stageLoading}>Loading…</div>}
+            </div>
+
+            <div className={styles.baseChoice}>
+              <button className={`${styles.baseBtn} ${!hasAccessory ? styles.baseBtnActive : ""}`} onClick={() => setAccessoryId(NO_ACCESSORY_ID)}>
+                No accessory
+              </button>
+              {paidAccessories.map((a) => {
+                const ready = !!accessoryFigures[`${baseId}|${a.id}`];
+                return (
+                  <button
+                    key={a.id}
+                    className={`${styles.baseBtn} ${accessoryId === a.id ? styles.baseBtnActive : ""}`}
+                    onClick={() => ready && setAccessoryId(a.id)}
+                    disabled={!ready}
+                  >
+                    {a.emoji} {a.label} {a.price > 0 && <small>+{money(a.price)}</small>}
+                    {!ready && <small> · loading…</small>}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button className={styles.cta} onClick={() => setStep("engrave")} disabled={hasAccessory && !accessorized}>
+              Continue
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
+            </button>
+          </div>
+        )}
+
+        {step === "engrave" && (
+          <div className={styles.card}>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 7 of 7</span></div>
+            <h1>🔤 Engrave the name?</h1>
+            <p className={styles.sub}>
+              {wantsBase ? `Add ${petName}'s name to the marble base.` : "Add a marble base first to engrave the name."}
+            </p>
+
+            <div className={styles.stage}>
+              {figure && <img src={figure} alt={`${animal} figure`} />}
+              {nameLoading && <div className={styles.stageLoading}>Engraving…</div>}
+            </div>
+
+            {wantsBase && (
+              <label className={styles.toggle}>
+                <input type="checkbox" checked={addName} onChange={(e) => setAddName(e.target.checked)} />
+                Engrave &quot;{petName.toUpperCase()}&quot; on the base (+{money(NAMEPLATE_PRICE)})
+                <span className={styles.popBadgeInline}>99% pick this</span>
+              </label>
+            )}
+
+            <button className={styles.cta} onClick={goReveal} disabled={nameLoading || (showEngraved && !figure)}>
+              {nameLoading ? "Engraving…" : "Continue"}
+              {!nameLoading && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>}
             </button>
           </div>
         )}

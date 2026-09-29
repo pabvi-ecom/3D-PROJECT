@@ -1,0 +1,6 @@
+# Binarios sueltos en el working dir (modelos 3D / imagenes de trabajo).
+# No forman parte de la web; se excluyen del deploy para no inflar el upload.
+*.glb
+*.stl
+ChatGPT Image*.png
+public/examples/ChatGPT Image*.png

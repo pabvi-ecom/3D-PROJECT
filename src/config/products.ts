@@ -159,3 +159,50 @@ export const paidBases = bases.filter((b) => b.id !== NO_BASE_ID);
 
 /** Coste de añadir el nombre grabado en la placa (requiere base). */
 export const NAMEPLATE_PRICE = 5;
+
+/**
+ * ACCESORIOS — paso posterior a la base. Se aplican sobre la figura YA generada
+ * (con o sin base), encadenados desde esa imagen para no cambiar el perro.
+ * `id: "none"` es la opción por defecto y gratuita.
+ * Precios de arranque (USD); ajustar cuando se fijen márgenes.
+ */
+export interface Accessory {
+  id: string;
+  label: string;
+  price: number;
+  emoji?: string;
+  prompt: string; // "" para "sin accesorio"
+}
+
+export const NO_ACCESSORY_ID = "none";
+
+export const accessories: Accessory[] = [
+  { id: "none", label: "No accessory", price: 0, prompt: "" },
+  {
+    id: "halloween",
+    label: "Halloween",
+    price: 5,
+    emoji: "🎃",
+    prompt:
+      " Dress the pet in a playful Halloween pumpkin costume — a soft orange pumpkin body wrap with a little green stem hat.",
+  },
+  {
+    id: "christmas",
+    label: "Christmas",
+    price: 5,
+    emoji: "🎅",
+    prompt:
+      " Dress the pet for Christmas — a plush red-and-white Santa hat and a little red scarf trimmed with white fur.",
+  },
+  {
+    id: "bone",
+    label: "Bone in mouth",
+    price: 5,
+    emoji: "🦴",
+    prompt:
+      " Add a small, clean, light-beige cartoon-style dog bone held gently and naturally in the pet's mouth.",
+  },
+];
+
+/** Accesorios de pago (para el selector, sin la opción "none"). */
+export const paidAccessories = accessories.filter((a) => a.id !== NO_ACCESSORY_ID);

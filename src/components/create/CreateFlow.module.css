@@ -159,6 +159,7 @@
 .cartItemPrice s{font-size:.78rem; color:var(--ink-faint)}
 .cartItemPrice b{font-size:.98rem}
 .stage img{width:100%; height:100%; object-fit:contain}
+.stageLoading{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:color-mix(in srgb, var(--surface-2) 78%, transparent); color:var(--ink-soft, var(--ink)); font-weight:600; font-size:.95rem; z-index:2}
 
 .baseChoice{display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px}
 .baseBtn{position:relative; flex:1; min-width:120px; padding:12px 14px; border:1.5px solid var(--line); border-radius:14px; background:var(--surface); font-weight:700; font-size:.9rem; cursor:pointer; text-align:center}
