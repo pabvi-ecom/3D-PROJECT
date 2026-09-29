@@ -86,33 +86,18 @@ const reviewCardVariants = {
 // (eso es lo que hacía que a veces "no apareciera" la foto).
 function ReviewStory() {
   const [idx, setIdx] = useState(0);
-  const [ready, setReady] = useState(false);
 
+  // Muestra la primera reseña al instante (sin esperar a precargar todas — en
+  // conexiones lentas eso dejaba el hueco vacío mucho rato). Las imágenes van
+  // cargando por su cuenta; en 2o plano se precargan las siguientes.
   useEffect(() => {
-    let cancelled = false;
-    Promise.all(
-      REVIEWS.map(
-        (r) =>
-          new Promise<void>((resolve) => {
-            const img = new Image();
-            img.onload = () => resolve();
-            img.onerror = () => resolve();
-            img.src = r.src;
-          }),
-      ),
-    ).then(() => !cancelled && setReady(true));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!ready) return;
+    REVIEWS.forEach((r) => {
+      const img = new Image();
+      img.src = r.src;
+    });
     const t = setInterval(() => setIdx((i) => (i + 1) % REVIEWS.length), 4400);
     return () => clearInterval(t);
-  }, [ready]);
-
-  if (!ready) return <div className={styles.reviewFloatViewport} />;
+  }, []);
 
   const r = REVIEWS[idx];
   return (
@@ -175,6 +160,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const [baseId, setBaseId] = useState(NO_BASE_ID);
   const [view, setView] = useState<"front" | "side">("front");
   const [addName, setAddName] = useState(false);
+  const [quality, setQuality] = useState<"hd" | "4k">("4k");
   const [accessoryId, setAccessoryId] = useState(NO_ACCESSORY_ID);
   // Imagen con accesorio aplicado, por combinacion base|accesorio.
   const [accessoryFigures, setAccessoryFigures] = useState<Record<string, string>>({});
@@ -376,7 +362,8 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   // muestra el paso de base con el mármol ya seleccionado.
   async function goToBase() {
     const firstBase = paidBases[0]?.id ?? NO_BASE_ID;
-    setBaseId(firstBase);
+    // Por defecto SIN base — el usuario debe elegir el pedestal si lo quiere.
+    setBaseId(NO_BASE_ID);
     setAddName(false);
     setAccessoryId(NO_ACCESSORY_ID);
     setGenerating(true);
@@ -385,8 +372,8 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setDone(0);
     setProgress(0);
     try {
-      // Precarga la base y, en cuanto está, la versión con el nombre grabado —
-      // así activar "base" o "nombre" en el paso siguiente es instantáneo.
+      // Precarga en 2o plano la base de mármol y su versión con nombre — así,
+      // si el usuario la elige en el paso siguiente, ya está lista al instante.
       await ensureBase(firstBase);
       setDone(1);
       await ensureNamed(firstBase).catch(() => null);
@@ -790,16 +777,26 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
               <>
                 <p className={styles.qualityPrompt}>Choose your quality</p>
                 <div className={styles.qualityGrid}>
-                  <button className={styles.qualityCard} onClick={() => generatePreviews(photo)}>
+                  <button
+                    className={`${styles.qualityCard} ${quality === "hd" ? styles.qualityCardActive : ""}`}
+                    onClick={() => setQuality("hd")}
+                  >
                     <span className={styles.qualityName}>HD</span>
                     <span className={styles.qualityMeta}>Ready in ~45 seconds</span>
                   </button>
-                  <button className={`${styles.qualityCard} ${styles.qualityCardBest}`} onClick={() => generatePreviews(photo)}>
+                  <button
+                    className={`${styles.qualityCard} ${quality === "4k" ? styles.qualityCardActive : ""}`}
+                    onClick={() => setQuality("4k")}
+                  >
                     <span className={styles.popBadge}>Best quality</span>
                     <span className={styles.qualityName}>Full HD 4K</span>
                     <span className={styles.qualityMeta}>Ready in ~90 seconds</span>
                   </button>
                 </div>
+                <button className={styles.cta} onClick={() => generatePreviews(photo)}>
+                  Continue
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
+                </button>
               </>
             )}
           </div>

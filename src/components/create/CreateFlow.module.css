@@ -21,17 +21,16 @@
 .mainWide{max-width:940px}
 .mainWider{max-width:1180px}
 
-.genWrap{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:28px}
-
-/* Panel de carga: tarjeta blanca centrada, sin foto de fondo */
-.genPanel{background:var(--surface); border:1px solid var(--line); border-radius:24px; box-shadow:var(--shadow); padding:clamp(28px,4vw,48px); max-width:520px; width:100%; display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px}
+/* Carga: tarjeta blanca SIEMPRE centrada en pantalla; la resena va a su derecha
+   (posicionada absoluta) para que el cuadro no se descentre. */
+.genWrap{position:relative; display:flex; align-items:center; justify-content:center; min-height:56vh}
+.genPanel{background:var(--surface); border:1px solid var(--line); border-radius:24px; box-shadow:var(--shadow); padding:clamp(34px,4vw,56px); max-width:560px; width:100%; min-height:300px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:16px}
 .genPanel .genTitle{margin:2px 0 6px}
-.progTrackBig{width:100%; max-width:360px; height:12px; background:var(--line-2); border-radius:99px; overflow:hidden; margin-top:6px}
+.progTrackBig{width:100%; max-width:400px; height:12px; background:var(--line-2); border-radius:99px; overflow:hidden; margin-top:6px}
 .progTrackBig > *{height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-deep)); border-radius:99px; transition:width .3s ease}
 .progPhraseBig{font-weight:700; color:var(--ink-soft); margin:2px 0 0; font-size:.98rem; min-height:1.4em}
-/* Reseña rotando FUERA del recuadro, mas comedida */
-.genReviewSide{width:220px; flex:none}
-@media (max-width:760px){ .genReviewSide{display:none} }
+.genReviewSide{position:absolute; top:50%; left:calc(50% + 300px); transform:translateY(-50%); width:220px}
+@media (max-width:1100px){ .genReviewSide{display:none} }
 .genCard{display:grid; grid-template-columns:1fr 1fr; gap:clamp(20px,3vw,36px); align-items:start; flex:1; min-width:0}
 .genCol{min-width:0}
 .genCol .stepTag{margin-bottom:10px}
@@ -165,7 +164,7 @@
 .qualityGrid{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:8px}
 .qualityCard{position:relative; display:flex; flex-direction:column; align-items:center; gap:6px; padding:26px 16px; border:2px solid var(--line); border-radius:16px; background:var(--surface); cursor:pointer; transition:border-color .15s ease, box-shadow .15s ease}
 .qualityCard:hover{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
-.qualityCardBest{border-color:var(--accent)}
+.qualityCardActive{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
 .qualityName{font-family:var(--font-display); font-weight:800; font-size:1.4rem}
 .qualityMeta{color:var(--ink-soft); font-size:.85rem; font-weight:600}
 @media (max-width:480px){ .qualityGrid{grid-template-columns:1fr} }
