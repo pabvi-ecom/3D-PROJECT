@@ -109,7 +109,9 @@ export async function POST(req: NextRequest) {
           `Change ONLY the front face of the marble rim: engrave the name "${engraved}" directly into the ` +
           `stone. Render ALL letters in UPPERCASE. Use a clean, OPEN, evenly-spaced sans-serif or humanist ` +
           `capital typeface with generous letter-spacing and letters of uniform height (no letter should ` +
-          `rise taller than the others). Keep the lettering SMALL and understated — roughly one third of the ` +
+          `rise taller than the others). Give the letters a MEDIUM-BOLD / SEMIBOLD weight with slightly ` +
+          `thicker, sturdier strokes (not thin or hairline), keeping the exact same engraved look and texture. ` +
+          `Keep the lettering SMALL and understated — roughly one third of the ` +
           `height of the marble rim, not oversized. It must read as physically CARVED/RECESSED into the ` +
           `stone: crisp engraved grooves with subtle inner shadow, in a soft warm brown/taupe tone slightly ` +
           `darker than the beige marble around it, like a real engraved marble memorial base. The text must be perfectly ` +
