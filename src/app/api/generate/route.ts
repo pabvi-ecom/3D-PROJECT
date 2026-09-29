@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     const basePhrase = base.prompt || NO_BASE;
     const baseRefUrls = base.refImage ? [new URL(base.refImage, req.nextUrl.origin).toString()] : [];
     const baseRefNote = base.refImage
-      ? " The LAST reference image shows the exact base to replicate — match its material, color and shape precisely, with the front of the marble rim left smooth and blank (no name yet)."
+      ? " The LAST reference image shows the EXACT base AND the exact composition to replicate — match its base material, color and shape, and place the pet in the SAME centered pose and position on the pedestal as in that reference (sitting upright, centered on the oval top, front paws resting fully on the marble well inside the front edge). Keep our pet's own identity; only the base setup and placement come from the reference. Leave the front of the marble rim smooth and blank (ignore any engraved name in the reference)."
       : "";
     let src: string | undefined;
     let prompt: string;
