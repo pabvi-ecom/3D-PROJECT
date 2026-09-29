@@ -115,18 +115,11 @@ export const figureStyles: FigureStyle[] = [
       " Make it in a cute Pixar/DreamWorks 3D animated-movie style — big expressive eyes, soft rounded proportions, smooth stylized fur — still clearly the same pet (same breed, colors and markings).",
   },
   {
-    id: "santa",
-    label: "Santa Claus",
-    description: "A little Santa hat and coat, ready for the holidays.",
+    id: "chibi",
+    label: "Chibi",
+    description: "Big-head Funko-Pop collectible look.",
     prompt:
-      " Dress it as Santa Claus — a plush red-and-white Santa hat and a little red coat trimmed with white fur.",
-  },
-  {
-    id: "halloween",
-    label: "Halloween",
-    description: "A playful pumpkin costume for spooky season.",
-    prompt:
-      " Dress it in a playful Halloween pumpkin costume — a soft orange pumpkin body wrap with a little green stem hat.",
+      " Make it a chibi / Funko-Pop style collectible figure — an oversized cute head on a small stubby body, simplified minimal features, smooth matte surfaces — still clearly the same pet (same breed, fur colors and markings, same face).",
   },
 ];
 
