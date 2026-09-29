@@ -202,16 +202,18 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const accessory = accessories.find((a) => a.id === accessoryId) ?? accessories[0];
   const wantsBase = baseId !== NO_BASE_ID;
   const hasAccessory = accessoryId !== NO_ACCESSORY_ID;
-  // Clave de la combinacion base|accesorio (siempre vista frontal).
-  const accKey = `${baseId}|${accessoryId}`;
-  // Imagen base (con o sin pedestal). Sin base = la figura del estilo elegido.
-  const baseFigure = wantsBase ? (figures[key(poseId, baseId, "front")] ?? null) : (styleFigures[styleId] ?? null);
-  // Con accesorio aplicado (si no, la imagen base).
-  const accessorized = hasAccessory ? (accessoryFigures[accKey] ?? null) : baseFigure;
-  // El grabado del nombre requiere base.
+  // El grabado del nombre se elige en el paso de base (requiere base) y ocurre
+  // ANTES de los accesorios. namedFigures se cachea por baseId.
   const showEngraved = wantsBase && addName;
-  const figure = showEngraved ? (namedFigures[accKey] ?? null) : accessorized;
-  const plainFigure = accessorized;
+  // Imagen del paso de base: sin base = figura del estilo; con base = pedestal,
+  // grabada si el usuario pidió nombre.
+  const baseFigure = wantsBase ? (figures[key(poseId, baseId, "front")] ?? null) : (styleFigures[styleId] ?? null);
+  const baseStepFigure = showEngraved ? (namedFigures[baseId] ?? null) : baseFigure;
+  // Los accesorios se generan encadenados desde la imagen del paso de base, así
+  // que la clave incluye base + si lleva nombre.
+  const accKey = `${baseId}|${addName ? "n" : "0"}|${accessoryId}`;
+  const figure = hasAccessory ? (accessoryFigures[accKey] ?? null) : baseStepFigure;
+  const plainFigure = figure;
   const total =
     FIGURE_PRICE + pose.price + base.price + accessory.price + (wantsBase && addName ? NAMEPLATE_PRICE : 0);
   const money = (n: number) => `${brand.currencySymbol}${n.toFixed(2)}`;
@@ -275,15 +277,17 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     return json.url as string;
   }
 
-  // Graba el nombre en la base a partir de la imagen actual (con accesorio si
-  // lo hay). Solo cuando el usuario activa "grabar" y aún no está generada.
+  // Graba el nombre en la base (paso de base, antes de accesorios). Se genera
+  // desde la imagen de la base y se cachea por baseId.
   useEffect(() => {
-    if (!showEngraved || !accessorized || namedFigures[accKey] || nameLoading) return;
+    if (!showEngraved || namedFigures[baseId] || nameLoading) return;
+    const src = figures[key(poseId, baseId, "front")];
+    if (!src) return;
     let cancelled = false;
     setNameLoading(true);
-    postGenerate({ referenceUrl: accessorized, change: "name", baseId, petName })
+    postGenerate({ referenceUrl: src, change: "name", baseId, petName })
       .then((url) => {
-        if (!cancelled) setNamedFigures((m) => ({ ...m, [accKey]: url }));
+        if (!cancelled) setNamedFigures((m) => ({ ...m, [baseId]: url }));
       })
       .catch((e) => !cancelled && setError((e as Error).message))
       .finally(() => !cancelled && setNameLoading(false));
@@ -291,7 +295,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showEngraved, accessorized, accKey, petName]);
+  }, [showEngraved, baseId, petName, figures]);
 
   // Fase 1: genera las TRES variantes de estilo a la vez (sin base, sin
   // nombre) para que el usuario elija la que más le guste — genera hype al
@@ -341,55 +345,106 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     }
   }
 
-  // Fase 2 (on-demand): al seleccionar una base de pago, genera esa imagen
-  // encadenada desde la figura del estilo elegido. Se cachea en `figures`.
-  async function ensureBaseImage(id: string) {
-    if (id === NO_BASE_ID) return;
+  // Genera (o devuelve de cache) la imagen con una base concreta, encadenada
+  // desde la figura del estilo elegido.
+  async function ensureBase(id: string): Promise<string | null> {
+    if (id === NO_BASE_ID) return styleFigures[styleId] ?? null;
     const k = key(poseId, id, "front");
-    if (figures[k]) return;
+    if (figures[k]) return figures[k];
     const chosen = styleFigures[styleId];
-    if (!chosen) return;
-    setStepLoading(true);
+    if (!chosen) return null;
+    const url = await postGenerate({ referenceUrl: chosen, change: "base", baseId: id });
+    setFigures((m) => ({ ...m, [k]: url }));
+    return url;
+  }
+
+  // Genera (o cache) la versión grabada de una base concreta.
+  async function ensureNamed(id: string): Promise<string | null> {
+    if (namedFigures[id]) return namedFigures[id];
+    const src = figures[key(poseId, id, "front")] ?? (await ensureBase(id));
+    if (!src) return null;
+    const url = await postGenerate({ referenceUrl: src, change: "name", baseId: id, petName });
+    setNamedFigures((m) => ({ ...m, [id]: url }));
+    return url;
+  }
+
+  // Fase 2: tras elegir el estilo -> pantalla de carga mientras se genera la
+  // base de mármol (para que el preview y el toggle sean instantáneos), luego
+  // muestra el paso de base con el mármol ya seleccionado.
+  async function goToBase() {
+    const firstBase = paidBases[0]?.id ?? NO_BASE_ID;
+    setBaseId(firstBase);
+    setAddName(false);
+    setAccessoryId(NO_ACCESSORY_ID);
+    setGenerating(true);
     setError(null);
+    setGenTotal(1);
+    setDone(0);
+    setProgress(0);
     try {
-      const url = await postGenerate({ referenceUrl: chosen, change: "base", baseId: id });
-      setFigures((m) => ({ ...m, [k]: url }));
+      await ensureBase(firstBase);
+      setDone(1);
+      setProgress(100);
+      setStep("base");
     } catch (e) {
       setError((e as Error).message);
-      setBaseId(NO_BASE_ID);
+      setStep("style");
     } finally {
-      setStepLoading(false);
+      setGenerating(false);
     }
   }
 
+  // En el paso de base, cambiar entre sin base / mármol (imágenes ya cacheadas).
   function selectBase(id: string) {
     setBaseId(id);
     setAddName(false);
-    // La base cambia la imagen -> resetea accesorio (sus imágenes dependían de la base anterior).
     setAccessoryId(NO_ACCESSORY_ID);
-    ensureBaseImage(id);
+    if (id !== NO_BASE_ID && !figures[key(poseId, id, "front")]) {
+      setStepLoading(true);
+      ensureBase(id)
+        .catch((e) => setError((e as Error).message))
+        .finally(() => setStepLoading(false));
+    }
   }
 
-  // Fase 3 (on-demand): al entrar al paso de accesorios, genera las 3 opciones
-  // en paralelo a partir de la imagen actual (con o sin base). "Sin accesorio"
-  // se muestra al instante; las demás van cargando.
+  // Fase 3: tras confirmar base (+nombre) -> pantalla de carga mientras se
+  // generan las 3 opciones de accesorio a partir de la imagen del paso de base.
+  // Al entrar al paso de accesorios ya están todas listas.
   async function goToAccessory() {
     setAccessoryId(NO_ACCESSORY_ID);
-    setStep("accessory");
-    const src = wantsBase ? figures[key(poseId, baseId, "front")] : styleFigures[styleId];
-    if (!src) return;
-    const missing = paidAccessories.filter((a) => !accessoryFigures[`${baseId}|${a.id}`]);
-    if (missing.length === 0) return;
-    setStepLoading(true);
+    setGenerating(true);
     setError(null);
-    await Promise.allSettled(
-      missing.map((a) =>
-        postGenerate({ referenceUrl: src, change: "accessory", baseId, accessoryId: a.id }).then((url) =>
-          setAccessoryFigures((m) => ({ ...m, [`${baseId}|${a.id}`]: url })),
-        ),
-      ),
-    );
-    setStepLoading(false);
+    setGenTotal(paidAccessories.length);
+    setDone(0);
+    setProgress(0);
+    try {
+      // Imagen de partida: sin base = figura del estilo; con base = pedestal
+      // (grabado si pidió nombre).
+      let src: string | null;
+      if (!wantsBase) src = styleFigures[styleId] ?? null;
+      else if (addName) src = await ensureNamed(baseId);
+      else src = await ensureBase(baseId);
+
+      if (src) {
+        await Promise.allSettled(
+          paidAccessories.map((a) => {
+            const k = `${baseId}|${addName ? "n" : "0"}|${a.id}`;
+            if (accessoryFigures[k]) return Promise.resolve();
+            return postGenerate({ referenceUrl: src as string, change: "accessory", baseId, accessoryId: a.id })
+              .then((url) => {
+                setAccessoryFigures((m) => ({ ...m, [k]: url }));
+                setDone((d) => d + 1);
+              });
+          }),
+        );
+      }
+      setProgress(100);
+      setStep("accessory");
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setGenerating(false);
+    }
   }
 
   // Las fotos de móvil pueden pesar varios MB — en base64 crecen ~33% más y
@@ -545,7 +600,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setStep("name");
   }
 
-  const STEP_ORDER: StepId[] = ["email", "name", "photo", "style", "base", "accessory", "engrave", "reveal", "ready"];
+  const STEP_ORDER: StepId[] = ["email", "name", "photo", "style", "base", "accessory", "reveal", "ready"];
   function goBack() {
     const idx = STEP_ORDER.indexOf(step);
     if (idx > 0) setStep(STEP_ORDER[idx - 1]);
@@ -635,7 +690,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     }
   }
 
-  const timelineStep: StepId = ["accessory", "engrave", "reveal"].includes(step) ? "base" : step;
+  const timelineStep: StepId = ["accessory", "reveal"].includes(step) ? "base" : step;
   const rv = REVIEWS[reviewIdx];
 
   return (
@@ -791,38 +846,39 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
         {step === "style" && !generating && (
           <div className={styles.card}>
-            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 4 of 5</span></div>
-            <h1>✨ Pick your favorite</h1>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 4 of 6</span></div>
+            <h1>✨ Pick your style</h1>
             <p className={styles.sub}>Pick the one that feels most like {petName}.</p>
-            <div className={styles.poseGrid}>
+            <div className={styles.styleGrid}>
               {figureStyles.filter((s) => styleFigures[s.id]).map((s) => (
                 <button
                   key={s.id}
-                  className={`${styles.poseCard} ${styleId === s.id ? styles.poseCardActive : ""}`}
+                  className={`${styles.styleCard} ${styleId === s.id ? styles.styleCardActive : ""}`}
                   onClick={() => setStyleId(s.id)}
                 >
                   {s.popular && <span className={styles.popBadge}>70% pick this</span>}
                   <img src={styleFigures[s.id]} alt={s.label} />
-                  <span>{s.label}</span>
+                  <span className={styles.styleName}>{s.label}</span>
+                  <small className={styles.styleDesc}>{s.description}</small>
                 </button>
               ))}
             </div>
-            <button className={styles.cta} onClick={() => setStep("base")}>
+            <button className={styles.cta} onClick={goToBase}>
               Continue
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
             </button>
           </div>
         )}
 
-        {step === "base" && (
+        {step === "base" && !generating && (
           <div className={styles.card}>
-            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 5 of 7</span></div>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 5 of 6</span></div>
             <h1>🏆 Add a display base?</h1>
             <p className={styles.sub}>A marble base makes it shelf-ready.</p>
 
             <div className={styles.stage}>
-              {baseFigure && <img src={baseFigure} alt={`${animal} figure`} />}
-              {stepLoading && <div className={styles.stageLoading}>Adding the base…</div>}
+              {baseStepFigure && <img src={baseStepFigure} alt={`${animal} figure`} />}
+              {(stepLoading || nameLoading) && <div className={styles.stageLoading}>{nameLoading ? "Engraving…" : "Adding the base…"}</div>}
             </div>
 
             <div className={styles.baseChoice}>
@@ -837,7 +893,15 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
               ))}
             </div>
 
-            <button className={styles.cta} onClick={goToAccessory} disabled={stepLoading || (wantsBase && !baseFigure)}>
+            {wantsBase && (
+              <label className={styles.toggle}>
+                <input type="checkbox" checked={addName} onChange={(e) => setAddName(e.target.checked)} />
+                Engrave &quot;{petName.toUpperCase()}&quot; on the base (+{money(NAMEPLATE_PRICE)})
+                <span className={styles.popBadgeInline}>99% pick this</span>
+              </label>
+            )}
+
+            <button className={styles.cta} onClick={goToAccessory} disabled={stepLoading || nameLoading || (wantsBase && !baseStepFigure)}>
               Continue
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
             </button>
@@ -848,14 +912,14 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
           </div>
         )}
 
-        {step === "accessory" && (
+        {step === "accessory" && !generating && (
           <div className={styles.card}>
-            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 6 of 7</span></div>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 6 of 6</span></div>
             <h1>✨ Add an accessory?</h1>
             <p className={styles.sub}>Dress {petName} up — or keep it as is.</p>
 
             <div className={styles.stage}>
-              {accessorized ? <img src={accessorized} alt={`${animal} figure`} /> : <div className={styles.stageLoading}>Loading…</div>}
+              {figure && <img src={figure} alt={`${animal} figure`} />}
             </div>
 
             <div className={styles.baseChoice}>
@@ -863,7 +927,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
                 No accessory
               </button>
               {paidAccessories.map((a) => {
-                const ready = !!accessoryFigures[`${baseId}|${a.id}`];
+                const ready = !!accessoryFigures[`${baseId}|${addName ? "n" : "0"}|${a.id}`];
                 return (
                   <button
                     key={a.id}
@@ -872,43 +936,15 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
                     disabled={!ready}
                   >
                     {a.emoji} {a.label} {a.price > 0 && <small>+{money(a.price)}</small>}
-                    {!ready && <small> · loading…</small>}
+                    {!ready && <small> · unavailable</small>}
                   </button>
                 );
               })}
             </div>
 
-            <button className={styles.cta} onClick={() => setStep("engrave")} disabled={hasAccessory && !accessorized}>
+            <button className={styles.cta} onClick={goReveal} disabled={hasAccessory && !figure}>
               Continue
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
-            </button>
-          </div>
-        )}
-
-        {step === "engrave" && (
-          <div className={styles.card}>
-            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 7 of 7</span></div>
-            <h1>🔤 Engrave the name?</h1>
-            <p className={styles.sub}>
-              {wantsBase ? `Add ${petName}'s name to the marble base.` : "Add a marble base first to engrave the name."}
-            </p>
-
-            <div className={styles.stage}>
-              {figure && <img src={figure} alt={`${animal} figure`} />}
-              {nameLoading && <div className={styles.stageLoading}>Engraving…</div>}
-            </div>
-
-            {wantsBase && (
-              <label className={styles.toggle}>
-                <input type="checkbox" checked={addName} onChange={(e) => setAddName(e.target.checked)} />
-                Engrave &quot;{petName.toUpperCase()}&quot; on the base (+{money(NAMEPLATE_PRICE)})
-                <span className={styles.popBadgeInline}>99% pick this</span>
-              </label>
-            )}
-
-            <button className={styles.cta} onClick={goReveal} disabled={nameLoading || (showEngraved && !figure)}>
-              {nameLoading ? "Engraving…" : "Continue"}
-              {!nameLoading && <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>}
             </button>
           </div>
         )}

@@ -102,22 +102,22 @@ export const figureStyles: FigureStyle[] = [
   {
     id: "realistic",
     label: "Realistic",
-    description: "True to life — every marking and detail.",
+    description: "Maximum detail, true to life.",
     popular: true,
     // Vacío: el prompt base ya pide figura de resina realista fiel a la foto.
     prompt: "",
   },
   {
     id: "pixar",
-    label: "Pixar-style",
-    description: "Cute animated-movie look, big expressive eyes.",
+    label: "Pixar style",
+    description: "Animated-movie look, big eyes.",
     prompt:
       " Make it in a cute Pixar/DreamWorks 3D animated-movie style — big expressive eyes, soft rounded proportions, smooth stylized fur — still clearly the same pet (same breed, colors and markings).",
   },
   {
     id: "chibi",
-    label: "Chibi",
-    description: "Big-head Funko-Pop collectible look.",
+    label: "Cartoon",
+    description: "Chunky big-head collectible.",
     prompt:
       " Make it a chibi / Funko-Pop style collectible figure — an oversized cute head on a small stubby body, simplified minimal features, smooth matte surfaces — still clearly the same pet (same breed, fur colors and markings, same face).",
   },
@@ -149,7 +149,7 @@ export const bases: Base[] = [
     // pedestal ovalado de mármol/travertino beige, borde escalonado. El
     // nombre va GRABADO en la piedra (no en placa de metal).
     prompt:
-      "on the exact display base shown in the LAST reference image — a smooth oval polished beige marble/travertine pedestal with a raised flat oval top and a wider stepped rounded rim below it, natural cream-and-tan stone veining, satin finish. Replicate that base's shape, proportions, material and color precisely. The front face of the lower marble rim is smooth and blank, ready for a name to be engraved directly into the stone (no metal plaque)",
+      "standing firmly ON TOP of the exact display base shown in the LAST reference image — a smooth oval polished beige marble/travertine pedestal with a raised flat oval top and a wider stepped rounded rim below it, natural cream-and-tan stone veining, satin finish. The pet must sit fully and squarely on the top surface of the pedestal, ALL its paws planted on the marble, as ONE cohesive object — the base directly under the pet, never floating, never in front of it, never clipping through its body or legs, and the pet is not offset off the edge. Replicate that base's shape, proportions, material and color precisely. The front face of the lower marble rim is smooth and blank, ready for a name to be engraved directly into the stone (no metal plaque)",
     refImage: "/bases/marble-ref.png",
   },
 ];
