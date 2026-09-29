@@ -149,7 +149,7 @@ export const bases: Base[] = [
     // pedestal ovalado de mármol/travertino beige, borde escalonado. El
     // nombre va GRABADO en la piedra (no en placa de metal).
     prompt:
-      "standing firmly ON TOP of the exact display base shown in the LAST reference image — a smooth oval polished beige marble/travertine pedestal with a raised flat oval top and a wider stepped rounded rim below it, natural cream-and-tan stone veining, satin finish. The pet must sit fully and squarely on the top surface of the pedestal, ALL its paws planted on the marble, as ONE cohesive object — the base directly under the pet, never floating, never in front of it, never clipping through its body or legs, and the pet is not offset off the edge. Replicate that base's shape, proportions, material and color precisely. The front face of the lower marble rim is smooth and blank, ready for a name to be engraved directly into the stone (no metal plaque)",
+      "sitting CENTERED on top of the exact display base shown in the LAST reference image — a smooth oval polished beige marble/travertine pedestal with a raised flat oval top and a wider stepped rounded rim below it, natural cream-and-tan stone veining, satin finish. CRITICAL COMPOSITION: the pedestal top must be clearly WIDER than the pet so there is visible marble margin all around it; the pet sits in the exact CENTER of the top surface with ALL FOUR paws (including the front paws) resting fully ON the marble, well INSIDE the edge — never at or over the front rim, never hanging off, never dangling in front of the base. The pet and the base read as ONE single cohesive sculpture, the pet firmly planted on and fused to the pedestal, not floating, not glued-on, not clipping through the stone. Replicate that base's shape, proportions, material and color precisely. The front face of the lower marble rim is smooth and blank, ready for a name to be engraved directly into the stone (no metal plaque)",
     refImage: "/bases/marble-ref.png",
   },
 ];
@@ -201,6 +201,14 @@ export const accessories: Accessory[] = [
     emoji: "🦴",
     prompt:
       " Add a small, clean, light-beige cartoon-style dog bone held gently and naturally in the pet's mouth.",
+  },
+  {
+    id: "bandana",
+    label: "Bandana",
+    price: 5,
+    emoji: "🧣",
+    prompt:
+      " Add a small classic red paisley bandana tied neatly around the pet's neck.",
   },
 ];
 

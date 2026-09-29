@@ -9,7 +9,6 @@ import { brand } from "@/config/brand";
 import { poses, paidBases, bases, figureStyles, accessories, paidAccessories, NO_BASE_ID, NO_ACCESSORY_ID, NAMEPLATE_PRICE } from "@/config/products";
 import type { Zone } from "@/config/zones";
 import { Timeline, type StepId } from "./Timeline";
-import { MiniGame } from "./MiniGame";
 import { AnnouncementBar } from "../studio/AnnouncementBar";
 
 const FIGURE_PRICE = 79.99;
@@ -378,12 +377,16 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setAccessoryId(NO_ACCESSORY_ID);
     setGenerating(true);
     setError(null);
-    setGenTotal(1);
+    setGenTotal(2);
     setDone(0);
     setProgress(0);
     try {
+      // Precarga la base y, en cuanto está, la versión con el nombre grabado —
+      // así activar "base" o "nombre" en el paso siguiente es instantáneo.
       await ensureBase(firstBase);
       setDone(1);
+      await ensureNamed(firstBase).catch(() => null);
+      setDone(2);
       setProgress(100);
       setStep("base");
     } catch (e) {
@@ -600,7 +603,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setStep("name");
   }
 
-  const STEP_ORDER: StepId[] = ["email", "name", "photo", "style", "base", "accessory", "reveal", "ready"];
+  const STEP_ORDER: StepId[] = ["email", "name", "photo", "quality", "style", "base", "accessory", "reveal", "ready"];
   function goBack() {
     const idx = STEP_ORDER.indexOf(step);
     if (idx > 0) setStep(STEP_ORDER[idx - 1]);
@@ -638,13 +641,6 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       clearTimeout(t2);
     };
   }, [step, leadId, figure, plainFigure, petName]);
-
-  // El jugador tocó el símbolo de descuento en el minijuego — se desbloquea
-  // arriba (fuera del propio juego), con su propio confeti.
-  function handleUnlock(pct: number, code: string) {
-    setUnlockedDiscounts((d) => (d.some((x) => x.code === code) ? d : [...d, { pct, code }]));
-    confetti({ particleCount: 70, spread: 70, startVelocity: 36, origin: { x: 0.75, y: 0.3 }, colors: ["#0071E3", "#F4B400", "#34A853"] });
-  }
 
   function copyCode(code: string) {
     navigator.clipboard?.writeText(code).catch(() => {});
@@ -690,7 +686,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     }
   }
 
-  const timelineStep: StepId = ["accessory", "reveal"].includes(step) ? "base" : step;
+  const timelineStep: StepId = step === "quality" ? "photo" : ["accessory", "reveal"].includes(step) ? "base" : step;
   const rv = REVIEWS[reviewIdx];
 
   return (
@@ -704,7 +700,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         <span className={styles.headerSpacer} />
       </header>
 
-      <main className={`${styles.main} ${generating ? styles.mainWider : ""}`}>
+      <main className={`${styles.main} ${generating ? styles.mainWider : step === "style" ? styles.mainWide : ""}`}>
         {step === "email" && (
           <div className={styles.card}>
             <span className={styles.stepTag}>Before we start</span>
@@ -751,7 +747,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
         {step === "photo" && !generating && (
           <div className={styles.card}>
-            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 3 of 5</span></div>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 3 of 6</span></div>
             <h1>📸 Upload a photo of {petName}</h1>
             <p className={styles.sub}>Any normal snapshot works best when it&apos;s clear and front-facing.</p>
             {photo ? (
@@ -788,11 +784,30 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
             {error && <div className={styles.err}>{error}</div>}
 
             {photo && (
-              <button className={styles.cta} onClick={() => generatePreviews(photo)}>
+              <button className={styles.cta} onClick={() => setStep("quality")}>
                 Continue
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14" /><path d="m13 6 6 6-6 6" /></svg>
               </button>
             )}
+          </div>
+        )}
+
+        {step === "quality" && !generating && (
+          <div className={styles.card}>
+            <div className={styles.stepHead}>{BackBtn}<span className={styles.stepTag}>Step 3 of 6</span></div>
+            <h1>🎚️ Choose your quality</h1>
+            <p className={styles.sub}>Both look great — higher quality just takes a little longer.</p>
+            <div className={styles.qualityGrid}>
+              <button className={styles.qualityCard} onClick={() => photo && generatePreviews(photo)}>
+                <span className={styles.qualityName}>HD</span>
+                <span className={styles.qualityMeta}>Ready in ~45 seconds</span>
+              </button>
+              <button className={`${styles.qualityCard} ${styles.qualityCardBest}`} onClick={() => photo && generatePreviews(photo)}>
+                <span className={styles.popBadge}>Best quality</span>
+                <span className={styles.qualityName}>Full HD 4K</span>
+                <span className={styles.qualityMeta}>Ready in ~90 seconds</span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -823,23 +838,8 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
               </div>
             </div>
             <div className={styles.genCol}>
-              {unlockedDiscounts.length > 0 && (
-                <div className={styles.unlockedList}>
-                  {unlockedDiscounts.map((d) => (
-                    <div key={d.code} className={styles.unlockedRowWon}>
-                      <span>🎉 {d.pct}% off unlocked!</span>
-                      <button type="button" onClick={() => copyCode(d.code)}>
-                        <code>{d.code}</code> {copiedCode === d.code ? "✓ Copied" : "Copy"}
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <MiniGame onUnlock={handleUnlock} />
+              <ReviewStory />
             </div>
-          </div>
-          <div className={styles.reviewFloatCol}>
-            <ReviewStory />
           </div>
           </div>
         )}

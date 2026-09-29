@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import styles from "./Timeline.module.css";
 
-export type StepId = "email" | "name" | "photo" | "style" | "base" | "accessory" | "engrave" | "reveal" | "ready";
+export type StepId = "email" | "name" | "photo" | "quality" | "style" | "base" | "accessory" | "engrave" | "reveal" | "ready";
 
 const STEPS: StepId[] = ["email", "name", "photo", "style", "base", "ready"];
 
