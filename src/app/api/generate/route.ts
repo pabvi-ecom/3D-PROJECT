@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     const basePhrase = base.prompt || NO_BASE;
     const baseRefUrls = base.refImage ? [new URL(base.refImage, req.nextUrl.origin).toString()] : [];
     const baseRefNote = base.refImage
-      ? " The LAST reference image is ONLY the empty marble base — copy its material, color and shape, but the dog is always OUR pet from the FIRST image; never copy any other animal. Center the pet on the oval top, pushed slightly back so the front paws rest fully on the marble inside the front edge. Leave the front of the marble rim smooth and blank."
+      ? " The LAST reference image is ONLY the empty round marble base — copy its material, color and shape, but the dog is always OUR pet from the FIRST image; never copy any other animal. The pet and base are ONE fused figurine. Center the pet in the DEAD CENTER of the round top — same marble margin behind the rear as in front of the paws, same on both sides; move the whole dog back if it leans forward. Leave the front of the marble rim smooth and blank."
       : "";
     let src: string | undefined;
     let prompt: string;
