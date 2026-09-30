@@ -105,22 +105,22 @@ export const figureStyles: FigureStyle[] = [
     label: "Pixar style",
     description: "Animated-movie look, big eyes.",
     prompt:
-      " Make it in a cute Pixar/DreamWorks 3D animated-movie style — big expressive eyes, soft rounded proportions, smooth stylized fur — still clearly the same pet (same breed, colors and markings).",
+      "Render it in the signature PIXAR / Disney 3D animated-feature film style: a smooth, polished, high-quality 3D character render with soft cinematic lighting and gentle subsurface glow on the skin and nose. Give it slightly enlarged, expressive, glossy eyes with big soft catchlights, a warm friendly appealing expression, and gently exaggerated, endearing features. The fur is soft and stylized, groomed into clean tidy clumps rather than photoreal strands. It must clearly look like a character from an animated movie — NOT a real photo and NOT a plastic toy — while keeping the same breed, the exact same fur colors and the same markings and face so it is obviously this same pet. Body proportions stay close to natural with only mild cartoon appeal.",
   },
   {
     id: "realistic",
     label: "Realistic",
     description: "Maximum detail, true to life.",
     popular: true,
-    // Vacío: el prompt base ya pide figura de resina realista fiel a la foto.
-    prompt: "",
+    prompt:
+      "Render it as a HYPER-PHOTOREALISTIC studio portrait, indistinguishable from a real high-end DSLR photograph of the real pet: real fur rendered strand by strand, realistic moist eyes with natural catchlights, realistic wet nose texture, and natural skin. Keep the pet's TRUE real-life anatomy and proportions exactly — the real leg length, body length, chest depth, head size and, critically, the exact muzzle/snout length and shape from the photo (a long snout stays long; NEVER shorten, flatten, pug-ify or 'cute-ify' it). Keep any long, scruffy, fluffy, uneven, messy or shaggy fur exactly as it is. Do NOT groom, smooth, slim, idealize or 'purebred-ify' the pet. It must look like a REAL living animal — never a cartoon, never stylized, never a toy.",
   },
   {
     id: "chibi",
     label: "Cartoon",
     description: "Chunky big-head collectible.",
     prompt:
-      " a Funko-Pop / chibi vinyl collectible figure with a VERY LARGE oversized round head (about as big as the whole body), a tiny short stubby body and little stubby legs, large solid glossy black button eyes, a tiny simplified snout, smooth matte vinyl surfaces and minimal simplified details — an exaggerated cute bobblehead toy look — while keeping the same breed, the exact same fur colors and markings so it is clearly the same pet.",
+      "Render it as a FUNKO POP! / chibi vinyl collectible figure. The single most important feature: a VERY LARGE, oversized, round head that is roughly AS BIG AS the entire rest of the body (a true bobblehead). Give it a tiny short stubby body, little stubby legs, large solid glossy black round button eyes set wide apart, a small simplified snout, small simplified ears, smooth matte vinyl surfaces and minimal flat simplified details — an exaggerated, super-cute toy look. Completely IGNORE realistic anatomy and proportions; the giant head must clearly dominate the figure. Keep the same breed, the exact same fur colors and the same markings so it is clearly this same pet.",
   },
 ];
 

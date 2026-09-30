@@ -30,7 +30,7 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 const STUDIO =
-  "Studio product photo, soft light, plain seamless light background, photorealistic, centered. " +
+  "Studio product shot, soft light, plain seamless light background, high quality, sharp, centered. " +
   "Frame the FULL body with comfortable empty margin on all four sides — the ENTIRE subject (and its " +
   "base, if any) must be fully inside the frame. NEVER crop or cut off the ears, paws, tail, top of the " +
   "head or any edge. This is a full-body shot, not a close-up or a zoomed-in crop. High resolution, sharp.";
@@ -166,50 +166,20 @@ export async function POST(req: NextRequest) {
       // solo desde texto daba animales aleatorios (salió hasta un conejo).
       // La foto de cada cliente ya va a una URL única (fix de nombres), así
       // que no se mezclan referencias entre sesiones.
-      // El estilo "realistic" no tiene prompt propio: usamos el bloque
-      // foto-realista. Para Pixar/Cartoon manda el estilo (style.prompt) y NO
-      // se aplica el bloque foto-real (si no, salen realistas/greñudos).
-      const isRealistic = !style.prompt;
-      const lookIntro = isRealistic
-        ? `Create a HYPER-PHOTOREALISTIC studio portrait of the EXACT SAME individual ${animal} shown in the ` +
-          `FIRST image — indistinguishable from a real high-end DSLR photograph of that real pet, with real fur ` +
-          `texture and natural skin/nose/eye detail. It must look like a real living ${animal}, NOT a plastic toy, ` +
-          `NOT a cartoon, NOT a smooth stylized figurine. Keep its REAL fur exactly — including any long, scruffy, ` +
-          `fluffy, uneven, messy or shaggy fur. Do NOT groom, smooth, slim, "purebred-ify" or idealize it — it ` +
-          `must look like this real, specific ${animal}, not a generic clean one. `
-        : `Create a stylized 3D figurine of the EXACT SAME individual ${animal} shown in the FIRST image, rendered ` +
-          `fully in the art style described here:${style.prompt} Commit to that style clearly (it must NOT look ` +
-          `like a plain realistic photo), while keeping it unmistakably THIS specific pet. `;
-      const proportions = isRealistic
-        ? `Render it at TRUE natural adult ${animal} proportions — the real leg length, body length, chest depth, ` +
-          `head size and snout length of this specific pet. Do NOT make it chubby, squat, short-legged, chibi, ` +
-          `big-headed or toy-like. `
-        : ``;
-      // El morro solo se bloquea en realista. En Pixar/Cartoon el estilo puede
-      // reformar proporciones (p. ej. Cartoon = cabezón/morro corto).
-      const muzzleClause = isRealistic
-        ? `MUZZLE / SNOUT LENGTH: keep the same long-to-short nose ratio as the photo — a long, protruding ` +
-          `snout must stay long; do NOT shorten, flatten, pug-ify or "cute-ify" the muzzle (unless the real pet ` +
-          `truly has a flat face). `
-        : ``;
-      const identityClause = isRealistic
-        ? `Preserve its EXACT face, head shape, expression, eye shape and spacing, snout, ear shape, and the ` +
-          `exact colors and placement of every marking so it is clearly THIS individual pet. `
-        : `Keep it clearly recognizable as THIS specific pet — same breed, the exact same fur colors and the ` +
-          `same placement of every marking, same ear shape and same eye/face character — but the chosen art ` +
-          `style MAY restyle the overall proportions and head size to fit that style (e.g. a big cute head). `;
+      // Núcleo común (identidad + boca/lengua + encuadre) y encima el prompt
+      // COMPLETO del estilo elegido (cada estilo es autónomo en products.ts).
       prompt =
-        lookIntro +
-        identityClause +
-        `MOUTH & TONGUE — match the photo exactly: if the pet's mouth is OPEN or its TONGUE is sticking ` +
+        `Create a 3D collectible figurine of the EXACT SAME individual ${animal} shown in the FIRST image. ` +
+        `It must be unmistakably THIS specific pet: keep the same breed, the exact same fur colors and the ` +
+        `exact placement of every marking, and the same ear shape. ` +
+        `\n\nSTYLE — ${style.label}: ${style.prompt} ` +
+        `\n\nMOUTH & TONGUE — match the photo exactly: if the pet's mouth is OPEN or its TONGUE is sticking ` +
         `out in the photo, the figurine MUST have the same open mouth with the tongue out in the same way; ` +
         `if the mouth is closed, keep it closed. Never close an open mouth, never hide or remove the tongue, ` +
         `and never change the facial expression — copy the exact same look and mood from the photo. ` +
-        muzzleClause +
         `If the photo is dark, backlit or the eyes are squinting, reconstruct the pet in clear even studio ` +
         `lighting but keep the same identity and features. ` +
-        proportions +
-        `Show only the ${animal} itself — exclude any people, hands, other animals, background, and any ` +
+        `\n\nShow only the ${animal} itself — exclude any people, hands, other animals, background, and any ` +
         `props, toys, hearts, accessories or held objects that are not part of its body (a plain everyday ` +
         `collar may stay). Show the full body of the ${animal} ${pose.prompt}, ${basePhrase}.` +
         `${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
