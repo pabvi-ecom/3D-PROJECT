@@ -120,7 +120,7 @@ export const figureStyles: FigureStyle[] = [
     label: "Cartoon",
     description: "Chunky big-head collectible.",
     prompt:
-      " Make it a chibi / Funko-Pop style collectible figure — an oversized cute head on a small stubby body, simplified minimal features, smooth matte surfaces — still clearly the same pet (same breed, fur colors and markings, same face).",
+      " a Funko-Pop / chibi vinyl collectible figure with a VERY LARGE oversized round head (about as big as the whole body), a tiny short stubby body and little stubby legs, large solid glossy black button eyes, a tiny simplified snout, smooth matte vinyl surfaces and minimal simplified details — an exaggerated cute bobblehead toy look — while keeping the same breed, the exact same fur colors and markings so it is clearly the same pet.",
   },
 ];
 

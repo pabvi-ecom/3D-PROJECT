@@ -185,18 +185,27 @@ export async function POST(req: NextRequest) {
           `head size and snout length of this specific pet. Do NOT make it chubby, squat, short-legged, chibi, ` +
           `big-headed or toy-like. `
         : ``;
+      // El morro solo se bloquea en realista. En Pixar/Cartoon el estilo puede
+      // reformar proporciones (p. ej. Cartoon = cabezón/morro corto).
+      const muzzleClause = isRealistic
+        ? `MUZZLE / SNOUT LENGTH: keep the same long-to-short nose ratio as the photo — a long, protruding ` +
+          `snout must stay long; do NOT shorten, flatten, pug-ify or "cute-ify" the muzzle (unless the real pet ` +
+          `truly has a flat face). `
+        : ``;
+      const identityClause = isRealistic
+        ? `Preserve its EXACT face, head shape, expression, eye shape and spacing, snout, ear shape, and the ` +
+          `exact colors and placement of every marking so it is clearly THIS individual pet. `
+        : `Keep it clearly recognizable as THIS specific pet — same breed, the exact same fur colors and the ` +
+          `same placement of every marking, same ear shape and same eye/face character — but the chosen art ` +
+          `style MAY restyle the overall proportions and head size to fit that style (e.g. a big cute head). `;
       prompt =
         lookIntro +
-        `Preserve its EXACT face, head shape, expression, eye shape and ` +
-        `spacing, snout, ear shape, and the exact colors and placement of every marking so it is clearly THIS ` +
-        `individual pet. ` +
+        identityClause +
         `MOUTH & TONGUE — match the photo exactly: if the pet's mouth is OPEN or its TONGUE is sticking ` +
         `out in the photo, the figurine MUST have the same open mouth with the tongue out in the same way; ` +
         `if the mouth is closed, keep it closed. Never close an open mouth, never hide or remove the tongue, ` +
         `and never change the facial expression — copy the exact same look and mood from the photo. ` +
-        `MUZZLE / SNOUT LENGTH: keep the same long-to-short nose ratio as the photo — a long, protruding ` +
-        `snout must stay long; do NOT shorten, flatten, pug-ify or "cute-ify" the muzzle (unless the real pet ` +
-        `truly has a flat face). ` +
+        muzzleClause +
         `If the photo is dark, backlit or the eyes are squinting, reconstruct the pet in clear even studio ` +
         `lighting but keep the same identity and features. ` +
         proportions +
