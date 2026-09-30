@@ -174,6 +174,10 @@ export async function POST(req: NextRequest) {
         `Preserve its EXACT face, head shape, expression, eye shape and ` +
         `spacing, snout, ear shape, body build and proportions, and its REAL fur — including any long, ` +
         `scruffy, fluffy, uneven, messy or shaggy fur and the exact colors and placement of every marking. ` +
+        `MOUTH & TONGUE — match the photo exactly: if the pet's mouth is OPEN or its TONGUE is sticking ` +
+        `out in the photo, the figurine MUST have the same open mouth with the tongue out in the same way; ` +
+        `if the mouth is closed, keep it closed. Never close an open mouth, never hide or remove the tongue, ` +
+        `and never change the facial expression — copy the exact same look and mood from the photo. ` +
         `CRITICAL — the MUZZLE / SNOUT LENGTH: look at the real photo and measure how far the nose tip ` +
         `sticks out from the eyes, then reproduce that SAME long-to-short ratio exactly. This is a ` +
         `long-muzzled dog unless the photo clearly shows a flat face; keep the full length of the snout — ` +
