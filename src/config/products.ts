@@ -82,7 +82,7 @@ export interface Pose {
 // Solo sentado — se quitó la elección de postura (menos pasos, menos
 // generación de IA, y era la fuente de la mayoría de bugs de consistencia).
 export const poses: Pose[] = [
-  { id: "sitting", label: "Sitting", price: 0, prompt: "ALWAYS sitting upright on its hindquarters and facing the camera straight-on (front view), body and head facing forward — regardless of the pose in the photo, render the figurine sitting front-facing. Capture maximum detail of the head and face so the expression reads clearly" },
+  { id: "sitting", label: "Sitting", price: 0, prompt: "sitting upright on its hindquarters, facing forward (front view)" },
 ];
 
 /**

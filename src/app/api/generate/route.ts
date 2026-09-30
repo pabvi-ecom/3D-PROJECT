@@ -166,12 +166,17 @@ export async function POST(req: NextRequest) {
       // solo desde texto daba animales aleatorios (salió hasta un conejo).
       // La foto de cada cliente ya va a una URL única (fix de nombres), así
       // que no se mezclan referencias entre sesiones.
-      // Núcleo común (identidad + boca/lengua + encuadre) y encima el prompt
-      // COMPLETO del estilo elegido (cada estilo es autónomo en products.ts).
+      // Núcleo común (identidad + postura + boca/lengua + encuadre) y encima el
+      // prompt COMPLETO del estilo elegido (autónomo en products.ts). El medio
+      // (foto real, animado, vinilo) lo define cada estilo, NO el núcleo.
       prompt =
-        `Create a 3D collectible figurine of the EXACT SAME individual ${animal} shown in the FIRST image. ` +
+        `Create a studio image of the EXACT SAME individual ${animal} shown in the FIRST image. ` +
         `It must be unmistakably THIS specific pet: keep the same breed, the exact same fur colors and the ` +
         `exact placement of every marking, and the same ear shape. ` +
+        `\n\nPOSE (very important): the ${animal} MUST be SITTING upright on its hindquarters, facing the ` +
+        `camera straight-on in a clean FRONT view, with its body and head facing forward. Even if the photo ` +
+        `shows it standing, lying down or at an angle, RE-POSE it into this sitting, front-facing pose. ` +
+        `Capture maximum detail of the head and face so the expression reads clearly. ` +
         `\n\nSTYLE — ${style.label}: ${style.prompt} ` +
         `\n\nMOUTH & TONGUE — match the photo exactly: if the pet's mouth is OPEN or its TONGUE is sticking ` +
         `out in the photo, the figurine MUST have the same open mouth with the tongue out in the same way; ` +
