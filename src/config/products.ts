@@ -82,7 +82,7 @@ export interface Pose {
 // Solo sentado — se quitó la elección de postura (menos pasos, menos
 // generación de IA, y era la fuente de la mayoría de bugs de consistencia).
 export const poses: Pose[] = [
-  { id: "sitting", label: "Sitting", price: 0, prompt: "sitting upright on its hindquarters, facing forward" },
+  { id: "sitting", label: "Sitting", price: 0, prompt: "ALWAYS sitting upright on its hindquarters and facing the camera straight-on (front view), body and head facing forward — regardless of the pose in the photo, render the figurine sitting front-facing. Capture maximum detail of the head and face so the expression reads clearly" },
 ];
 
 /**
@@ -151,9 +151,8 @@ export const bases: Base[] = [
     // nombre va GRABADO en la piedra (no en placa de metal).
     prompt:
       "This is a photorealistic product photo of ONE single real painted resin collectible figurine: the pet and the marble base are a SINGLE fused sculpture, manufactured as one piece, photographed together in a studio — never two separate objects, never floating, never pasted on. Use the LAST reference image ONLY for the base's shape, material and color: a low, flat, round polished beige marble pedestal with a stepped rounded rim, cream-and-tan veining, satin finish. The dog is always OUR pet from the FIRST image (keep its exact face, head shape, muzzle, ears, fur colors and markings) — never copy any other animal. " +
-      "KEEP THE EXACT SAME POSE as the FIRST image — same body position, same stance, same leg and paw arrangement, same head tilt, same expression. Do NOT re-pose, do NOT sit the dog down if it is standing, do NOT change or straighten its legs. It is the SAME figure from the first image, simply now standing on the marble base. The ONLY change from the first image is that the base is added underneath. " +
-      "CAMERA ANGLE: shoot from a SLIGHTLY ELEVATED three-quarter angle looking gently DOWN at the figurine (about 25-30 degrees above eye level) so the round marble top is clearly visible as a wide ellipse and you can see the full flat top surface with the dog sitting on it — NOT a flat straight-on eye-level shot. " +
-      "SIZE & CENTERING (critical): make the round marble top LARGE and DEEP — clearly bigger than the dog, so the dog's whole footprint takes up only the MIDDLE of the top with a generous ring of empty marble all around it. The dog is positioned in the DEAD CENTER of the circle, centered both left-to-right AND front-to-back: the SAME amount of empty marble is visible BEHIND the dog, IN FRONT of the dog's front feet, and on both sides. The front feet must land around the MIDDLE of the top surface with plenty of marble in front of them — the feet must NEVER touch, reach or hang over the front edge/rim. If the dog looks shifted forward, move the WHOLE dog backward and/or make the base bigger until the feet are safely inside. The front face of the lower marble rim is smooth and BLANK — ready for a name to be engraved later (no metal plaque)",
+      "This must be the EXACT SAME IMAGE as the FIRST image with ONLY a marble base added underneath the pet — nothing else changes. KEEP the pet IDENTICAL: same front-facing view, same pose, same body position, same stance, same leg and paw arrangement, same head tilt, same expression, same framing and same art style. Do NOT rotate, turn or re-angle the dog — it keeps facing the camera straight-on / front view exactly like the first image. Do NOT re-pose it, do NOT turn it to the side or to a three-quarter angle, do NOT change or straighten its legs, do NOT change the camera angle. The pet and the base become ONE single fused figurine. " +
+      "CENTERING: the pet sits in the CENTER of the round marble top with a ring of empty marble all around it; make the marble top clearly bigger than the pet so its feet rest comfortably ON the marble, inside the rim, never hanging over the front edge. The front face of the marble rim is smooth and BLANK — ready for a name to be engraved later (no metal plaque)",
     refImage: "/bases/marble-ref.png",
   },
 ];
