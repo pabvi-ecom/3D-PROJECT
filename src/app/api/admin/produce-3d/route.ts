@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getRecord, updateRecord } from "@/lib/airtable";
 import { createImageToModelTask, createMultiviewToModelTask } from "@/lib/tripo";
-import { generateView } from "@/lib/views";
+import { generateOrbitViews } from "@/lib/views";
 
 export const runtime = "nodejs";
 // Genera 3 vistas extra (nano-banana, ~100s c/u en paralelo) antes de lanzar
@@ -44,11 +44,8 @@ export async function POST(req: NextRequest) {
     if (views && (views.left || views.back || views.right)) {
       left = views.left ?? undefined; back = views.back ?? undefined; right = views.right ?? undefined;
     } else {
-      [left, back, right] = await Promise.all([
-        generateView(figureUrl, "left").catch(() => undefined),
-        generateView(figureUrl, "back").catch(() => undefined),
-        generateView(figureUrl, "right").catch(() => undefined),
-      ]);
+      const v = await generateOrbitViews(figureUrl);
+      left = v.left ?? undefined; back = v.back ?? undefined; right = v.right ?? undefined;
     }
 
     const haveViews = left || back || right;

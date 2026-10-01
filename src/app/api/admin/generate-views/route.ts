@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { generateView } from "@/lib/views";
+import { generateOrbitViews } from "@/lib/views";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -21,11 +21,7 @@ export async function POST(req: NextRequest) {
   try {
     const { figureUrl } = await req.json();
     if (!figureUrl) return NextResponse.json({ error: "Falta figureUrl" }, { status: 400 });
-    const [left, back, right] = await Promise.all([
-      generateView(figureUrl, "left").catch(() => null),
-      generateView(figureUrl, "back").catch(() => null),
-      generateView(figureUrl, "right").catch(() => null),
-    ]);
+    const { left, back, right } = await generateOrbitViews(figureUrl);
     return NextResponse.json({ ok: true, left, back, right });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });

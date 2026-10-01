@@ -1,29 +1,40 @@
 /**
- * Genera vistas adicionales (izquierda, atrás, derecha) de una figura YA
- * generada, para alimentar a Tripo multiview_to_model. Se trata la figura como
- * un OBJETO físico rígido y la cámara "orbita" — nano-banana edita la imagen
- * previa, así que mantiene bastante la identidad entre vistas.
+ * Genera vistas adicionales de una figura YA generada para Tripo multiview.
+ * Se generan EN CADENA orbitando (front -> left -> back -> right): cada vista
+ * edita la ANTERIOR, no el frente suelto. Así el objeto es consistente entre
+ * ángulos y los rasgos unilaterales (cola ladeada, oreja caída) no se duplican
+ * ni se voltean de un lado a otro.
  */
 import { generateFigurine as generateKie } from "@/lib/kie";
 
 const BASE_RULES =
-  "This is a studio product photo of ONE single finished, already-painted, rigid physical figurine (a pet sculpture on its base). " +
-  "It is a fixed solid object that CANNOT change shape, pose, proportions, colors, markings or base. Do NOT re-sculpt, re-pose, recolor or re-imagine it. " +
-  "Keep the EXACT same figurine, same size and same vertical position, perfectly centered on a plain seamless light studio background. " +
-  "The ONLY thing that changes is the camera orbits around the SAME physical object to show it from a new angle: ";
+  "This is a studio product photo of ONE single finished, rigid physical figurine (a pet sculpture). " +
+  "It is a fixed solid object that CANNOT change shape, pose, proportions, colors or markings. Do NOT re-sculpt, re-pose, recolor or re-imagine it. " +
+  "Keep the EXACT same figurine, same size and vertical position, centered on a pure plain WHITE seamless background with FLAT EVEN lighting and NO shadows. " +
+  "CRITICAL: any ASYMMETRIC / one-sided feature of the real pet (a tail curled to one side, one ear flopped differently, a marking on only one side) exists on only ONE physical side — keep it on that SAME side and do NOT duplicate it on both sides or flip it between views. " +
+  "The ONLY change is the camera orbits around the SAME physical object to this new angle: ";
 
-const VIEWS: Record<"left" | "back" | "right", string> = {
-  left:
-    BASE_RULES +
-    "its LEFT side — a true left side profile, camera rotated 90 degrees to the pet's left, showing the full length of its body from the side.",
-  back:
-    BASE_RULES +
-    "its BACK — camera directly behind the figurine (rotated 180 degrees), showing the back of the head, back, tail and the rear of the base.",
-  right:
-    BASE_RULES +
-    "its RIGHT side — a true right side profile, camera rotated 90 degrees to the pet's right, showing the full length of its body from the side.",
+const DESC: Record<"left" | "back" | "right", string> = {
+  left: "a true LEFT side profile (camera rotated 90° to the pet's left), showing the full body length from the side.",
+  back: "directly BEHIND the figurine (rotated 180° from the front), showing the back of the head, the back and the tail.",
+  right: "a true RIGHT side profile (camera rotated 90° to the pet's right), showing the full body length from the side.",
 };
 
-export async function generateView(frontUrl: string, view: "left" | "back" | "right"): Promise<string> {
-  return generateKie(frontUrl, VIEWS[view]);
+export async function generateView(refUrl: string, view: "left" | "back" | "right"): Promise<string> {
+  return generateKie(refUrl, BASE_RULES + DESC[view]);
+}
+
+/**
+ * Genera las 3 vistas en cadena orbitando desde el frente, para máxima
+ * consistencia entre ángulos. Devuelve lo que consiga (null si alguna falla).
+ */
+export async function generateOrbitViews(frontUrl: string): Promise<{
+  left: string | null;
+  back: string | null;
+  right: string | null;
+}> {
+  const left = await generateView(frontUrl, "left").catch(() => null);
+  const back = await generateView(left ?? frontUrl, "back").catch(() => null);
+  const right = await generateView(back ?? frontUrl, "right").catch(() => null);
+  return { left, back, right };
 }

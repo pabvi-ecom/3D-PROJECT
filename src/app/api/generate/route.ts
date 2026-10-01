@@ -30,7 +30,8 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 const STUDIO =
-  "Studio product shot, soft light, plain seamless light background, high quality, sharp, centered. " +
+  "Studio product shot on a pure plain white seamless background, FLAT EVEN lighting, high quality, sharp, centered. " +
+  "NO cast shadow and NO contact shadow under or around the figurine or its base — the background and base stay clean white with zero shadows. " +
   "Frame the FULL body with comfortable empty margin on all four sides — the ENTIRE subject (and its " +
   "base, if any) must be fully inside the frame. NEVER crop or cut off the ears, paws, tail, top of the " +
   "head or any edge. This is a full-body shot, not a close-up or a zoomed-in crop. High resolution, sharp.";
