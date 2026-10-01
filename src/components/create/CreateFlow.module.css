@@ -117,6 +117,16 @@
 /* Prompt de calidad dentro del paso foto */
 .qualityPrompt{margin:22px 0 10px; text-align:center; font-weight:800; color:var(--ink)}
 
+/* Fotos extra opcionales */
+.extraPhotos{margin-top:14px}
+.extraNote{text-align:center; font-size:.82rem; color:var(--ink-soft); line-height:1.4; margin:0 auto 10px; max-width:420px}
+.extraSlots{display:flex; gap:10px; justify-content:center}
+.extraSlot{width:92px; height:92px; border:2px dashed var(--line); border-radius:14px; background:var(--surface-2); cursor:pointer; overflow:hidden; display:flex; align-items:center; justify-content:center; padding:0}
+.extraSlot:hover{border-color:var(--accent)}
+.extraSlot img{width:100%; height:100%; object-fit:cover}
+.extraPlus{display:flex; flex-direction:column; align-items:center; gap:2px; font-weight:700; font-size:.82rem; color:var(--ink-soft)}
+.extraPlus small{font-size:.66rem; font-weight:500; opacity:.7}
+
 .genStage{position:relative; border-radius:18px; overflow:hidden; aspect-ratio:1/1; background:var(--surface-2); margin-bottom:20px}
 .genGhost{width:100%; height:100%; object-fit:cover; opacity:.25; filter:grayscale(.3)}
 .genOverlay{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; padding:20px; text-align:center}

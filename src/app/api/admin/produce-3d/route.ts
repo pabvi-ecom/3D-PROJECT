@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getRecord, updateRecord } from "@/lib/airtable";
-import { createImageToModelTask } from "@/lib/tripo";
+import { createImageToModelTask, createMultiviewToModelTask } from "@/lib/tripo";
+import { generateView } from "@/lib/views";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+// Genera 3 vistas extra (nano-banana, ~100s c/u en paralelo) antes de lanzar
+// Tripo multiview — necesita bastante más que 60s.
+export const maxDuration = 300;
 
 async function checkAuth() {
   const store = await cookies();
@@ -34,10 +37,23 @@ export async function POST(req: NextRequest) {
     const figureUrl = record.fields["Figure Image URL"] as string | undefined;
     if (!figureUrl) return NextResponse.json({ error: "No figure image on this record" }, { status: 400 });
 
-    const taskId = await createImageToModelTask(figureUrl);
+    // Genera 3 vistas extra (izq/atrás/der) desde el frente para dar a Tripo
+    // 4 ángulos — así NO se inventa la espalda/el cuerpo. Si alguna vista falla,
+    // se omite (Tripo la acepta vacía). Si fallan todas, cae a 1 sola imagen.
+    const [left, back, right] = await Promise.all([
+      generateView(figureUrl, "left").catch(() => undefined),
+      generateView(figureUrl, "back").catch(() => undefined),
+      generateView(figureUrl, "right").catch(() => undefined),
+    ]);
+
+    const haveViews = left || back || right;
+    const taskId = haveViews
+      ? await createMultiviewToModelTask({ front: figureUrl, left, back, right })
+      : await createImageToModelTask(figureUrl);
+
     await updateRecord(table, id, { "Tripo Task ID": taskId, "Tripo Status": "Processing", "Model File URL": "" });
 
-    return NextResponse.json({ ok: true, taskId });
+    return NextResponse.json({ ok: true, taskId, mode: haveViews ? "multiview" : "single" });
   } catch (e) {
     console.error("[/api/admin/produce-3d]", (e as Error).message);
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });

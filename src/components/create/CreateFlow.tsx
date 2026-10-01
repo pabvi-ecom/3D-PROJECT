@@ -142,6 +142,10 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const [nameDraft, setNameDraft] = useState(initialName ?? "");
 
   const [photo, setPhoto] = useState<string | null>(null);
+  // Fotos extra OPCIONALES — más ángulos = más fidelidad del perro. Se mandan
+  // como referencias adicionales a la generación.
+  const [photo2, setPhoto2] = useState<string | null>(null);
+  const [photo3, setPhoto3] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
   const [readingFile, setReadingFile] = useState(false);
   const [figures, setFigures] = useState<Record<string, string>>({});
@@ -181,6 +185,8 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const [reviewIdx, setReviewIdx] = useState(0);
 
   const fileRef = useRef<HTMLInputElement>(null);
+  const fileRef2 = useRef<HTMLInputElement>(null);
+  const fileRef3 = useRef<HTMLInputElement>(null);
 
   const pose = poses.find((p) => p.id === poseId) ?? poses[0];
   const base = bases.find((b) => b.id === baseId) ?? bases[0];
@@ -309,9 +315,10 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       // allSettled: si un estilo falla (ej. el filtro de seguridad de Gemini
       // marca esa generación en concreto), no tira abajo los demás — el
       // usuario aún puede elegir entre los que sí salieron bien.
+      const extraImages = [photo2, photo3].filter((p): p is string => !!p);
       const settled = await Promise.allSettled(
         figureStyles.map((s) =>
-          postGenerate({ imageBase64: dataUri, poseId: poses[0].id, baseId: NO_BASE_ID, notes: notes.trim() || undefined, styleId: s.id }).then((url) => {
+          postGenerate({ imageBase64: dataUri, extraImages, poseId: poses[0].id, baseId: NO_BASE_ID, notes: notes.trim() || undefined, styleId: s.id }).then((url) => {
             setDone((d) => d + 1);
             return [s.id, url] as const;
           }),
@@ -465,22 +472,19 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     });
   }
 
-  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
-    const f = e.target.files?.[0];
-    if (!f) return;
+  function readInto(f: File, setter: (v: string | null) => void) {
     setError(null);
     setReadingFile(true);
     const reader = new FileReader();
     reader.onload = async () => {
       const dataUri = reader.result as string;
       try {
-        const resized = await resizeImage(dataUri);
-        setPhoto(resized);
+        setter(await resizeImage(dataUri));
       } catch {
         // Suele pasar con fotos HEIC de iPhone — el navegador no las puede
         // decodificar. Mejor avisar claro que guardar una imagen rota que
         // luego falla en silencio al generar.
-        setPhoto(null);
+        setter(null);
         setError("We couldn't read that photo. If it's an iPhone HEIC photo, try a screenshot of it, or a JPG/PNG instead.");
       } finally {
         setReadingFile(false);
@@ -491,6 +495,11 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       setError("Couldn't read that photo");
     };
     reader.readAsDataURL(f);
+  }
+
+  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (f) readInto(f, setPhoto);
   }
 
   // TODO: cuando salga de pruebas, exigir formato @gmail.com aquí (pedido explícito).
@@ -579,6 +588,8 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setPetName("");
     setNameDraft("");
     setPhoto(null);
+    setPhoto2(null);
+    setPhoto3(null);
     setNotes("");
     setFigures({});
     setNamedFigures({});
@@ -682,6 +693,8 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   return (
     <div className={styles.page}>
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
+      <input ref={fileRef2} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) readInto(f, setPhoto2); }} />
+      <input ref={fileRef3} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) readInto(f, setPhoto3); }} />
 
       <AnnouncementBar />
       <header className={styles.header}>
@@ -757,6 +770,25 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
                 <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V4" /><path d="m6 10 6-6 6 6" /><path d="M4 18v1a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1" /></svg>
                 <span>{readingFile ? "Loading…" : "Tap to choose a photo"}</span>
               </button>
+            )}
+
+            {photo && (
+              <div className={styles.extraPhotos}>
+                <p className={styles.extraNote}>
+                  📸 Add 1–2 more photos from other angles (side, back) — the more we see of {petName}, the more accurate the figure.
+                </p>
+                <div className={styles.extraSlots}>
+                  {[{ p: photo2, set: setPhoto2, ref: fileRef2 }, { p: photo3, set: setPhoto3, ref: fileRef3 }].map((slot, i) => (
+                    <button key={i} type="button" className={styles.extraSlot} onClick={() => slot.ref.current?.click()}>
+                      {slot.p ? (
+                        <img src={slot.p} alt="" />
+                      ) : (
+                        <span className={styles.extraPlus}>+ Photo {i + 2}<small>optional</small></span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
             )}
 
             <label className={styles.notesLabel}>

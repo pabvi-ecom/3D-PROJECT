@@ -39,6 +39,38 @@ export async function createImageToModelTask(imageUrl: string): Promise<string> 
   return json.data.task_id as string;
 }
 
+/**
+ * Genera el modelo 3D a partir de VARIAS vistas (frente, izquierda, atrás,
+ * derecha) de la misma figura — mucho mejor geometría que una sola imagen
+ * (que obligaba a Tripo a inventarse la espalda y los lados).
+ * Orden EXIGIDO por Tripo: [front, left, back, right]. Una vista vacía se pasa
+ * como objeto vacío {}.
+ */
+export async function createMultiviewToModelTask(views: {
+  front: string;
+  left?: string;
+  back?: string;
+  right?: string;
+}): Promise<string> {
+  const file = (url?: string) => (url ? { type: "jpg", url } : {});
+  const res = await fetch(`${BASE}/generation/multiview-to-model`, {
+    method: "POST",
+    headers: headers(),
+    body: JSON.stringify({
+      files: [file(views.front), file(views.left), file(views.back), file(views.right)],
+      model: MODEL_VERSION,
+      face_limit: 50000,
+      texture: true,
+      pbr: true,
+      texture_quality: "extreme",
+      texture_size: 8192,
+    }),
+  });
+  const json = await res.json();
+  if (json.code !== 0) throw new Error(`TRIPO_FAIL: ${json.message ?? "unknown error"}`);
+  return json.data.task_id as string;
+}
+
 export type TripoTask = {
   status: "queued" | "running" | "success" | "failed" | "cancelled";
   progress: number;

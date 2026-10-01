@@ -54,7 +54,8 @@ const NO_BASE = "with no display base, standing directly on a clean seamless lig
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { imageBase64, imageUrl, referenceUrl, change, zone = "dogs", poseId, baseId = NO_BASE_ID, petName, notes, view, styleId, accessoryId } = body;
+    const { imageBase64, imageUrl, referenceUrl, change, zone = "dogs", poseId, baseId = NO_BASE_ID, petName, notes, view, styleId, accessoryId, extraImages } = body;
+    let customerExtraRefs: string[] = [];
 
     const z = getZone(zone);
     const animal = z?.animal ?? "pet";
@@ -151,6 +152,17 @@ export async function POST(req: NextRequest) {
       if (!src) {
         return NextResponse.json({ error: "Falta la foto (imageBase64/imageUrl) o referenceUrl" }, { status: 400 });
       }
+      // Fotos extra OPCIONALES del cliente (otros ángulos) — se suben y se pasan
+      // como referencias adicionales para captar mejor al perro.
+      if (Array.isArray(extraImages) && extraImages.length) {
+        const uploaded = await Promise.all(
+          (extraImages as string[])
+            .filter((x) => typeof x === "string" && x.startsWith("data:"))
+            .slice(0, 2)
+            .map((x) => uploadImage(x).catch(() => null)),
+        );
+        customerExtraRefs = uploaded.filter((u): u is string => !!u);
+      }
       const style = figureStyles.find((s) => s.id === styleId) ?? figureStyles[0];
       const viewNote =
         view === "side"
@@ -173,6 +185,9 @@ export async function POST(req: NextRequest) {
         `Create a studio image of the EXACT SAME individual ${animal} shown in the FIRST image. ` +
         `It must be unmistakably THIS specific pet: keep the same breed, the exact same fur colors and the ` +
         `exact placement of every marking, and the same ear shape. ` +
+        (customerExtraRefs.length
+          ? `The additional reference images show the SAME pet from other angles — use ALL of them together to get its true body shape, markings and proportions right. `
+          : "") +
         `\n\nPOSE (very important): the ${animal} MUST be SITTING upright on its hindquarters, facing the ` +
         `camera straight-on in a clean FRONT view, with its body and head facing forward. Even if the photo ` +
         `shows it standing, lying down or at an angle, RE-POSE it into this sitting, front-facing pose. ` +
@@ -193,7 +208,7 @@ export async function POST(req: NextRequest) {
     // El grabado del nombre y los accesorios editan una imagen YA compuesta
     // (perro + base) — no necesitan la referencia de base, que además pediría
     // dejar el canto en blanco y borraría el nombre.
-    const extraRefUrls = change === "name" || change === "accessory" ? [] : baseRefUrls;
+    const extraRefUrls = change === "name" || change === "accessory" ? [] : [...baseRefUrls, ...customerExtraRefs];
     // El filtro de seguridad de Gemini a veces marca una imagen como
     // "sensible" en un falso positivo (foto normal, nada raro) — un segundo
     // intento con el mismo input suele pasar sin problema, así que
