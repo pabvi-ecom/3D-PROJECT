@@ -31,6 +31,34 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (url: string) => void 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
+  // Vistas 4-ángulos para revisar antes de enviar a Tripo.
+  const [views, setViews] = useState<{ label: string; url: string }[] | null>(null);
+  const [viewIdx, setViewIdx] = useState(0);
+  const [viewsLoading, setViewsLoading] = useState(false);
+
+  async function previewViews() {
+    setViewsLoading(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/admin/generate-views", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ figureUrl: card.figureUrl }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Failed");
+      const v = [{ label: "Front", url: card.figureUrl }];
+      if (json.left) v.push({ label: "Left", url: json.left });
+      if (json.back) v.push({ label: "Back", url: json.back });
+      if (json.right) v.push({ label: "Right", url: json.right });
+      setViews(v);
+      setViewIdx(0);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setViewsLoading(false);
+    }
+  }
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -121,10 +149,18 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (url: string) => void 
       setStlUrl("");
     }
     try {
+      // Si ya generamos vistas para revisar, se mandan para no regenerarlas.
+      const viewsPayload = views
+        ? {
+            left: views.find((v) => v.label === "Left")?.url ?? null,
+            back: views.find((v) => v.label === "Back")?.url ?? null,
+            right: views.find((v) => v.label === "Right")?.url ?? null,
+          }
+        : undefined;
       const res = await fetch("/api/admin/produce-3d", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ table: card.table, id: card.id }),
+        body: JSON.stringify({ table: card.table, id: card.id, views: viewsPayload }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Failed");
@@ -141,7 +177,19 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (url: string) => void 
   return (
     <div className={styles.itemCard}>
       <div className={styles.itemStage}>
-        {card.figureUrl ? (
+        {views && views.length ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={views[viewIdx].url} alt={views[viewIdx].label} className={styles.zoomable} onClick={() => onZoom(views[viewIdx].url)} />
+            <span className={styles.viewLabel}>{views[viewIdx].label} · {viewIdx + 1}/{views.length} → Tripo</span>
+            {views.length > 1 && (
+              <>
+                <button className={`${styles.viewNav} ${styles.viewNavL}`} onClick={() => setViewIdx((i) => (i - 1 + views.length) % views.length)}>‹</button>
+                <button className={`${styles.viewNav} ${styles.viewNavR}`} onClick={() => setViewIdx((i) => (i + 1) % views.length)}>›</button>
+              </>
+            )}
+          </>
+        ) : card.figureUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={card.figureUrl}
@@ -176,8 +224,13 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (url: string) => void 
               {downloadingKey === "previous" ? "Downloading…" : "⬇️ Previous version"}
             </button>
           )}
+          {!views && !loading && (
+            <button className={styles.modelLinkGhost} onClick={previewViews} disabled={viewsLoading || !card.figureUrl}>
+              {viewsLoading ? "Generating views… (~2-3 min)" : "👁️ Preview 3D views"}
+            </button>
+          )}
           <button className={styles.produceBtn} onClick={produce} disabled={loading || !card.figureUrl}>
-            {loading ? "Generating… (can take a few min)" : modelUrl || prevModelUrl ? "🔁 Regenerate" : "🧊 Produce 3D model"}
+            {loading ? "Generating… (can take a few min)" : modelUrl || prevModelUrl ? "🔁 Regenerate" : views ? "🧊 Produce 3D (use these views)" : "🧊 Produce 3D model"}
           </button>
         </div>
       </div>

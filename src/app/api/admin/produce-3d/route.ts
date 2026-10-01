@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   if (!(await checkAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const { table, id } = await req.json();
+    const { table, id, views } = await req.json();
     if (table !== "Leads" && table !== "OrderItems") {
       return NextResponse.json({ error: "Invalid table" }, { status: 400 });
     }
@@ -37,14 +37,19 @@ export async function POST(req: NextRequest) {
     const figureUrl = record.fields["Figure Image URL"] as string | undefined;
     if (!figureUrl) return NextResponse.json({ error: "No figure image on this record" }, { status: 400 });
 
-    // Genera 3 vistas extra (izq/atrás/der) desde el frente para dar a Tripo
-    // 4 ángulos — así NO se inventa la espalda/el cuerpo. Si alguna vista falla,
-    // se omite (Tripo la acepta vacía). Si fallan todas, cae a 1 sola imagen.
-    const [left, back, right] = await Promise.all([
-      generateView(figureUrl, "left").catch(() => undefined),
-      generateView(figureUrl, "back").catch(() => undefined),
-      generateView(figureUrl, "right").catch(() => undefined),
-    ]);
+    // Si el dashboard ya mandó las vistas revisadas, se usan tal cual. Si no,
+    // se generan aquí (izq/atrás/der) desde el frente para dar a Tripo 4
+    // ángulos — así NO se inventa la espalda. Si fallan todas, cae a 1 imagen.
+    let left: string | undefined, back: string | undefined, right: string | undefined;
+    if (views && (views.left || views.back || views.right)) {
+      left = views.left ?? undefined; back = views.back ?? undefined; right = views.right ?? undefined;
+    } else {
+      [left, back, right] = await Promise.all([
+        generateView(figureUrl, "left").catch(() => undefined),
+        generateView(figureUrl, "back").catch(() => undefined),
+        generateView(figureUrl, "right").catch(() => undefined),
+      ]);
+    }
 
     const haveViews = left || back || right;
     const taskId = haveViews
