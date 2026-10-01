@@ -25,6 +25,22 @@ export async function generateView(refUrl: string, view: "left" | "back" | "righ
 }
 
 /**
+ * Quita la base/pedestal y el nombre grabado de la figura, dejando SOLO el
+ * perro sobre blanco. Se manda esto a Tripo (perro limpio); la base perfecta y
+ * el nombre nitido se añaden luego en Blender. Evita base rugosa + sombra.
+ */
+export async function stripBase(figureUrl: string): Promise<string> {
+  return generateKie(
+    figureUrl,
+    "This is a photo of a pet figurine standing on a display base. Remove the display base / pedestal / plinth " +
+      "COMPLETELY, and remove any engraved name or nameplate text. Keep ONLY the pet itself, exactly the same — " +
+      "same pose, same body, same fur colors and markings, and any worn accessory (bandana, harness, collar) stays. " +
+      "Show just the pet, with nothing under it, floating cleanly on a pure plain WHITE seamless background with " +
+      "FLAT EVEN lighting and absolutely NO shadow. No base, no ground, no platform, no text anywhere.",
+  );
+}
+
+/**
  * Genera las 3 vistas en cadena orbitando desde el frente, para máxima
  * consistencia entre ángulos. Devuelve lo que consiga (null si alguna falla).
  */

@@ -47,7 +47,7 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (url: string) => void 
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Failed");
-      const v = [{ label: "Front", url: card.figureUrl }];
+      const v = [{ label: "Front", url: json.front ?? card.figureUrl }];
       if (json.left) v.push({ label: "Left", url: json.left });
       if (json.back) v.push({ label: "Back", url: json.back });
       if (json.right) v.push({ label: "Right", url: json.right });
@@ -152,6 +152,7 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (url: string) => void 
       // Si ya generamos vistas para revisar, se mandan para no regenerarlas.
       const viewsPayload = views
         ? {
+            front: views.find((v) => v.label === "Front")?.url ?? null,
             left: views.find((v) => v.label === "Left")?.url ?? null,
             back: views.find((v) => v.label === "Back")?.url ?? null,
             right: views.find((v) => v.label === "Right")?.url ?? null,

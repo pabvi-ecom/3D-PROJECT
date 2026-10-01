@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getRecord, updateRecord } from "@/lib/airtable";
 import { createImageToModelTask, createMultiviewToModelTask } from "@/lib/tripo";
-import { generateOrbitViews } from "@/lib/views";
+import { generateOrbitViews, stripBase } from "@/lib/views";
 
 export const runtime = "nodejs";
 // Genera 3 vistas extra (nano-banana, ~100s c/u en paralelo) antes de lanzar
@@ -40,18 +40,22 @@ export async function POST(req: NextRequest) {
     // Si el dashboard ya mandó las vistas revisadas, se usan tal cual. Si no,
     // se generan aquí (izq/atrás/der) desde el frente para dar a Tripo 4
     // ángulos — así NO se inventa la espalda. Si fallan todas, cae a 1 imagen.
-    let left: string | undefined, back: string | undefined, right: string | undefined;
+    // El frente que va a Tripo es el perro SIN base (base + nombre se añaden
+    // luego en Blender). Si el dashboard ya mandó las vistas revisadas, se usan.
+    let front = figureUrl, left: string | undefined, back: string | undefined, right: string | undefined;
     if (views && (views.left || views.back || views.right)) {
+      front = views.front ?? figureUrl;
       left = views.left ?? undefined; back = views.back ?? undefined; right = views.right ?? undefined;
     } else {
-      const v = await generateOrbitViews(figureUrl);
+      front = await stripBase(figureUrl).catch(() => figureUrl);
+      const v = await generateOrbitViews(front);
       left = v.left ?? undefined; back = v.back ?? undefined; right = v.right ?? undefined;
     }
 
     const haveViews = left || back || right;
     const taskId = haveViews
-      ? await createMultiviewToModelTask({ front: figureUrl, left, back, right })
-      : await createImageToModelTask(figureUrl);
+      ? await createMultiviewToModelTask({ front, left, back, right })
+      : await createImageToModelTask(front);
 
     await updateRecord(table, id, { "Tripo Task ID": taskId, "Tripo Status": "Processing", "Model File URL": "" });
 

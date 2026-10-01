@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { generateOrbitViews } from "@/lib/views";
+import { generateOrbitViews, stripBase } from "@/lib/views";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -21,8 +21,10 @@ export async function POST(req: NextRequest) {
   try {
     const { figureUrl } = await req.json();
     if (!figureUrl) return NextResponse.json({ error: "Falta figureUrl" }, { status: 400 });
-    const { left, back, right } = await generateOrbitViews(figureUrl);
-    return NextResponse.json({ ok: true, left, back, right });
+    // Quita la base -> perro limpio. Las vistas (y Tripo) usan ESE frente.
+    const front = await stripBase(figureUrl).catch(() => figureUrl);
+    const { left, back, right } = await generateOrbitViews(front);
+    return NextResponse.json({ ok: true, front, left, back, right });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
   }
