@@ -316,11 +316,22 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       // marca esa generación en concreto), no tira abajo los demás — el
       // usuario aún puede elegir entre los que sí salieron bien.
       const extraImages = [photo2, photo3].filter((p): p is string => !!p);
+      // Reintento por estilo: nano-banana a veces falla un estilo suelto (filtro
+      // de seguridad o timeout). Reintentamos ese estilo una vez para que NO se
+      // quede sin mostrar (antes se perdía, p. ej. faltaba el realista).
+      const genStyle = async (sid: string): Promise<readonly [string, string]> => {
+        const body = { imageBase64: dataUri, extraImages, poseId: poses[0].id, baseId: NO_BASE_ID, notes: notes.trim() || undefined, styleId: sid };
+        try {
+          return [sid, await postGenerate(body)] as const;
+        } catch {
+          return [sid, await postGenerate(body)] as const; // 2º intento
+        }
+      };
       const settled = await Promise.allSettled(
         figureStyles.map((s) =>
-          postGenerate({ imageBase64: dataUri, extraImages, poseId: poses[0].id, baseId: NO_BASE_ID, notes: notes.trim() || undefined, styleId: s.id }).then((url) => {
+          genStyle(s.id).then((r) => {
             setDone((d) => d + 1);
-            return [s.id, url] as const;
+            return r;
           }),
         ),
       );

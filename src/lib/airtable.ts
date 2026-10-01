@@ -34,6 +34,10 @@ export async function updateRecord(table: string, id: string, fields: Record<str
   await airtableFetch(`${table}/${id}`, { method: "PATCH", body: JSON.stringify({ fields }) });
 }
 
+export async function deleteRecord(table: string, id: string): Promise<void> {
+  await airtableFetch(`${table}/${id}`, { method: "DELETE" });
+}
+
 export async function getRecord(table: string, id: string): Promise<{ id: string; fields: Record<string, unknown> }> {
   return airtableFetch(`${table}/${id}`);
 }

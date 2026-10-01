@@ -24,6 +24,7 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 function CardView({ card, onZoom }: { card: Card; onZoom: (url: string) => void }) {
+  const router = useRouter();
   const [status, setStatus] = useState(card.tripoStatus || "Not started");
   const [modelUrl, setModelUrl] = useState(card.modelUrl);
   const [stlUrl, setStlUrl] = useState(card.stlUrl);
@@ -232,6 +233,16 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (url: string) => void 
           )}
           <button className={styles.produceBtn} onClick={produce} disabled={loading || !card.figureUrl}>
             {loading ? "Generating… (can take a few min)" : modelUrl || prevModelUrl ? "🔁 Regenerate" : views ? "🧊 Produce 3D (use these views)" : "🧊 Produce 3D model"}
+          </button>
+          <button
+            className={styles.modelLinkGhost}
+            onClick={async () => {
+              if (!confirm(`Delete "${card.petName || card.id}"? This can't be undone.`)) return;
+              await fetch("/api/admin/delete-record", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ table: card.table, id: card.id }) });
+              router.refresh();
+            }}
+          >
+            🗑 Delete
           </button>
         </div>
       </div>
