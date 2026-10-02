@@ -42,21 +42,20 @@ export async function POST(req: NextRequest) {
     // ángulos — así NO se inventa la espalda. Si fallan todas, cae a 1 imagen.
     // El frente que va a Tripo es el perro SIN base (base + nombre se añaden
     // luego en Blender). Si el dashboard ya mandó las vistas revisadas, se usan.
-    // El frente que va al modelo 3D es el perro SIN base (la base + nombre se
-    // ponen luego en Blender). Hunyuan-3d-3.1 es de 1 imagen pero CON color;
-    // 2mv daba forma multivista pero SIN color (no sirve para full-color).
-    let front: string;
+    // fal Hunyuan3D v2 multi-view (front/back/left) CON textura -> forma
+    // multivista Y color. El perro va SIN base (base + nombre en Blender).
+    let front: string, back: string | undefined, left: string | undefined;
     if (views && views.front) {
-      front = views.front;
+      front = views.front; back = views.back ?? undefined; left = views.left ?? undefined;
     } else {
       front = await stripBase(figureUrl).catch(() => figureUrl);
     }
 
-    const taskId = await createTexturedModelTask(front);
+    const taskId = await createTexturedModelTask({ front, back, left });
 
     await updateRecord(table, id, { "Tripo Task ID": taskId, "Tripo Status": "Processing", "Model File URL": "" });
 
-    return NextResponse.json({ ok: true, taskId, mode: "textured-3.1" });
+    return NextResponse.json({ ok: true, taskId, mode: back && left ? "multiview-textured" : "single-textured" });
   } catch (e) {
     console.error("[/api/admin/produce-3d]", (e as Error).message);
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });

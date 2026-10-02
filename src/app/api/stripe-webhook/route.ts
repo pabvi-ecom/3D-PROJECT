@@ -28,7 +28,7 @@ async function fulfill(session: Stripe.Checkout.Session) {
       const item = await getRecord("OrderItems", itemId);
       const figureUrl = item.fields["Figure Image URL"] as string | undefined;
       if (!figureUrl) continue;
-      const taskId = await createTexturedModelTask(figureUrl);
+      const taskId = await createTexturedModelTask({ front: figureUrl });
       await updateRecord("OrderItems", itemId, { "Tripo Task ID": taskId, "Tripo Status": "Processing" });
     } catch (e) {
       console.error("[stripe-webhook] tripo dispatch failed", itemId, (e as Error).message);
