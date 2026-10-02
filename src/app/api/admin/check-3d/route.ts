@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getRecord, updateRecord } from "@/lib/airtable";
-import { getTask } from "@/lib/tripo";
+import { getTask } from "@/lib/hunyuan3d";
 import { processModel } from "@/lib/model-store";
 
 export const runtime = "nodejs";
