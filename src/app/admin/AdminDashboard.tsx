@@ -23,7 +23,7 @@ const STATUS_COLOR: Record<string, string> = {
   Failed: "#D33",
 };
 
-function CardView({ card, onZoom }: { card: Card; onZoom: (url: string) => void }) {
+function CardView({ card, onZoom }: { card: Card; onZoom: (urls: string[], idx: number) => void }) {
   const router = useRouter();
   const [status, setStatus] = useState(card.tripoStatus || "Not started");
   const [modelUrl, setModelUrl] = useState(card.modelUrl);
@@ -182,7 +182,7 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (url: string) => void 
         {views && views.length ? (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={views[viewIdx].url} alt={views[viewIdx].label} className={styles.zoomable} onClick={() => onZoom(views[viewIdx].url)} />
+            <img src={views[viewIdx].url} alt={views[viewIdx].label} className={styles.zoomable} onClick={() => onZoom(views.map((v) => v.url), viewIdx)} />
             <span className={styles.viewLabel}>{views[viewIdx].label} · {viewIdx + 1}/{views.length} → Tripo</span>
             {views.length > 1 && (
               <>
@@ -197,7 +197,7 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (url: string) => void 
             src={card.figureUrl}
             alt={card.petName}
             className={styles.zoomable}
-            onClick={() => onZoom(card.figureUrl)}
+            onClick={() => onZoom([card.figureUrl], 0)}
           />
         ) : (
           <span className={styles.noImg}>No image</span>
@@ -254,7 +254,10 @@ export function AdminDashboard({ orders, leads }: { orders: Card[]; leads: Card[
   const router = useRouter();
   const [tab, setTab] = useState<"orders" | "leads">("orders");
   const [refreshing, setRefreshing] = useState(false);
-  const [zoomUrl, setZoomUrl] = useState<string | null>(null);
+  const [zoom, setZoom] = useState<{ urls: string[]; idx: number } | null>(null);
+  const zoomUrl = zoom ? zoom.urls[zoom.idx] : null;
+  const zoomPrev = () => setZoom((z) => (z ? { ...z, idx: (z.idx - 1 + z.urls.length) % z.urls.length } : z));
+  const zoomNext = () => setZoom((z) => (z ? { ...z, idx: (z.idx + 1) % z.urls.length } : z));
   const list = tab === "orders" ? orders : leads;
 
   function refresh() {
@@ -282,16 +285,23 @@ export function AdminDashboard({ orders, leads }: { orders: Card[]; leads: Card[
 
       <div className={styles.itemGrid}>
         {list.map((c) => (
-          <CardView key={c.id} card={c} onZoom={setZoomUrl} />
+          <CardView key={c.id} card={c} onZoom={(urls, idx) => setZoom({ urls, idx })} />
         ))}
         {list.length === 0 && <p className={styles.empty}>Nothing here yet.</p>}
       </div>
 
       {zoomUrl && (
-        <div className={styles.lightbox} onClick={() => setZoomUrl(null)}>
+        <div className={styles.lightbox} onClick={() => setZoom(null)}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={zoomUrl} alt="" onClick={(e) => e.stopPropagation()} />
-          <button className={styles.lightboxClose} onClick={() => setZoomUrl(null)} aria-label="Close">×</button>
+          {zoom && zoom.urls.length > 1 && (
+            <>
+              <button className={`${styles.viewNav} ${styles.viewNavL}`} style={{ position: "fixed", left: 24 }} onClick={(e) => { e.stopPropagation(); zoomPrev(); }}>‹</button>
+              <button className={`${styles.viewNav} ${styles.viewNavR}`} style={{ position: "fixed", right: 24 }} onClick={(e) => { e.stopPropagation(); zoomNext(); }}>›</button>
+              <span style={{ position: "fixed", bottom: 24, left: "50%", transform: "translateX(-50%)", background: "rgba(0,0,0,.7)", color: "#fff", padding: "4px 12px", borderRadius: 99, fontSize: ".8rem", fontWeight: 700 }}>{zoom.idx + 1}/{zoom.urls.length}</span>
+            </>
+          )}
+          <button className={styles.lightboxClose} onClick={() => setZoom(null)} aria-label="Close">×</button>
           <button
             className={styles.lightboxDownload}
             onClick={async (e) => {
