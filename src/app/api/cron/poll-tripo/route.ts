@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { listRecords, updateRecord } from "@/lib/airtable";
-import { getTask } from "@/lib/tripo";
+import { getTask } from "@/lib/hunyuan3d";
 import { processModel } from "@/lib/model-store";
 
 export const runtime = "nodejs";

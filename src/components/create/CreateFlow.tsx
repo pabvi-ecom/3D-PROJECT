@@ -7,6 +7,7 @@ import confetti from "canvas-confetti";
 import styles from "./CreateFlow.module.css";
 import { brand } from "@/config/brand";
 import { poses, paidBases, bases, figureStyles, accessories, paidAccessories, NO_BASE_ID, NO_ACCESSORY_ID, NAMEPLATE_PRICE } from "@/config/products";
+import { COMPOSE_DISPLAY_BASE } from "@/config/flags";
 import type { Zone } from "@/config/zones";
 import { Timeline, type StepId } from "./Timeline";
 import { AnnouncementBar } from "../studio/AnnouncementBar";
@@ -374,13 +375,27 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
 
   // Genera (o devuelve de cache) la imagen con una base concreta, encadenada
   // desde la figura del estilo elegido.
+  // Composición por código (perro recortado + base fija + nombre). Rápida.
+  async function postCompose(figureUrl: string, name?: string): Promise<string> {
+    const res = await fetch("/api/compose-base", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ figureUrl, petName: name }),
+    });
+    const json = await res.json();
+    if (!res.ok || !json.url) throw new Error(json.error ?? "compose failed");
+    return json.url as string;
+  }
+
   async function ensureBase(id: string): Promise<string | null> {
     if (id === NO_BASE_ID) return styleFigures[styleId] ?? null;
     const k = key(poseId, id, "front");
     if (figures[k]) return figures[k];
     const chosen = styleFigures[styleId];
     if (!chosen) return null;
-    const url = await postGenerate({ referenceUrl: chosen, change: "base", baseId: id });
+    const url = COMPOSE_DISPLAY_BASE
+      ? await postCompose(chosen)
+      : await postGenerate({ referenceUrl: chosen, change: "base", baseId: id });
     setFigures((m) => ({ ...m, [k]: url }));
     return url;
   }
@@ -388,6 +403,13 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   // Genera (o cache) la versión grabada de una base concreta.
   async function ensureNamed(id: string): Promise<string | null> {
     if (namedFigures[id]) return namedFigures[id];
+    if (COMPOSE_DISPLAY_BASE) {
+      const chosen = styleFigures[styleId];
+      if (!chosen) return null;
+      const url = await postCompose(chosen, petName);
+      setNamedFigures((m) => ({ ...m, [id]: url }));
+      return url;
+    }
     const src = figures[key(poseId, id, "front")] ?? (await ensureBase(id));
     if (!src) return null;
     const url = await postGenerate({ referenceUrl: src, change: "name", baseId: id, petName });

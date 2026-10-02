@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { updateRecord, getRecord } from "@/lib/airtable";
-import { createImageToModelTask } from "@/lib/tripo";
+import { createImageToModelTask } from "@/lib/hunyuan3d";
 
 export const runtime = "nodejs";
 

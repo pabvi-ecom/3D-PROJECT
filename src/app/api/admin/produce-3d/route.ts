@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getRecord, updateRecord } from "@/lib/airtable";
-import { createImageToModelTask, createMultiviewToModelTask } from "@/lib/tripo";
+import { createImageToModelTask, createMultiviewToModelTask } from "@/lib/hunyuan3d";
 import { generateOrbitViews, stripBase } from "@/lib/views";
 
 export const runtime = "nodejs";
