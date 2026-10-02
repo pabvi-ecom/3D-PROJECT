@@ -12,9 +12,9 @@ const BASE_IMG = path.join(process.cwd(), "public/bases/marble-ref.png");
 // Anclas medidas sobre marble-ref.png (1178x1335): superficie superior y canto.
 const BASE_W = 1178, BASE_H = 1335;
 const TOP_CENTER_X = 584;   // centro horizontal del pedestal
-const FEET_Y = 1005;        // y donde apoyan las patas (sobre la superficie)
+const FEET_Y = 965;         // y donde apoyan las patas (centro de la superficie, no el borde)
 const NAME_Y = 1095;        // y del nombre en el canto frontal
-const DOG_TARGET_H = 880;   // alto objetivo del perro en el lienzo
+const DOG_TARGET_H = 620;   // alto objetivo del perro (mas pequeño: sienta DENTRO de la base)
 
 /** Quita el fondo BLANCO conectado a los bordes (conserva blancos internos del perro). */
 async function removeWhiteBg(buf: Buffer): Promise<Buffer> {
@@ -71,24 +71,25 @@ export async function composeDisplay(dogBuf: Buffer, opts: { petName?: string })
   const dogX = Math.round(TOP_CENTER_X - dogW / 2);
   const dogY = Math.round(FEET_Y - dogH);
 
-  // 2) sombra de contacto (elipse borrosa) bajo las patas
-  const shW = Math.round(dogW * 0.7), shH = 46;
+  // 2) sombra de contacto (elipse borrosa) bajo las patas — sutil
+  const shW = Math.round(dogW * 0.5), shH = 30;
+  const pad = 20;
   const shadow = await sharp({
-    create: { width: shW, height: shH, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
+    create: { width: shW + pad * 2, height: shH + pad * 2, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
   })
     .composite([
       {
         input: Buffer.from(
-          `<svg width="${shW}" height="${shH}"><ellipse cx="${shW / 2}" cy="${shH / 2}" rx="${shW / 2}" ry="${shH / 2}" fill="black" opacity="0.28"/></svg>`,
+          `<svg width="${shW + pad * 2}" height="${shH + pad * 2}"><ellipse cx="${shW / 2 + pad}" cy="${shH / 2 + pad}" rx="${shW / 2}" ry="${shH / 2}" fill="black" opacity="0.18"/></svg>`,
         ),
       },
     ])
-    .blur(14)
+    .blur(10)
     .png()
     .toBuffer();
 
   const layers: { input: Buffer; left?: number; top?: number }[] = [
-    { input: shadow, left: Math.round(TOP_CENTER_X - shW / 2), top: Math.round(FEET_Y - shH / 2) },
+    { input: shadow, left: Math.round(TOP_CENTER_X - (shW + pad * 2) / 2), top: Math.round(FEET_Y - (shH + pad * 2) / 2) },
     { input: dog, left: dogX, top: dogY },
   ];
   if (opts.petName && opts.petName.trim()) {
