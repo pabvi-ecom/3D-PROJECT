@@ -11,8 +11,8 @@ const BASE = "https://queue.fal.run";
 const MODEL = "fal-ai/hunyuan3d/v2";
 
 function headers() {
-  const key = process.env.FAL_KEY;
-  if (!key) throw new Error("FAL_KEY no configurado");
+  const key = process.env.FALAI ?? process.env.FAL_KEY;
+  if (!key) throw new Error("FALAI / FAL_KEY no configurado");
   return { Authorization: `Key ${key}`, "Content-Type": "application/json" };
 }
 
