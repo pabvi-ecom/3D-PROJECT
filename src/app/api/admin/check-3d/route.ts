@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
       await updateRecord(table, id, { "Tripo Status": "Failed" });
       return NextResponse.json({ status: "Failed" });
     }
-    return NextResponse.json({ status: "Processing", progress: task.progress ?? 0 });
+    return NextResponse.json({ status: "Processing" });
   } catch (e) {
     console.error("[/api/admin/check-3d]", (e as Error).message);
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
