@@ -12,9 +12,9 @@ const BASE_IMG = path.join(process.cwd(), "public/bases/marble-ref.png");
 // Anclas medidas sobre marble-ref.png (1178x1335): superficie superior y canto.
 const BASE_W = 1178, BASE_H = 1335;
 const TOP_CENTER_X = 584;   // centro horizontal del pedestal
-const FEET_Y = 965;         // y donde apoyan las patas (centro de la superficie, no el borde)
+const FEET_Y = 1010;        // y donde apoyan las patas (sobre la superficie, tocando)
 const NAME_Y = 1095;        // y del nombre en el canto frontal
-const DOG_TARGET_H = 620;   // alto objetivo del perro (mas pequeño: sienta DENTRO de la base)
+const DOG_TARGET_H = 740;   // alto objetivo del perro
 
 /** Quita el fondo BLANCO conectado a los bordes (conserva blancos internos del perro). */
 async function removeWhiteBg(buf: Buffer): Promise<Buffer> {
