@@ -88,6 +88,7 @@ export async function createTexturedModelTask(imageUrl: string): Promise<string>
 export type HunyuanTask = {
   status: "queued" | "running" | "success" | "failed" | "cancelled";
   output?: { model_url?: string };
+  error?: string;
 };
 
 /**
@@ -112,8 +113,15 @@ export async function getTask(id: string): Promise<HunyuanTask> {
             ? "running"
             : "queued";
 
+  // El output de Replicate puede ser una URL (string) o un objeto con el glb.
+  let modelUrl: string | undefined;
+  const out = json.output;
+  if (typeof out === "string") modelUrl = out;
+  else if (out && typeof out === "object") modelUrl = out.mesh ?? out.glb ?? out.model ?? out.model_file ?? out.url ?? (Array.isArray(out) ? out[0] : undefined);
+
   return {
     status,
-    output: status === "success" ? { model_url: json.output as string } : undefined,
+    output: status === "success" ? { model_url: modelUrl } : undefined,
+    error: typeof json.error === "string" ? json.error : json.error ? JSON.stringify(json.error) : undefined,
   };
 }

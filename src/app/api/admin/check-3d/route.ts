@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     }
     if (task.status === "failed" || task.status === "cancelled") {
       await updateRecord(table, id, { "Tripo Status": "Failed" });
-      return NextResponse.json({ status: "Failed" });
+      return NextResponse.json({ status: "Failed", error: task.error });
     }
     return NextResponse.json({ status: "Processing" });
   } catch (e) {

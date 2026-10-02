@@ -114,6 +114,7 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (urls: string[], idx: 
           if (pollRef.current) clearInterval(pollRef.current);
         } else if (json.status === "Failed") {
           setStatus("Failed");
+          if (json.error) setError(json.error);
           setLoading(false);
           if (pollRef.current) clearInterval(pollRef.current);
         }
