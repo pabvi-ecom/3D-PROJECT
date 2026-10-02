@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { updateRecord, getRecord } from "@/lib/airtable";
-import { createImageToModelTask } from "@/lib/hunyuan3d";
+import { createTexturedModelTask } from "@/lib/fal";
 
 export const runtime = "nodejs";
 
@@ -28,7 +28,7 @@ async function fulfill(session: Stripe.Checkout.Session) {
       const item = await getRecord("OrderItems", itemId);
       const figureUrl = item.fields["Figure Image URL"] as string | undefined;
       if (!figureUrl) continue;
-      const taskId = await createImageToModelTask(figureUrl);
+      const taskId = await createTexturedModelTask(figureUrl);
       await updateRecord("OrderItems", itemId, { "Tripo Task ID": taskId, "Tripo Status": "Processing" });
     } catch (e) {
       console.error("[stripe-webhook] tripo dispatch failed", itemId, (e as Error).message);
