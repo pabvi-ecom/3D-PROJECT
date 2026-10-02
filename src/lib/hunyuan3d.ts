@@ -11,10 +11,12 @@
  * el resto del flujo (Airtable, cron, model-store).
  */
 const BASE = "https://api.replicate.com/v1";
-const MODEL_MV = "tencent/hunyuan3d-2mv"; // multi-vista: front/back/left/right
+const MODEL_MV = "tencent/hunyuan3d-2mv"; // multi-vista: SOLO forma (sin color)
 const MODEL_1 = "tencent/hunyuan3d-2"; // una sola imagen
+const MODEL_31 = "tencent/hunyuan-3d-3.1"; // una imagen CON textura/color (Normal)
 const VERSION_MV = "71798fbc3c9f7b7097e3bb85496e5a797d8b8f616b550692e7c3e176a8e9e5db";
 const VERSION_1 = "b1b9449a1277e10402781c5d41eb30c0a0683504fb23fab591ca9dfc2aabe1cb";
+const VERSION_31 = "aea094f5d024bfcf2b536c899ab20c2ec6314e5711c8e98dd12c29332d7b8277";
 
 function headers() {
   const key = process.env.REPLICATE_API_TOKEN;
@@ -69,6 +71,17 @@ export async function createImageToModelTask(imageUrl: string): Promise<string> 
   return createPrediction(MODEL_1, VERSION_1, {
     image: imageUrl,
     remove_background: true,
+  });
+}
+
+/**
+ * Una imagen (el frente sin base) -> modelo 3D CON textura/color, con
+ * hunyuan-3d-3.1. generate_type "Normal" ya trae geometria + materiales.
+ */
+export async function createTexturedModelTask(imageUrl: string): Promise<string> {
+  return createPrediction(MODEL_31, VERSION_31, {
+    image: imageUrl,
+    generate_type: "Normal",
   });
 }
 
