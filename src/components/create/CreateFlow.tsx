@@ -169,6 +169,26 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   // Imagen con accesorio aplicado, por combinacion base|accesorio.
   const [accessoryFigures, setAccessoryFigures] = useState<Record<string, string>>({});
   const [stepLoading, setStepLoading] = useState(false);
+  // Pre-generacion de accesorios en 2o plano: espejo de accessoryFigures (para
+  // leer el estado mas reciente dentro de promesas) + promesa por combinacion
+  // base|nombre para no lanzar el lote dos veces.
+  const accFiguresRef = useRef<Record<string, string>>({});
+  const accGenRef = useRef<Record<string, Promise<void> | undefined>>({});
+  useEffect(() => { accFiguresRef.current = accessoryFigures; }, [accessoryFigures]);
+  // En el paso de base, en cuanto la imagen de partida (base y/o nombre) esté
+  // lista, pre-genera los accesorios en 2º plano para la combinación actual —
+  // así al pulsar Continuar normalmente ya están todos y el cambio es instantáneo.
+  useEffect(() => {
+    if (step !== "base") return;
+    if (!wantsBase) {
+      if (styleFigures[styleId]) startAccessoryGen(NO_BASE_ID, false);
+    } else if (addName) {
+      if (namedFigures[baseId]) startAccessoryGen(baseId, true);
+    } else if (figures[key(poseId, baseId, "front")]) {
+      startAccessoryGen(baseId, false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step, baseId, addName, styleFigures, figures, namedFigures]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [discountCode, setDiscountCode] = useState("");
   const [unlockedDiscounts, setUnlockedDiscounts] = useState<{ pct: number; code: string }[]>([]);
@@ -422,40 +442,56 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   // Fase 3: tras confirmar base (+nombre) -> pantalla de carga mientras se
   // generan las 3 opciones de accesorio a partir de la imagen del paso de base.
   // Al entrar al paso de accesorios ya están todas listas.
+  // Imagen de partida del accesorio para la combinación base|nombre actual.
+  async function accessorySource(bId: string, named: boolean): Promise<string | null> {
+    if (bId === NO_BASE_ID) return styleFigures[styleId] ?? null;
+    if (named) return ensureNamed(bId);
+    return ensureBase(bId);
+  }
+
+  // Lanza (una vez por combinación) la generación de los accesorios que falten,
+  // con reintento. Cacheada en accGenRef para poder esperarla luego.
+  function startAccessoryGen(bId: string, named: boolean): Promise<void> {
+    const combo = `${bId}|${named ? "n" : "0"}`;
+    const existing = accGenRef.current[combo];
+    if (existing) return existing;
+    const p = (async () => {
+      const src = await accessorySource(bId, named);
+      if (!src) return;
+      await Promise.allSettled(
+        paidAccessories.map(async (a) => {
+          const k = `${combo}|${a.id}`;
+          if (accFiguresRef.current[k]) return;
+          let url: string;
+          try {
+            url = await postGenerate({ referenceUrl: src, change: "accessory", baseId: bId, accessoryId: a.id });
+          } catch {
+            url = await postGenerate({ referenceUrl: src, change: "accessory", baseId: bId, accessoryId: a.id });
+          }
+          setAccessoryFigures((m) => ({ ...m, [k]: url }));
+        }),
+      );
+    })();
+    accGenRef.current[combo] = p;
+    return p;
+  }
+
   async function goToAccessory() {
     setAccessoryId(NO_ACCESSORY_ID);
+    const combo = `${baseId}|${addName ? "n" : "0"}`;
+    const allReady = paidAccessories.every((a) => accessoryFigures[`${combo}|${a.id}`]);
+    if (allReady) {
+      // Ya pre-generadas en 2º plano → entra al instante, sin pantalla de carga.
+      setStep("accessory");
+      return;
+    }
     setGenerating(true);
     setError(null);
     setGenTotal(paidAccessories.length);
     setDone(0);
     setProgress(0);
     try {
-      // Imagen de partida: sin base = figura del estilo; con base = pedestal
-      // (grabado si pidió nombre).
-      let src: string | null;
-      if (!wantsBase) src = styleFigures[styleId] ?? null;
-      else if (addName) src = await ensureNamed(baseId);
-      else src = await ensureBase(baseId);
-
-      if (src) {
-        const source = src;
-        await Promise.allSettled(
-          paidAccessories.map(async (a) => {
-            const k = `${baseId}|${addName ? "n" : "0"}|${a.id}`;
-            if (accessoryFigures[k]) return;
-            // Reintento una vez: nano-banana a veces tumba un accesorio suelto
-            // (filtro/timeout) y quedaba "unavailable".
-            let url: string;
-            try {
-              url = await postGenerate({ referenceUrl: source, change: "accessory", baseId, accessoryId: a.id });
-            } catch {
-              url = await postGenerate({ referenceUrl: source, change: "accessory", baseId, accessoryId: a.id });
-            }
-            setAccessoryFigures((m) => ({ ...m, [k]: url }));
-            setDone((d) => d + 1);
-          }),
-        );
-      }
+      await startAccessoryGen(baseId, addName);
       setProgress(100);
       setStep("accessory");
     } catch (e) {
