@@ -438,15 +438,21 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       else src = await ensureBase(baseId);
 
       if (src) {
+        const source = src;
         await Promise.allSettled(
-          paidAccessories.map((a) => {
+          paidAccessories.map(async (a) => {
             const k = `${baseId}|${addName ? "n" : "0"}|${a.id}`;
-            if (accessoryFigures[k]) return Promise.resolve();
-            return postGenerate({ referenceUrl: src as string, change: "accessory", baseId, accessoryId: a.id })
-              .then((url) => {
-                setAccessoryFigures((m) => ({ ...m, [k]: url }));
-                setDone((d) => d + 1);
-              });
+            if (accessoryFigures[k]) return;
+            // Reintento una vez: nano-banana a veces tumba un accesorio suelto
+            // (filtro/timeout) y quedaba "unavailable".
+            let url: string;
+            try {
+              url = await postGenerate({ referenceUrl: source, change: "accessory", baseId, accessoryId: a.id });
+            } catch {
+              url = await postGenerate({ referenceUrl: source, change: "accessory", baseId, accessoryId: a.id });
+            }
+            setAccessoryFigures((m) => ({ ...m, [k]: url }));
+            setDone((d) => d + 1);
           }),
         );
       }
