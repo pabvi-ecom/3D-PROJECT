@@ -82,6 +82,7 @@ export async function createTexturedModelTask(imageUrl: string): Promise<string>
   return createPrediction(MODEL_31, VERSION_31, {
     image: imageUrl,
     generate_type: "Normal",
+    face_count: 60000, // el default 500000 pedia demasiada GPU (ResourceInsufficient)
   });
 }
 
