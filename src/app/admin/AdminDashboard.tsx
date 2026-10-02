@@ -126,7 +126,7 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (urls: string[], idx: 
       }
       // Tope de seguridad — calidad "extreme" puede tardar varios minutos,
       // pero si pasa de 10 min algo va mal, dejamos de insistir solos.
-      if (tries > 120 && pollRef.current) {
+      if (tries > 200 && pollRef.current) {
         clearInterval(pollRef.current);
         setLoading(false);
         setError("Taking unusually long — check back later or try again.");
