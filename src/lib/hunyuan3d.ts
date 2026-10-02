@@ -24,13 +24,16 @@ function headers() {
 
 async function createPrediction(
   model: string,
-  version: string,
+  _version: string,
   input: Record<string, unknown>
 ): Promise<string> {
+  // El endpoint /models/{model}/predictions corre la ULTIMA version del modelo
+  // y NO acepta el campo `version` (da "Additional property version is not
+  // allowed"). El hash solo vale para el endpoint generico /predictions.
   const res = await fetch(`${BASE}/models/${model}/predictions`, {
     method: "POST",
     headers: headers(),
-    body: JSON.stringify({ version, input }),
+    body: JSON.stringify({ input }),
   });
   const json = await res.json();
   if (!res.ok || !json.id) {
