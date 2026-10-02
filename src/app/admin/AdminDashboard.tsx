@@ -13,8 +13,26 @@ export type Card = {
   tripoStatus: string;
   modelUrl: string;
   stlUrl: string;
+  views?: string; // JSON {front,left,back,right} persistido en Airtable
   purchased: boolean;
 };
+
+// Parsea el campo Views (JSON) a la lista del carrusel.
+function parseViews(raw?: string): { label: string; url: string }[] | null {
+  if (!raw) return null;
+  try {
+    const v = JSON.parse(raw) as { front?: string; left?: string; back?: string; right?: string };
+    const out = [
+      { label: "Front", url: v.front },
+      { label: "Left", url: v.left },
+      { label: "Back", url: v.back },
+      { label: "Right", url: v.right },
+    ].filter((x): x is { label: string; url: string } => !!x.url);
+    return out.length ? out : null;
+  } catch {
+    return null;
+  }
+}
 
 const STATUS_COLOR: Record<string, string> = {
   "Not started": "#86868B",
@@ -32,8 +50,9 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (urls: string[], idx: 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
-  // Vistas 4-ángulos para revisar antes de enviar a Tripo.
-  const [views, setViews] = useState<{ label: string; url: string }[] | null>(null);
+  // Vistas 4-ángulos para revisar antes de enviar a Tripo. Se inicializan con
+  // las persistidas en Airtable (si las hay) para verlas siempre sin regenerar.
+  const [views, setViews] = useState<{ label: string; url: string }[] | null>(() => parseViews(card.views));
   const [viewIdx, setViewIdx] = useState(0);
   const [viewsLoading, setViewsLoading] = useState(false);
 
@@ -44,7 +63,7 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (urls: string[], idx: 
       const res = await fetch("/api/admin/generate-views", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ figureUrl: card.figureUrl }),
+        body: JSON.stringify({ figureUrl: card.figureUrl, table: card.table, id: card.id }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Failed");

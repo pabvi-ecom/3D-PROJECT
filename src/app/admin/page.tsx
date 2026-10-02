@@ -13,6 +13,7 @@ type ItemFields = {
   "Tripo Status"?: string;
   "Model File URL"?: string;
   "Model STL URL"?: string;
+  Views?: string;
 };
 type LeadFields = {
   Email?: string;
@@ -21,6 +22,7 @@ type LeadFields = {
   "Tripo Status"?: string;
   "Model File URL"?: string;
   "Model STL URL"?: string;
+  Views?: string;
 };
 
 async function buildData() {
@@ -47,6 +49,7 @@ async function buildData() {
       tripoStatus: it.fields["Tripo Status"] ?? "Not started",
       modelUrl: it.fields["Model File URL"] ?? "",
       stlUrl: it.fields["Model STL URL"] ?? "",
+      views: it.fields["Views"] ?? "",
       purchased: true,
     }));
 
@@ -61,6 +64,7 @@ async function buildData() {
       tripoStatus: l.fields["Tripo Status"] ?? "Not started",
       modelUrl: l.fields["Model File URL"] ?? "",
       stlUrl: l.fields["Model STL URL"] ?? "",
+      views: l.fields["Views"] ?? "",
       purchased: false,
     }))
     .reverse();

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { generateOrbitViews, stripBase } from "@/lib/views";
+import { updateRecord } from "@/lib/airtable";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -19,11 +20,18 @@ async function checkAuth() {
 export async function POST(req: NextRequest) {
   if (!(await checkAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   try {
-    const { figureUrl } = await req.json();
+    const { figureUrl, table, id } = await req.json();
     if (!figureUrl) return NextResponse.json({ error: "Falta figureUrl" }, { status: 400 });
     // Quita la base -> perro limpio. Las vistas (y Tripo) usan ESE frente.
     const front = await stripBase(figureUrl).catch(() => figureUrl);
     const { left, back, right } = await generateOrbitViews(front);
+    // Persistir en Airtable (campo "Views") para que sobrevivan al refresh y se
+    // puedan ver siempre. Si el campo no existe aún, se ignora el error.
+    if (table && id) {
+      await updateRecord(table, id, { Views: JSON.stringify({ front, left, back, right }) }).catch((e) =>
+        console.error("[generate-views] no se pudo guardar Views (¿falta el campo en Airtable?):", (e as Error).message),
+      );
+    }
     return NextResponse.json({ ok: true, front, left, back, right });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
