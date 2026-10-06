@@ -246,9 +246,13 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (urls: string[], idx: 
               {downloadingKey === "previous" ? "Downloading…" : "⬇️ Previous version"}
             </button>
           )}
-          {!views && !loading && (
+          {!loading && (
             <button className={styles.modelLinkGhost} onClick={previewViews} disabled={viewsLoading || !card.figureUrl}>
-              {viewsLoading ? "Generating views… (~2-3 min)" : "👁️ Preview 3D views"}
+              {viewsLoading
+                ? "Generating views… (~2-3 min)"
+                : views
+                  ? "🔄 Regenerate reference photos"
+                  : "👁️ Preview 3D views"}
             </button>
           )}
           <button className={styles.produceBtn} onClick={produce} disabled={loading || !card.figureUrl}>
