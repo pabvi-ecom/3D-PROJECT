@@ -65,8 +65,11 @@ export type FalTask = {
 };
 
 export async function getTask(taskId: string): Promise<FalTask> {
-  const [tag, id] = taskId.includes(":") ? taskId.split(":") : ["single", taskId];
-  const model = tag === "mv" ? MODEL_MV : MODEL_SINGLE;
+  const id = taskId.includes(":") ? taskId.split(":")[1] : taskId;
+  // fal consulta estado/resultado por el APP BASE (fal-ai/hunyuan3d), no por la
+  // subruta usada al enviar (.../v2/multi-view). La subruta devolvia vacio
+  // ("Unexpected end of JSON input") -> el 3D se quedaba "Processing" eterno.
+  const model = "fal-ai/hunyuan3d";
 
   const sres = await fetch(`${BASE}/${model}/requests/${id}/status`, { headers: headers() });
   const sj = await sres.json();
