@@ -10,29 +10,13 @@ export type Card = {
   email: string;
   petName: string;
   figureUrl: string;
+  angledUrl?: string; // foto 3/4 sin base (cara+espalda+cola) -> la que se manda a Tripo y se ve en el dashboard
   tripoStatus: string;
   modelUrl: string;
   stlUrl: string;
-  views?: string; // JSON {front,left,back,right} persistido en Airtable
+  views?: string; // (legacy) JSON {front,left,back,right}
   purchased: boolean;
 };
-
-// Parsea el campo Views (JSON) a la lista del carrusel.
-function parseViews(raw?: string): { label: string; url: string }[] | null {
-  if (!raw) return null;
-  try {
-    const v = JSON.parse(raw) as { front?: string; left?: string; back?: string; right?: string };
-    const out = [
-      { label: "Front", url: v.front },
-      { label: "Left", url: v.left },
-      { label: "Back", url: v.back },
-      { label: "Right", url: v.right },
-    ].filter((x): x is { label: string; url: string } => !!x.url);
-    return out.length ? out : null;
-  } catch {
-    return null;
-  }
-}
 
 const STATUS_COLOR: Record<string, string> = {
   "Not started": "#86868B",
@@ -50,33 +34,30 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (urls: string[], idx: 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [downloadingKey, setDownloadingKey] = useState<string | null>(null);
-  // Vistas 4-ángulos para revisar antes de enviar a Tripo. Se inicializan con
-  // las persistidas en Airtable (si las hay) para verlas siempre sin regenerar.
-  const [views, setViews] = useState<{ label: string; url: string }[] | null>(() => parseViews(card.views));
+  // Foto 3/4 SIN base (cara+espalda+cola). Es la que se ve en el dashboard y la
+  // que se manda a Tripo. Si no existe, se genera automaticamente al abrir.
+  const [angled, setAngled] = useState<string>(card.angledUrl ?? "");
+  const [angledLoading, setAngledLoading] = useState(false);
   const [viewIdx, setViewIdx] = useState(0);
-  const [viewsLoading, setViewsLoading] = useState(false);
+  const angledTriedRef = useRef(false);
 
-  async function previewViews() {
-    setViewsLoading(true);
+  async function genAngled() {
+    setAngledLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/admin/generate-views", {
+      const res = await fetch("/api/admin/generate-angled", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ figureUrl: card.figureUrl, table: card.table, id: card.id }),
+        body: JSON.stringify({ table: card.table, id: card.id }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Failed");
-      const v = [{ label: "Front", url: json.front ?? card.figureUrl }];
-      if (json.left) v.push({ label: "Left", url: json.left });
-      if (json.back) v.push({ label: "Back", url: json.back });
-      if (json.right) v.push({ label: "Right", url: json.right });
-      setViews(v);
+      setAngled(json.angledUrl);
       setViewIdx(0);
     } catch (e) {
       setError((e as Error).message);
     } finally {
-      setViewsLoading(false);
+      setAngledLoading(false);
     }
   }
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -87,6 +68,11 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (urls: string[], idx: 
     if (status === "Processing") {
       setLoading(true);
       pollStatus();
+    }
+    // Genera la foto 3/4 sola (una vez) si hay figura y aun no existe.
+    if (card.figureUrl && !card.angledUrl && !angledTriedRef.current) {
+      angledTriedRef.current = true;
+      genAngled();
     }
     return () => {
       if (pollRef.current) clearInterval(pollRef.current);
@@ -170,19 +156,12 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (urls: string[], idx: 
       setStlUrl("");
     }
     try {
-      // Si ya generamos vistas para revisar, se mandan para no regenerarlas.
-      const viewsPayload = views
-        ? {
-            front: views.find((v) => v.label === "Front")?.url ?? null,
-            left: views.find((v) => v.label === "Left")?.url ?? null,
-            back: views.find((v) => v.label === "Back")?.url ?? null,
-            right: views.find((v) => v.label === "Right")?.url ?? null,
-          }
-        : undefined;
+      // produce-3d usa la foto 3/4 sin base (la genera si falta) y la manda a
+      // Tripo single-image. No hace falta pasarle nada mas.
       const res = await fetch("/api/admin/produce-3d", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ table: card.table, id: card.id, views: viewsPayload }),
+        body: JSON.stringify({ table: card.table, id: card.id }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Failed");
@@ -196,10 +175,14 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (urls: string[], idx: 
     }
   }
 
-  // Carrusel: la imagen que PIDIÓ el cliente (con base + nombre) primero, luego
-  // las vistas sin base que van al 3D. Lo que se manda a fal usa el estado
-  // `views` (sin base); este array es solo para ver en el dashboard.
-  const carousel = views && views.length ? [{ label: "Ordered (with base/name)", url: card.figureUrl }, ...views] : null;
+  // Carrusel dashboard: primero la foto 3/4 SIN base (la que se manda a Tripo),
+  // luego la que pidió el cliente (frente con base/nombre, solo referencia).
+  const carousel = angled
+    ? [
+        { label: "3/4 (to Tripo)", url: angled },
+        { label: "Ordered (client)", url: card.figureUrl },
+      ]
+    : null;
 
   return (
     <div className={styles.itemCard}>
@@ -252,16 +235,12 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (urls: string[], idx: 
             </button>
           )}
           {!loading && (
-            <button className={styles.modelLinkGhost} onClick={previewViews} disabled={viewsLoading || !card.figureUrl}>
-              {viewsLoading
-                ? "Generating views… (~2-3 min)"
-                : views
-                  ? "🔄 Regenerate reference photos"
-                  : "👁️ Preview 3D views"}
+            <button className={styles.modelLinkGhost} onClick={genAngled} disabled={angledLoading || !card.figureUrl}>
+              {angledLoading ? "Generando foto 3/4… (~2 min)" : angled ? "🔄 Regenerar foto 3/4" : "📸 Generar foto 3/4"}
             </button>
           )}
-          <button className={styles.produceBtn} onClick={produce} disabled={loading || !card.figureUrl}>
-            {loading ? "Generating… (can take a few min)" : modelUrl || prevModelUrl ? "🔁 Regenerate" : views ? "🧊 Produce 3D (use these views)" : "🧊 Produce 3D model"}
+          <button className={styles.produceBtn} onClick={produce} disabled={loading || angledLoading || !card.figureUrl}>
+            {loading ? "Generating… (can take a few min)" : modelUrl || prevModelUrl ? "🔁 Regenerate" : "🧊 Produce 3D model"}
           </button>
           <button
             className={styles.modelLinkGhost}

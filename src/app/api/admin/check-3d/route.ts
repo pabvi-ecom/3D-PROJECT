@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getRecord, updateRecord } from "@/lib/airtable";
-import { getTask } from "@/lib/fal";
+import { getTask } from "@/lib/tripo";
 import { processModel } from "@/lib/model-store";
 
 export const runtime = "nodejs";
@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
     }
     if (task.status === "failed" || task.status === "cancelled") {
       await updateRecord(table, id, { "Tripo Status": "Failed" });
-      return NextResponse.json({ status: "Failed", error: task.error });
+      return NextResponse.json({ status: "Failed" });
     }
     return NextResponse.json({ status: "Processing" });
   } catch (e) {

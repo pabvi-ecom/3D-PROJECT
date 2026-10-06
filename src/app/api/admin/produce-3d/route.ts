@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getRecord, updateRecord } from "@/lib/airtable";
-import { createTexturedModelTask } from "@/lib/fal";
+import { createImageToModelTask } from "@/lib/tripo";
+import { generateAngled } from "@/lib/views";
 
 export const runtime = "nodejs";
 // Genera 3 vistas extra (nano-banana, ~100s c/u en paralelo) antes de lanzar
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
   if (!(await checkAuth())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   try {
-    const { table, id, views } = await req.json();
+    const { table, id } = await req.json();
     if (table !== "Leads" && table !== "OrderItems") {
       return NextResponse.json({ error: "Invalid table" }, { status: 400 });
     }
@@ -36,15 +37,21 @@ export async function POST(req: NextRequest) {
     const figureUrl = record.fields["Figure Image URL"] as string | undefined;
     if (!figureUrl) return NextResponse.json({ error: "No figure image on this record" }, { status: 400 });
 
-    // Se manda la imagen CON base + nombre como UNA sola imagen (single) a fal
-    // Hunyuan3D v2 con textura. El modelo single reconstruye la imagen entera
-    // -> incluye base + nombre + color (como hacia Tripo). El multiview tiraba
-    // la base, por eso se usa single aqui.
-    const taskId = await createTexturedModelTask({ front: figureUrl });
+    // A Tripo se le manda la foto 3/4 SIN base (cara + espalda + cola). La base
+    // y el nombre se montan luego en Blender (plantilla fija). Si aun no existe
+    // la ladeada, se genera aqui y se guarda.
+    let angledUrl = record.fields["Angled Image URL"] as string | undefined;
+    if (!angledUrl) {
+      angledUrl = await generateAngled(figureUrl);
+      await updateRecord(table, id, { "Angled Image URL": angledUrl });
+    }
+
+    // Tripo single-image, maxima calidad (P2 Ultra, textura 8K, extreme).
+    const taskId = await createImageToModelTask(angledUrl);
 
     await updateRecord(table, id, { "Tripo Task ID": taskId, "Tripo Status": "Processing", "Model File URL": "" });
 
-    return NextResponse.json({ ok: true, taskId, mode: "single-textured-with-base" });
+    return NextResponse.json({ ok: true, taskId, mode: "tripo-single-maxq" });
   } catch (e) {
     console.error("[/api/admin/produce-3d]", (e as Error).message);
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });

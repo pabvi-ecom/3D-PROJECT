@@ -21,6 +21,9 @@ const BASE_RULES =
   "CRITICAL — COPY THE EXACT MOUTH AND TONGUE STATE FROM THE REFERENCE IMAGE and keep it identical in THIS view: if the mouth " +
   "is CLOSED in the reference, it stays CLOSED here (do NOT add or stick out a tongue); if the tongue is out, it stays out. " +
   "NEVER change the mouth, tongue or facial expression between views — it must match the reference exactly. " +
+  "MUZZLE / SNOUT LENGTH: give the dog a PROPER FULL-LENGTH snout, the natural long muzzle this breed and size of dog really " +
+  "has. Do NOT shorten, flatten, squash or pug-ify the muzzle; it is NOT a short-faced/brachycephalic dog. If anything the " +
+  "snout in the reference looks too short, so render it a touch LONGER — a normal elongated dog muzzle — never shorter. " +
   "CRITICAL: any ASYMMETRIC / one-sided feature (a tail curled to one side, one ear flopped differently, a marking on only " +
   "one side) exists on only ONE physical side — keep it on that SAME side, do NOT duplicate it on both sides or flip it. " +
   "The ONLY change is the camera orbits around the SAME physical object to this new angle: ";
@@ -51,6 +54,32 @@ export async function stripBase(figureUrl: string): Promise<string> {
       "noise. Keep the mouth and tongue exactly as shown (if the tongue is out, keep it out). " +
       "Show just the pet, nothing under it, floating cleanly on a pure plain WHITE seamless background with BRIGHT FLAT " +
       "EVEN lighting (well lit, vivid colors, NOT dark) and absolutely NO shadow. No base, no ground, no platform, no text.",
+  );
+}
+
+/**
+ * Genera UNA foto del perro "ladeada" (3/4) y SIN base, para mandar a Tripo
+ * single-image. Al estar girada ~35° se ve a la vez la cara, un costado
+ * completo, la espalda y la cola -> Tripo no se inventa el culo. Esta imagen
+ * es la que se muestra en el dashboard (postproducción); al cliente se le
+ * sigue enseñando el frente con base.
+ */
+export async function generateAngled(figureUrl: string): Promise<string> {
+  return generateKie(
+    figureUrl,
+    "Show the SAME individual pet from this reference, turned about 35 degrees to a THREE-QUARTER view (camera to the " +
+      "front-side) so that its face, one FULL side of the body, the back and the tail are all visible at once. " +
+      "Remove any display base / pedestal / plinth and any engraved name or nameplate text COMPLETELY — show ONLY the pet, " +
+      "nothing under it. Keep the exact same sitting pose, body, proportions, fur colors and markings, and any worn accessory " +
+      "(bandana, harness, collar). " +
+      "ABSOLUTE RULE: same species (a DOG, NEVER a cat or other animal), same breed, same exact colors and markings. " +
+      "MUZZLE / SNOUT: keep a proper FULL-LENGTH long muzzle — do NOT shorten, flatten or pug-ify it; if anything make it a " +
+      "touch longer, a normal elongated dog snout. " +
+      "COPY the exact mouth and tongue state from the reference (closed stays closed, tongue out stays out). " +
+      "Render as a SMOOTH PAINTED RESIN COLLECTIBLE FIGURINE: clean smooth sculpted surfaces, crisp defined forms (ears, paws, " +
+      "muzzle, tail well defined), vivid true-to-life colors — NOT a real animal, NO loose/photographic fur, NO noise. " +
+      "Float the pet cleanly on a pure plain WHITE seamless background with BRIGHT FLAT EVEN lighting (well lit, vivid colors, " +
+      "NOT dark) and absolutely NO shadow. No base, no ground, no platform, no text.",
   );
 }
 
