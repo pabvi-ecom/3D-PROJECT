@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getRecord, updateRecord } from "@/lib/airtable";
 import { createTexturedModelTask } from "@/lib/fal";
-import { stripBase } from "@/lib/views";
 
 export const runtime = "nodejs";
 // Genera 3 vistas extra (nano-banana, ~100s c/u en paralelo) antes de lanzar
@@ -37,25 +36,15 @@ export async function POST(req: NextRequest) {
     const figureUrl = record.fields["Figure Image URL"] as string | undefined;
     if (!figureUrl) return NextResponse.json({ error: "No figure image on this record" }, { status: 400 });
 
-    // Si el dashboard ya mandó las vistas revisadas, se usan tal cual. Si no,
-    // se generan aquí (izq/atrás/der) desde el frente para dar a Tripo 4
-    // ángulos — así NO se inventa la espalda. Si fallan todas, cae a 1 imagen.
-    // El frente que va a Tripo es el perro SIN base (base + nombre se añaden
-    // luego en Blender). Si el dashboard ya mandó las vistas revisadas, se usan.
-    // fal Hunyuan3D v2 multi-view (front/back/left) CON textura -> forma
-    // multivista Y color. El perro va SIN base (base + nombre en Blender).
-    let front: string, back: string | undefined, left: string | undefined;
-    if (views && views.front) {
-      front = views.front; back = views.back ?? undefined; left = views.left ?? undefined;
-    } else {
-      front = await stripBase(figureUrl).catch(() => figureUrl); // sin base (fal la quita igual)
-    }
-
-    const taskId = await createTexturedModelTask({ front, back, left });
+    // Se manda la imagen CON base + nombre como UNA sola imagen (single) a fal
+    // Hunyuan3D v2 con textura. El modelo single reconstruye la imagen entera
+    // -> incluye base + nombre + color (como hacia Tripo). El multiview tiraba
+    // la base, por eso se usa single aqui.
+    const taskId = await createTexturedModelTask({ front: figureUrl });
 
     await updateRecord(table, id, { "Tripo Task ID": taskId, "Tripo Status": "Processing", "Model File URL": "" });
 
-    return NextResponse.json({ ok: true, taskId, mode: back && left ? "multiview-textured" : "single-textured" });
+    return NextResponse.json({ ok: true, taskId, mode: "single-textured-with-base" });
   } catch (e) {
     console.error("[/api/admin/produce-3d]", (e as Error).message);
     return NextResponse.json({ error: (e as Error).message }, { status: 500 });
