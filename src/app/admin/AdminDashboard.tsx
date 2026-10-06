@@ -196,18 +196,23 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (urls: string[], idx: 
     }
   }
 
+  // Carrusel: la imagen que PIDIÓ el cliente (con base + nombre) primero, luego
+  // las vistas sin base que van al 3D. Lo que se manda a fal usa el estado
+  // `views` (sin base); este array es solo para ver en el dashboard.
+  const carousel = views && views.length ? [{ label: "Ordered (with base/name)", url: card.figureUrl }, ...views] : null;
+
   return (
     <div className={styles.itemCard}>
       <div className={styles.itemStage}>
-        {views && views.length ? (
+        {carousel ? (
           <>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={views[viewIdx].url} alt={views[viewIdx].label} className={styles.zoomable} onClick={() => onZoom(views.map((v) => v.url), viewIdx)} />
-            <span className={styles.viewLabel}>{views[viewIdx].label} · {viewIdx + 1}/{views.length} → Tripo</span>
-            {views.length > 1 && (
+            <img src={carousel[viewIdx].url} alt={carousel[viewIdx].label} className={styles.zoomable} onClick={() => onZoom(carousel.map((v) => v.url), viewIdx)} />
+            <span className={styles.viewLabel}>{carousel[viewIdx].label} · {viewIdx + 1}/{carousel.length}</span>
+            {carousel.length > 1 && (
               <>
-                <button className={`${styles.viewNav} ${styles.viewNavL}`} onClick={() => setViewIdx((i) => (i - 1 + views.length) % views.length)}>‹</button>
-                <button className={`${styles.viewNav} ${styles.viewNavR}`} onClick={() => setViewIdx((i) => (i + 1) % views.length)}>›</button>
+                <button className={`${styles.viewNav} ${styles.viewNavL}`} onClick={() => setViewIdx((i) => (i - 1 + carousel.length) % carousel.length)}>‹</button>
+                <button className={`${styles.viewNav} ${styles.viewNavR}`} onClick={() => setViewIdx((i) => (i + 1) % carousel.length)}>›</button>
               </>
             )}
           </>
