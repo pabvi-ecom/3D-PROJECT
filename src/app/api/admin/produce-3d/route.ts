@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getRecord, updateRecord } from "@/lib/airtable";
 import { createTexturedModelTask } from "@/lib/fal";
+import { stripBase } from "@/lib/views";
 
 export const runtime = "nodejs";
 // Genera 3 vistas extra (nano-banana, ~100s c/u en paralelo) antes de lanzar
@@ -47,7 +48,7 @@ export async function POST(req: NextRequest) {
     if (views && views.front) {
       front = views.front; back = views.back ?? undefined; left = views.left ?? undefined;
     } else {
-      front = figureUrl; // CON base
+      front = await stripBase(figureUrl).catch(() => figureUrl); // sin base (fal la quita igual)
     }
 
     const taskId = await createTexturedModelTask({ front, back, left });

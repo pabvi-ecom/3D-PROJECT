@@ -15,9 +15,9 @@ const BASE_RULES =
   "ABSOLUTE RULE: this is the SAME INDIVIDUAL DOG as in the reference image — keep the exact same species (a DOG, NEVER a cat " +
   "or any other animal), the same breed, the same exact fur colors and markings, and the same collar/accessory. Do NOT change " +
   "the animal into a different species or breed under any circumstance. " +
-  "Keep the EXACT same figurine INCLUDING its display base/pedestal and any engraved name — do NOT remove the base, do NOT " +
-  "remove the name; the base stays under the pet in every view (seen from this new angle). Same size and vertical position, " +
-  "centered on a pure plain WHITE seamless background with BRIGHT FLAT EVEN lighting (well lit, vivid true colors, NOT dark) and NO shadows. " +
+  "Keep the EXACT same pet figurine (same size and vertical position), WITHOUT any display base/pedestal and without any name " +
+  "text — just the pet alone, floating cleanly, centered on a pure plain WHITE seamless background with BRIGHT FLAT EVEN " +
+  "lighting (well lit, vivid true colors, NOT dark) and NO shadows. " +
   "CRITICAL — COPY THE EXACT MOUTH AND TONGUE STATE FROM THE REFERENCE IMAGE and keep it identical in THIS view: if the mouth " +
   "is CLOSED in the reference, it stays CLOSED here (do NOT add or stick out a tongue); if the tongue is out, it stays out. " +
   "NEVER change the mouth, tongue or facial expression between views — it must match the reference exactly. " +
@@ -26,9 +26,9 @@ const BASE_RULES =
   "The ONLY change is the camera orbits around the SAME physical object to this new angle: ";
 
 const DESC: Record<"left" | "back" | "right", string> = {
-  left: "a true LEFT side profile (camera rotated 90° to the pet's left), showing the full body length from the side, with the base under it.",
-  back: "directly BEHIND the figurine (rotated 180° from the front), showing the back of the head, the back, the tail and the back of the base.",
-  right: "a true RIGHT side profile (camera rotated 90° to the pet's right), showing the full body length from the side, with the base under it.",
+  left: "a true LEFT side profile (camera rotated 90° to the pet's left), showing the full body length from the side.",
+  back: "directly BEHIND the figurine (rotated 180° from the front), showing the back of the head, the back and the tail.",
+  right: "a true RIGHT side profile (camera rotated 90° to the pet's right), showing the full body length from the side.",
 };
 
 export async function generateView(refUrl: string, view: "left" | "back" | "right"): Promise<string> {
