@@ -8,10 +8,17 @@
 import { generateFigurine as generateKie } from "@/lib/kie";
 
 const BASE_RULES =
-  "This is a studio product photo of ONE single finished, rigid physical figurine (a pet sculpture). " +
-  "It is a fixed solid object that CANNOT change shape, pose, proportions, colors or markings. Do NOT re-sculpt, re-pose, recolor or re-imagine it. " +
-  "Keep the EXACT same figurine, same size and vertical position, centered on a pure plain WHITE seamless background with FLAT EVEN lighting and NO shadows. " +
-  "CRITICAL: any ASYMMETRIC / one-sided feature of the real pet (a tail curled to one side, one ear flopped differently, a marking on only one side) exists on only ONE physical side — keep it on that SAME side and do NOT duplicate it on both sides or flip it between views. " +
+  "This is a studio product photo of ONE single finished, rigid, SMOOTH PAINTED RESIN COLLECTIBLE FIGURINE of a pet " +
+  "(a solid sculpted object with smooth clean surfaces and crisp defined forms — NOT a real living animal, NO loose fur, " +
+  "no photographic fur noise). It is a fixed solid object that CANNOT change shape, pose, proportions, colors or markings. " +
+  "Do NOT re-sculpt, re-pose, recolor or re-imagine it. " +
+  "Keep the EXACT same figurine, same size and vertical position, centered on a pure plain WHITE seamless background with " +
+  "BRIGHT FLAT EVEN lighting (well lit, vivid true colors, NOT dark) and NO shadows. " +
+  "CRITICAL — keep the MOUTH and TONGUE EXACTLY the same as the figurine in EVERY view: if the tongue is sticking out, it " +
+  "stays sticking out at this angle too; if the mouth is open it stays open; NEVER close an open mouth, hide a tongue or " +
+  "change the facial expression between views. " +
+  "CRITICAL: any ASYMMETRIC / one-sided feature (a tail curled to one side, one ear flopped differently, a marking on only " +
+  "one side) exists on only ONE physical side — keep it on that SAME side, do NOT duplicate it on both sides or flip it. " +
   "The ONLY change is the camera orbits around the SAME physical object to this new angle: ";
 
 const DESC: Record<"left" | "back" | "right", string> = {
@@ -32,11 +39,14 @@ export async function generateView(refUrl: string, view: "left" | "back" | "righ
 export async function stripBase(figureUrl: string): Promise<string> {
   return generateKie(
     figureUrl,
-    "This is a photo of a pet figurine standing on a display base. Remove the display base / pedestal / plinth " +
-      "COMPLETELY, and remove any engraved name or nameplate text. Keep ONLY the pet itself, exactly the same — " +
-      "same pose, same body, same fur colors and markings, and any worn accessory (bandana, harness, collar) stays. " +
-      "Show just the pet, with nothing under it, floating cleanly on a pure plain WHITE seamless background with " +
-      "FLAT EVEN lighting and absolutely NO shadow. No base, no ground, no platform, no text anywhere.",
+    "This is a photo of a pet figurine on a display base. Remove the display base / pedestal / plinth COMPLETELY, and " +
+      "remove any engraved name or nameplate text. Keep ONLY the pet itself, exactly the same pose, body, colors and " +
+      "markings, and any worn accessory (bandana, harness, collar) stays. " +
+      "Render the pet as a SMOOTH PAINTED RESIN COLLECTIBLE FIGURINE: clean smooth sculpted surfaces, crisp defined forms " +
+      "(ears, paws, muzzle well defined), vivid true-to-life colors — NOT a real animal, NO loose/photographic fur, NO " +
+      "noise. Keep the mouth and tongue exactly as shown (if the tongue is out, keep it out). " +
+      "Show just the pet, nothing under it, floating cleanly on a pure plain WHITE seamless background with BRIGHT FLAT " +
+      "EVEN lighting (well lit, vivid colors, NOT dark) and absolutely NO shadow. No base, no ground, no platform, no text.",
   );
 }
 
