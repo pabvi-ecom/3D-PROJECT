@@ -30,7 +30,9 @@ export async function POST(req: NextRequest) {
     if (!figureUrl) return NextResponse.json({ error: "No figure image on this record" }, { status: 400 });
 
     const angledUrl = await generateAngled(figureUrl);
-    await updateRecord(table, id, { "Angled Image URL": angledUrl });
+    // Se guarda en el campo "Views" (reutilizado) para no necesitar crear un
+    // campo nuevo en Airtable (el token es solo de datos, no de esquema).
+    await updateRecord(table, id, { Views: angledUrl });
     return NextResponse.json({ ok: true, angledUrl });
   } catch (e) {
     console.error("[/api/admin/generate-angled]", (e as Error).message);

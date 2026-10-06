@@ -10,7 +10,6 @@ type ItemFields = {
   "Pet Name"?: string;
   Order?: string[];
   "Figure Image URL"?: string;
-  "Angled Image URL"?: string;
   "Tripo Status"?: string;
   "Model File URL"?: string;
   "Model STL URL"?: string;
@@ -20,7 +19,6 @@ type LeadFields = {
   Email?: string;
   "Pet Name"?: string;
   "Figure Image URL"?: string;
-  "Angled Image URL"?: string;
   "Tripo Status"?: string;
   "Model File URL"?: string;
   "Model STL URL"?: string;
@@ -48,7 +46,7 @@ async function buildData() {
       email: it.fields.Order?.[0] ? orderEmailById.get(it.fields.Order[0]) ?? "" : "",
       petName: it.fields["Pet Name"] ?? "",
       figureUrl: it.fields["Figure Image URL"] ?? "",
-      angledUrl: it.fields["Angled Image URL"] ?? "",
+      angledUrl: it.fields["Views"]?.startsWith("http") ? it.fields["Views"] : "",
       tripoStatus: it.fields["Tripo Status"] ?? "Not started",
       modelUrl: it.fields["Model File URL"] ?? "",
       stlUrl: it.fields["Model STL URL"] ?? "",
@@ -64,7 +62,7 @@ async function buildData() {
       email: l.fields.Email ?? "",
       petName: l.fields["Pet Name"] ?? "",
       figureUrl: l.fields["Figure Image URL"] ?? "",
-      angledUrl: l.fields["Angled Image URL"] ?? "",
+      angledUrl: l.fields["Views"]?.startsWith("http") ? l.fields["Views"] : "",
       tripoStatus: l.fields["Tripo Status"] ?? "Not started",
       modelUrl: l.fields["Model File URL"] ?? "",
       stlUrl: l.fields["Model STL URL"] ?? "",

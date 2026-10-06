@@ -40,10 +40,13 @@ export async function POST(req: NextRequest) {
     // A Tripo se le manda la foto 3/4 SIN base (cara + espalda + cola). La base
     // y el nombre se montan luego en Blender (plantilla fija). Si aun no existe
     // la ladeada, se genera aqui y se guarda.
-    let angledUrl = record.fields["Angled Image URL"] as string | undefined;
+    // La ladeada se guarda en el campo "Views" (reutilizado). Solo vale si es
+    // una URL http (registros viejos tenian JSON ahi -> se ignora y regenera).
+    const stored = record.fields["Views"] as string | undefined;
+    let angledUrl = stored && stored.startsWith("http") ? stored : undefined;
     if (!angledUrl) {
       angledUrl = await generateAngled(figureUrl);
-      await updateRecord(table, id, { "Angled Image URL": angledUrl });
+      await updateRecord(table, id, { Views: angledUrl });
     }
 
     // Tripo single-image, maxima calidad (P2 Ultra, textura 8K, extreme).
