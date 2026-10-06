@@ -12,6 +12,9 @@ const BASE_RULES =
   "(a solid sculpted object with smooth clean surfaces and crisp defined forms — NOT a real living animal, NO loose fur, " +
   "no photographic fur noise). It is a fixed solid object that CANNOT change shape, pose, proportions, colors or markings. " +
   "Do NOT re-sculpt, re-pose, recolor or re-imagine it. " +
+  "ABSOLUTE RULE: this is the SAME INDIVIDUAL DOG as in the reference image — keep the exact same species (a DOG, NEVER a cat " +
+  "or any other animal), the same breed, the same exact fur colors and markings, and the same collar/accessory. Do NOT change " +
+  "the animal into a different species or breed under any circumstance. " +
   "Keep the EXACT same figurine, same size and vertical position, centered on a pure plain WHITE seamless background with " +
   "BRIGHT FLAT EVEN lighting (well lit, vivid true colors, NOT dark) and NO shadows. " +
   "CRITICAL — keep the MOUTH and TONGUE EXACTLY the same as the figurine in EVERY view: if the tongue is sticking out, it " +
@@ -59,8 +62,14 @@ export async function generateOrbitViews(frontUrl: string): Promise<{
   back: string | null;
   right: string | null;
 }> {
-  const left = await generateView(frontUrl, "left").catch(() => null);
-  const back = await generateView(left ?? frontUrl, "back").catch(() => null);
-  const right = await generateView(back ?? frontUrl, "right").catch(() => null);
+  // Cada vista se genera ANCLADA AL FRENTE (el perro real conocido), NO en
+  // cadena: encadenar propagaba errores catastroficos (una vista salio gato y
+  // contaminaba las siguientes). Partir siempre del frente evita el cambio de
+  // especie. En paralelo para ir mas rapido.
+  const [left, back, right] = await Promise.all([
+    generateView(frontUrl, "left").catch(() => null),
+    generateView(frontUrl, "back").catch(() => null),
+    generateView(frontUrl, "right").catch(() => null),
+  ]);
   return { left, back, right };
 }
