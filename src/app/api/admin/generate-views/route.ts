@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { generateOrbitViews, stripBase } from "@/lib/views";
+import { generateOrbitViews } from "@/lib/views";
 import { updateRecord } from "@/lib/airtable";
 
 export const runtime = "nodejs";
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const { figureUrl, table, id } = await req.json();
     if (!figureUrl) return NextResponse.json({ error: "Falta figureUrl" }, { status: 400 });
     // Quita la base -> perro limpio. Las vistas (y Tripo) usan ESE frente.
-    const front = await stripBase(figureUrl).catch(() => figureUrl);
+    const front = figureUrl; // CON base: las vistas mantienen base + nombre
     const { left, back, right } = await generateOrbitViews(front);
     // Persistir en Airtable (campo "Views") para que sobrevivan al refresh y se
     // puedan ver siempre. Si el campo no existe aún, se ignora el error.
