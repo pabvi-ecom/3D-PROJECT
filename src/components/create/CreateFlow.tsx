@@ -351,11 +351,17 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       // quede sin mostrar (antes se perdía, p. ej. faltaba el realista).
       const genStyle = async (sid: string): Promise<readonly [string, string]> => {
         const body = { imageBase64: dataUri, extraImages, poseId: poses[0].id, baseId: NO_BASE_ID, notes: notes.trim() || undefined, styleId: sid };
-        try {
-          return [sid, await postGenerate(body)] as const;
-        } catch {
-          return [sid, await postGenerate(body)] as const; // 2º intento
+        // Hasta 3 intentos: nano-banana a veces tumba un estilo suelto (filtro
+        // de seguridad / timeout). Con 3 casi nunca se queda sin mostrar.
+        let lastErr: unknown;
+        for (let i = 0; i < 3; i++) {
+          try {
+            return [sid, await postGenerate(body)] as const;
+          } catch (e) {
+            lastErr = e;
+          }
         }
+        throw lastErr;
       };
       const settled = await Promise.allSettled(
         figureStyles.map((s) =>
