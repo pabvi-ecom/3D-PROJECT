@@ -46,3 +46,5 @@ next-env.d.ts
 *.stl
 ChatGPT Image*.png
 public/examples/ChatGPT Image*.png
+
+work/
