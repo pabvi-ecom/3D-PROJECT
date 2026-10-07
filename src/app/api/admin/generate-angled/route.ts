@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getRecord, updateRecord } from "@/lib/airtable";
+import { getRecord } from "@/lib/airtable";
 import { generateAngled } from "@/lib/views";
+import { mergeImgRefs } from "@/lib/produce";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -30,9 +31,7 @@ export async function POST(req: NextRequest) {
     if (!figureUrl) return NextResponse.json({ error: "No figure image on this record" }, { status: 400 });
 
     const angledUrl = await generateAngled(figureUrl);
-    // Se guarda en el campo "Views" (reutilizado) para no necesitar crear un
-    // campo nuevo en Airtable (el token es solo de datos, no de esquema).
-    await updateRecord(table, id, { Views: angledUrl });
+    await mergeImgRefs(table, id, { angled: angledUrl });
     return NextResponse.json({ ok: true, angledUrl });
   } catch (e) {
     console.error("[/api/admin/generate-angled]", (e as Error).message);

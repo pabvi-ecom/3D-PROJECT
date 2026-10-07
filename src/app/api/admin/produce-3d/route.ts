@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { getRecord, updateRecord } from "@/lib/airtable";
-import { createImageToModelTask } from "@/lib/tripo";
-import { generateAngled } from "@/lib/views";
+import { launchTripo } from "@/lib/produce";
 
 export const runtime = "nodejs";
 // Genera 3 vistas extra (nano-banana, ~100s c/u en paralelo) antes de lanzar
@@ -33,27 +31,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid table" }, { status: 400 });
     }
 
-    const record = await getRecord(table, id);
-    const figureUrl = record.fields["Figure Image URL"] as string | undefined;
-    if (!figureUrl) return NextResponse.json({ error: "No figure image on this record" }, { status: 400 });
-
-    // A Tripo se le manda la foto 3/4 SIN base (cara + espalda + cola). La base
-    // y el nombre se montan luego en Blender (plantilla fija). Si aun no existe
-    // la ladeada, se genera aqui y se guarda.
-    // La ladeada se guarda en el campo "Views" (reutilizado). Solo vale si es
-    // una URL http (registros viejos tenian JSON ahi -> se ignora y regenera).
-    const stored = record.fields["Views"] as string | undefined;
-    let angledUrl = stored && stored.startsWith("http") ? stored : undefined;
-    if (!angledUrl) {
-      angledUrl = await generateAngled(figureUrl);
-      await updateRecord(table, id, { Views: angledUrl });
-    }
-
-    // Tripo single-image, maxima calidad (P2 Ultra, textura 8K, extreme).
-    const taskId = await createImageToModelTask(angledUrl);
-
-    await updateRecord(table, id, { "Tripo Task ID": taskId, "Tripo Status": "Processing", "Model File URL": "" });
-
+    const taskId = await launchTripo(table, id);
     return NextResponse.json({ ok: true, taskId, mode: "tripo-single-maxq" });
   } catch (e) {
     console.error("[/api/admin/produce-3d]", (e as Error).message);

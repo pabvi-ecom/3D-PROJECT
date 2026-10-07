@@ -224,7 +224,10 @@ export async function POST(req: NextRequest) {
         throw e;
       }
     }
-    return NextResponse.json({ url });
+    // `src` es la foto ORIGINAL del cliente (URL subida) — se devuelve para
+    // guardarla y poder verificar el parecido en el dashboard.
+    const originalUrl = typeof src === "string" && src.startsWith("http") ? src : undefined;
+    return NextResponse.json({ url, originalUrl });
   } catch (e) {
     // Log técnico para depurar en Vercel; al cliente solo un mensaje corto y amable.
     const msg = (e as Error).message;

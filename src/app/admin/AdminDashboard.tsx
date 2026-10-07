@@ -11,6 +11,11 @@ export type Card = {
   petName: string;
   figureUrl: string;
   angledUrl?: string; // foto 3/4 sin base (cara+espalda+cola) -> la que se manda a Tripo y se ve en el dashboard
+  originalUrl?: string; // foto REAL que subió el cliente (para verificar parecido)
+  createdAt?: string; // ISO de creación del registro
+  base?: boolean | null; // eligió base
+  name?: boolean | null; // eligió nombre grabado
+  accessory?: string; // etiqueta accesorio o "none"/""
   tripoStatus: string;
   modelUrl: string;
   stlUrl: string;
@@ -175,14 +180,15 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (urls: string[], idx: 
     }
   }
 
-  // Carrusel dashboard: primero la foto 3/4 SIN base (la que se manda a Tripo),
-  // luego la que pidió el cliente (frente con base/nombre, solo referencia).
-  const carousel = angled
-    ? [
-        { label: "3/4 (to Tripo)", url: angled },
-        { label: "Ordered (client)", url: card.figureUrl },
-      ]
-    : null;
+  // Carrusel dashboard: foto REAL del cliente (para verificar parecido),
+  // luego la 3/4 SIN base (la que va a Tripo), luego la que pidió el cliente.
+  const carousel = (() => {
+    const out: { label: string; url: string }[] = [];
+    if (card.originalUrl) out.push({ label: "Real (client photo)", url: card.originalUrl });
+    if (angled) out.push({ label: "3/4 (to Tripo)", url: angled });
+    if (card.figureUrl) out.push({ label: "Ordered (client)", url: card.figureUrl });
+    return out.length > 1 ? out : null;
+  })();
 
   return (
     <div className={styles.itemCard}>
@@ -214,6 +220,37 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (urls: string[], idx: 
       <div className={styles.itemBody}>
         <b>{card.petName || "—"}</b>
         <span className={styles.sub}>{card.email}</span>
+        {card.createdAt && (
+          <span className={styles.sub}>
+            {new Date(card.createdAt).toLocaleString("es-ES", {
+              day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit",
+            })}
+          </span>
+        )}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 4, margin: "2px 0" }}>
+          {(() => {
+            const chip = (ok: boolean, text: string) => (
+              <span
+                key={text}
+                style={{
+                  fontSize: 11, padding: "2px 7px", borderRadius: 999,
+                  background: ok ? "#E6F4EA" : "#F1F1F3", color: ok ? "#137333" : "#86868B",
+                  border: `1px solid ${ok ? "#CDEAD5" : "#E2E2E6"}`,
+                }}
+              >
+                {text}
+              </span>
+            );
+            const acc = card.accessory && card.accessory !== "none" ? card.accessory : "";
+            return (
+              <>
+                {card.base != null && chip(card.base, card.base ? "Base" : "Sin base")}
+                {card.name != null && chip(card.name, card.name ? "Nombre" : "Sin nombre")}
+                {chip(!!acc, acc ? `Accesorio: ${acc}` : "Sin accesorio")}
+              </>
+            );
+          })()}
+        </div>
         <span className={styles.badge} style={{ background: STATUS_COLOR[status] ?? "#86868B" }}>
           {status}
         </span>

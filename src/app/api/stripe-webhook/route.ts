@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { updateRecord, getRecord } from "@/lib/airtable";
-import { createTexturedModelTask } from "@/lib/fal";
+import { launchTripo } from "@/lib/produce";
 
 export const runtime = "nodejs";
 
@@ -26,10 +26,12 @@ async function fulfill(session: Stripe.Checkout.Session) {
   for (const itemId of itemIds) {
     try {
       const item = await getRecord("OrderItems", itemId);
-      const figureUrl = item.fields["Figure Image URL"] as string | undefined;
-      if (!figureUrl) continue;
-      const taskId = await createTexturedModelTask({ front: figureUrl });
-      await updateRecord("OrderItems", itemId, { "Tripo Task ID": taskId, "Tripo Status": "Processing" });
+      if (!item.fields["Figure Image URL"]) continue;
+      // Idempotente: si ya se lanzó (reintento de webhook), no duplicar.
+      if (item.fields["Tripo Task ID"]) continue;
+      // Mismo flujo que el dashboard: genera la 3/4 sin base si falta y
+      // lanza Tripo single máxima calidad.
+      await launchTripo("OrderItems", itemId);
     } catch (e) {
       console.error("[stripe-webhook] tripo dispatch failed", itemId, (e as Error).message);
       await updateRecord("OrderItems", itemId, { "Tripo Status": "Failed" }).catch(() => {});

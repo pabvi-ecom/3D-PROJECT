@@ -35,9 +35,12 @@ type CartItem = {
   // Tripo/producción. El texto de la placa se añade aparte (real, nítido),
   // nunca la que reconstruye la IA desde la foto (sale borroso).
   figureUrlPlain: string | null;
+  originalUrl: string | null; // foto REAL del cliente (para verificar parecido en el dashboard)
   poseLabel: string;
   baseLabel: string;
   hasNameplate: boolean;
+  baseChosen: boolean;
+  accessoryLabel: string; // etiqueta del accesorio o "none"
   unitPrice: number;
   firstUnitDiscountPct: number; // 0 = primera figura del pedido, .35 = mascota nueva añadida después
   qty: number; // unidad 1: firstUnitDiscountPct · unidad 2: -50% · unidad 3+: precio completo
@@ -137,6 +140,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const [step, setStep] = useState<StepId>("email");
   const [email, setEmail] = useState("");
   const [leadId, setLeadId] = useState<string | null>(null);
+  const [originalUrl, setOriginalUrl] = useState<string | null>(null);
   const savedFigureRef = useRef<string | null>(null);
   const [emailDraft, setEmailDraft] = useState("");
   const [petName, setPetName] = useState(initialName ?? "");
@@ -280,7 +284,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ zone: zone.slug, ...body }),
     });
-    let json: { url?: string; error?: string } = {};
+    let json: { url?: string; originalUrl?: string; error?: string } = {};
     try {
       json = await res.json();
     } catch {
@@ -290,6 +294,9 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       throw new Error(res.status === 413 ? "That photo is too large. Try a smaller one." : "Couldn't generate");
     }
     if (!res.ok) throw new Error(json.error ?? "Couldn't generate");
+    // Guarda la foto ORIGINAL del cliente la primera vez que el server la
+    // devuelve (para poder verificar el parecido en el dashboard).
+    if (json.originalUrl) setOriginalUrl((cur) => cur ?? json.originalUrl ?? null);
     return json.url as string;
   }
 
@@ -614,9 +621,12 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       petName,
       figureUrl: figure,
       figureUrlPlain: plainFigure,
+      originalUrl,
       poseLabel: pose.label,
       baseLabel: hasAccessory ? `${base.label} · ${accessory.label}` : base.label,
       hasNameplate: wantsBase && addName,
+      baseChosen: wantsBase,
+      accessoryLabel: hasAccessory ? accessory.label : "none",
       unitPrice: total,
       firstUnitDiscountPct,
       qty,
@@ -709,7 +719,15 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       fetch("/api/lead-figure", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ leadId, figureUrl: figure, petName }),
+        body: JSON.stringify({
+          leadId,
+          figureUrl: figure,
+          petName,
+          originalUrl,
+          base: wantsBase,
+          name: wantsBase && addName,
+          accessory: hasAccessory ? accessory.label : "none",
+        }),
       }).catch(() => {});
     }
 
@@ -717,7 +735,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [step, leadId, figure, plainFigure, petName]);
+  }, [step, leadId, figure, plainFigure, petName, originalUrl, wantsBase, addName, hasAccessory, accessory.label]);
 
   function copyCode(code: string) {
     navigator.clipboard?.writeText(code).catch(() => {});

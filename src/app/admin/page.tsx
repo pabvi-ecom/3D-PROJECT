@@ -1,7 +1,20 @@
 import { cookies } from "next/headers";
 import { listRecords } from "@/lib/airtable";
+import { parseImgRefs } from "@/lib/produce";
 import { AdminLogin } from "./AdminLogin";
 import { AdminDashboard, type Card } from "./AdminDashboard";
+
+// Lee refs + elecciones del campo "Views" (JSON o URL vieja), con defaults.
+function parseRefs(raw?: string) {
+  const r = parseImgRefs(raw);
+  return {
+    angled: r.angled ?? "",
+    original: r.original ?? "",
+    base: r.base ?? null,
+    name: r.name ?? null,
+    accessory: r.accessory ?? "",
+  };
+}
 
 export const dynamic = "force-dynamic";
 
@@ -33,8 +46,8 @@ async function buildData() {
   ]);
 
   const ordersTyped = orders as unknown as { id: string; fields: OrderFields }[];
-  const itemsTyped = items as unknown as { id: string; fields: ItemFields }[];
-  const leadsTyped = leads as unknown as { id: string; fields: LeadFields }[];
+  const itemsTyped = items as unknown as { id: string; createdTime?: string; fields: ItemFields }[];
+  const leadsTyped = leads as unknown as { id: string; createdTime?: string; fields: LeadFields }[];
 
   const orderEmailById = new Map(ordersTyped.map((o) => [o.id, o.fields.Email ?? ""]));
 
@@ -46,7 +59,12 @@ async function buildData() {
       email: it.fields.Order?.[0] ? orderEmailById.get(it.fields.Order[0]) ?? "" : "",
       petName: it.fields["Pet Name"] ?? "",
       figureUrl: it.fields["Figure Image URL"] ?? "",
-      angledUrl: it.fields["Views"]?.startsWith("http") ? it.fields["Views"] : "",
+      angledUrl: parseRefs(it.fields["Views"]).angled,
+      originalUrl: parseRefs(it.fields["Views"]).original,
+      createdAt: it.createdTime ?? "",
+      base: parseRefs(it.fields["Views"]).base,
+      name: parseRefs(it.fields["Views"]).name,
+      accessory: parseRefs(it.fields["Views"]).accessory,
       tripoStatus: it.fields["Tripo Status"] ?? "Not started",
       modelUrl: it.fields["Model File URL"] ?? "",
       stlUrl: it.fields["Model STL URL"] ?? "",
@@ -62,7 +80,12 @@ async function buildData() {
       email: l.fields.Email ?? "",
       petName: l.fields["Pet Name"] ?? "",
       figureUrl: l.fields["Figure Image URL"] ?? "",
-      angledUrl: l.fields["Views"]?.startsWith("http") ? l.fields["Views"] : "",
+      angledUrl: parseRefs(l.fields["Views"]).angled,
+      originalUrl: parseRefs(l.fields["Views"]).original,
+      createdAt: l.createdTime ?? "",
+      base: parseRefs(l.fields["Views"]).base,
+      name: parseRefs(l.fields["Views"]).name,
+      accessory: parseRefs(l.fields["Views"]).accessory,
       tripoStatus: l.fields["Tripo Status"] ?? "Not started",
       modelUrl: l.fields["Model File URL"] ?? "",
       stlUrl: l.fields["Model STL URL"] ?? "",

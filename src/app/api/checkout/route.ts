@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createRecord, createRecords } from "@/lib/airtable";
+import { serializeImgRefs } from "@/lib/produce";
 
 export const runtime = "nodejs";
 
@@ -22,6 +23,9 @@ type CartItemIn = {
   qty: number;
   figureUrl: string | null;
   figureUrlPlain: string | null;
+  originalUrl?: string | null;
+  baseChosen?: boolean;
+  accessoryLabel?: string;
 };
 
 // La misma lógica de precios por unidad que en el cliente (CreateFlow.tsx)
@@ -102,7 +106,13 @@ export async function POST(req: NextRequest) {
           // La imagen que ve el cliente (con nombre grabado si eligió placa)
           // — Tripo P2+8K reconstruye la placa nítida directamente de ella.
           "Figure Image URL": it.figureUrl ?? "",
-          ...(it.figureUrl ? { "Original Photo": [{ url: it.figureUrl }] } : {}),
+          // Foto original + elecciones, serializadas en "Views" (JSON).
+          Views: serializeImgRefs({
+            original: it.originalUrl ?? undefined,
+            base: it.baseChosen ?? it.baseLabel !== "No base",
+            name: it.hasNameplate,
+            accessory: it.accessoryLabel ?? "none",
+          }),
           "Tripo Status": "Not started",
         },
       })),
