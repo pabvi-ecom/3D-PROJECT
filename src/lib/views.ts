@@ -70,8 +70,10 @@ export async function generateAngled(figureUrl: string): Promise<string> {
     "Show the SAME individual pet from this reference, turned about 35 degrees to a THREE-QUARTER view (camera to the " +
       "front-side) so that its face, one FULL side of the body, the back and the tail are all visible at once. " +
       "Remove any display base / pedestal / plinth and any engraved name or nameplate text COMPLETELY — show ONLY the pet, " +
-      "nothing under it. Keep the exact same sitting pose, body, proportions, fur colors and markings, and any worn accessory " +
-      "(bandana, harness, collar). " +
+      "nothing under it. Keep the exact same sitting pose, body, proportions, fur colors and markings. " +
+      "DO NOT INVENT ANYTHING: replicate EXACTLY what is in the reference and nothing else. If the pet wears NO collar, NO " +
+      "harness, NO bandana, NO tag and NO clothing, then it must have NONE of those here either — do NOT add a collar or any " +
+      "accessory that is not clearly, visibly present in the reference. Only keep an accessory if it is actually there. " +
       "ABSOLUTE RULE: same species (a DOG, NEVER a cat or other animal), same breed, same exact colors and markings. " +
       "MUZZLE / SNOUT: keep a proper FULL-LENGTH long muzzle — do NOT shorten, flatten or pug-ify it; if anything make it a " +
       "touch longer, a normal elongated dog snout. " +

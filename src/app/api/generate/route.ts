@@ -201,8 +201,10 @@ export async function POST(req: NextRequest) {
         `If the photo is dark, backlit or the eyes are squinting, reconstruct the pet in clear even studio ` +
         `lighting but keep the same identity and features. ` +
         `\n\nShow only the ${animal} itself — exclude any people, hands, other animals, background, and any ` +
-        `props, toys, hearts, accessories or held objects that are not part of its body (a plain everyday ` +
-        `collar may stay). Show the full body of the ${animal} ${pose.prompt}, ${basePhrase}.` +
+        `props, toys, hearts, accessories or held objects that are not part of its body. ` +
+        `DO NOT INVENT accessories: if the pet in the photo wears NO collar, NO harness, NO bandana and NO tag, ` +
+        `then add NONE — never add a collar or anything the pet is not actually wearing. Only keep an accessory if it is ` +
+        `clearly visible in the photo. Show the full body of the ${animal} ${pose.prompt}, ${basePhrase}.` +
         `${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
     }
 
