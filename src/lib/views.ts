@@ -58,25 +58,28 @@ export async function stripBase(figureUrl: string): Promise<string> {
 }
 
 /**
- * Genera UNA foto del perro "ladeada" (3/4) y SIN base, para mandar a Tripo
- * single-image. Al estar girada ~35° se ve a la vez la cara, un costado
- * completo, la espalda y la cola -> Tripo no se inventa el culo. Esta imagen
- * es la que se muestra en el dashboard (postproducción); al cliente se le
- * sigue enseñando el frente con base.
+ * Genera UNA foto del perro de FRENTE y SIN base para mandar a Tripo
+ * single-image. Se usa el FRENTE (no 3/4) porque desde un 3/4 Tripo se
+ * inventa mal la cara (orejas abiertas, morro corto = "gremlin"). Con el
+ * frente correcto la cara sale bien y Tripo reconstruye la espalda solo
+ * (como hizo con FRANKIE). Es la imagen que se ve en el dashboard.
  */
 export async function generateAngled(figureUrl: string): Promise<string> {
   return generateKie(
     figureUrl,
-    "Show the SAME individual pet from this reference, turned about 35 degrees to a THREE-QUARTER view (camera to the " +
-      "front-side) so that its face, one FULL side of the body, the back and the tail are all visible at once. " +
+    "Show the SAME individual pet from this reference, in a clean FRONT view facing the camera straight-on (the whole face and " +
+      "chest clearly visible, sitting upright). " +
       "Remove any display base / pedestal / plinth and any engraved name or nameplate text COMPLETELY — show ONLY the pet, " +
       "nothing under it. Keep the exact same sitting pose, body, proportions, fur colors and markings. " +
       "DO NOT INVENT ANYTHING: replicate EXACTLY what is in the reference and nothing else. If the pet wears NO collar, NO " +
       "harness, NO bandana, NO tag and NO clothing, then it must have NONE of those here either — do NOT add a collar or any " +
       "accessory that is not clearly, visibly present in the reference. Only keep an accessory if it is actually there. " +
       "ABSOLUTE RULE: same species (a DOG, NEVER a cat or other animal), same breed, same exact colors and markings. " +
-      "MUZZLE / SNOUT: keep a proper FULL-LENGTH long muzzle — do NOT shorten, flatten or pug-ify it; if anything make it a " +
-      "touch longer, a normal elongated dog snout. " +
+      "EARS — CRITICAL: keep the ears in the EXACT same position, angle and shape as the reference. If the ears sit close to " +
+      "the head / hang down naturally, keep them close and hanging — do NOT spread them out wide, do NOT flare them sideways, " +
+      "do NOT make them stick out like wings. Match the reference ears precisely. " +
+      "MUZZLE / SNOUT — CRITICAL: keep a proper FULL-LENGTH long muzzle exactly like the reference — do NOT shorten, flatten, " +
+      "squash or pug-ify it. A long snout stays long. Never make a short flat 'gremlin' face. " +
       "COPY the exact mouth and tongue state from the reference (closed stays closed, tongue out stays out). " +
       "Render as a HIGHLY DETAILED hand-sculpted PAINTED COLLECTIBLE FIGURINE / statue: crisp, sharply defined sculpted detail " +
       "— individually sculpted fur strands and coat texture, well defined ears, muzzle, paws, toes and tail, clean sharp edges " +
