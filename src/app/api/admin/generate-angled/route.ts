@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getRecord } from "@/lib/airtable";
 import { generateAngled } from "@/lib/views";
-import { mergeImgRefs } from "@/lib/produce";
+import { mergeImgRefs, parseImgRefs } from "@/lib/produce";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -30,7 +30,8 @@ export async function POST(req: NextRequest) {
     const figureUrl = record.fields["Figure Image URL"] as string | undefined;
     if (!figureUrl) return NextResponse.json({ error: "No figure image on this record" }, { status: 400 });
 
-    const angledUrl = await generateAngled(figureUrl);
+    const tail = parseImgRefs(record.fields["Views"] as string | undefined).tail;
+    const angledUrl = await generateAngled(figureUrl, tail);
     await mergeImgRefs(table, id, { angled: angledUrl });
     return NextResponse.json({ ok: true, angledUrl });
   } catch (e) {

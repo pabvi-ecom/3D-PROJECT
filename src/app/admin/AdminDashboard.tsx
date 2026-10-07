@@ -16,6 +16,7 @@ export type Card = {
   base?: boolean | null; // eligió base
   name?: boolean | null; // eligió nombre grabado
   accessory?: string; // etiqueta accesorio o "none"/""
+  tail?: string; // "long" | "short" | "none" | ""
   tripoStatus: string;
   modelUrl: string;
   stlUrl: string;
@@ -242,11 +243,13 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (urls: string[], idx: 
               </span>
             );
             const acc = card.accessory && card.accessory !== "none" ? card.accessory : "";
+            const tailTxt = card.tail === "none" ? "Sin cola" : card.tail === "short" ? "Cola corta" : card.tail === "long" ? "Cola larga" : "";
             return (
               <>
                 {chip(!!card.base, card.base ? "Base" : "Sin base")}
                 {chip(!!card.name, card.name ? "Nombre" : "Sin nombre")}
                 {chip(!!acc, acc ? `Accesorio: ${acc}` : "Sin accesorio")}
+                {tailTxt && chip(card.tail !== "none", tailTxt)}
               </>
             );
           })()}

@@ -13,6 +13,7 @@ function parseRefs(raw?: string) {
     base: r.base ?? null,
     name: r.name ?? null,
     accessory: r.accessory ?? "",
+    tail: r.tail ?? "",
   };
 }
 
@@ -65,6 +66,7 @@ async function buildData() {
       base: parseRefs(it.fields["Views"]).base,
       name: parseRefs(it.fields["Views"]).name,
       accessory: parseRefs(it.fields["Views"]).accessory,
+      tail: parseRefs(it.fields["Views"]).tail,
       tripoStatus: it.fields["Tripo Status"] ?? "Not started",
       modelUrl: it.fields["Model File URL"] ?? "",
       stlUrl: it.fields["Model STL URL"] ?? "",
@@ -86,6 +88,7 @@ async function buildData() {
       base: parseRefs(l.fields["Views"]).base,
       name: parseRefs(l.fields["Views"]).name,
       accessory: parseRefs(l.fields["Views"]).accessory,
+      tail: parseRefs(l.fields["Views"]).tail,
       tripoStatus: l.fields["Tripo Status"] ?? "Not started",
       modelUrl: l.fields["Model File URL"] ?? "",
       stlUrl: l.fields["Model STL URL"] ?? "",

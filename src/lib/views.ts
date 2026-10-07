@@ -64,11 +64,22 @@ export async function stripBase(figureUrl: string): Promise<string> {
  * frente correcto la cara sale bien y Tripo reconstruye la espalda solo
  * (como hizo con FRANKIE). Es la imagen que se ve en el dashboard.
  */
-export async function generateAngled(figureUrl: string): Promise<string> {
+export async function generateAngled(figureUrl: string, tail?: string): Promise<string> {
+  // La cola la dice el dueño en el formulario (desde el frente no se ve, Tripo
+  // la inventaría). Se fuerza que el frente muestre la cola correcta.
+  const tailRule =
+    tail === "none"
+      ? "TAIL: this dog has NO tail (naturally bobbed / docked). Show a clean rounded rear with NO tail at all; do NOT add any tail. "
+      : tail === "short"
+        ? "TAIL: this dog has a SHORT stubby tail. If any tail shows, it is small and short; do NOT give it a long tail. "
+        : tail === "long"
+          ? "TAIL: this dog has a LONG tail. Make sure its long tail is present (resting/curling to one side, partly visible from the front); do NOT omit it or make it short. "
+          : "";
   return generateKie(
     figureUrl,
     "Show the SAME individual pet from this reference, in a clean FRONT view facing the camera straight-on (the whole face and " +
       "chest clearly visible, sitting upright). " +
+      tailRule +
       "Remove any display base / pedestal / plinth and any engraved name or nameplate text COMPLETELY — show ONLY the pet, " +
       "nothing under it. Keep the exact same sitting pose, body, proportions, fur colors and markings. " +
       "DO NOT INVENT ANYTHING: replicate EXACTLY what is in the reference and nothing else. If the pet wears NO collar, NO " +

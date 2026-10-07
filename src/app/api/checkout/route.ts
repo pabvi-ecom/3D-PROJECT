@@ -26,6 +26,7 @@ type CartItemIn = {
   originalUrl?: string | null;
   baseChosen?: boolean;
   accessoryLabel?: string;
+  tail?: string;
 };
 
 // La misma lógica de precios por unidad que en el cliente (CreateFlow.tsx)
@@ -112,6 +113,7 @@ export async function POST(req: NextRequest) {
             base: it.baseChosen ?? it.baseLabel !== "No base",
             name: it.hasNameplate,
             accessory: it.accessoryLabel ?? "none",
+            tail: it.tail ?? "long",
           }),
           "Tripo Status": "Not started",
         },

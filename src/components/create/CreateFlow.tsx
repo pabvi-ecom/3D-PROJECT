@@ -41,6 +41,7 @@ type CartItem = {
   hasNameplate: boolean;
   baseChosen: boolean;
   accessoryLabel: string; // etiqueta del accesorio o "none"
+  tail: string; // "long" | "short" | "none"
   unitPrice: number;
   firstUnitDiscountPct: number; // 0 = primera figura del pedido, .35 = mascota nueva añadida después
   qty: number; // unidad 1: firstUnitDiscountPct · unidad 2: -50% · unidad 3+: precio completo
@@ -152,6 +153,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const [photo2, setPhoto2] = useState<string | null>(null);
   const [photo3, setPhoto3] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
+  const [tail, setTail] = useState<"long" | "short" | "none">("long");
   const [readingFile, setReadingFile] = useState(false);
   const [figures, setFigures] = useState<Record<string, string>>({});
   const [namedFigures, setNamedFigures] = useState<Record<string, string>>({});
@@ -627,6 +629,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       hasNameplate: wantsBase && addName,
       baseChosen: wantsBase,
       accessoryLabel: hasAccessory ? accessory.label : "none",
+      tail,
       unitPrice: total,
       firstUnitDiscountPct,
       qty,
@@ -727,6 +730,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
           base: wantsBase,
           name: wantsBase && addName,
           accessory: hasAccessory ? accessory.label : "none",
+          tail,
         }),
       }).catch(() => {});
     }
@@ -735,7 +739,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [step, leadId, figure, plainFigure, petName, originalUrl, wantsBase, addName, hasAccessory, accessory.label]);
+  }, [step, leadId, figure, plainFigure, petName, originalUrl, wantsBase, addName, hasAccessory, accessory.label, tail]);
 
   function copyCode(code: string) {
     navigator.clipboard?.writeText(code).catch(() => {});
@@ -883,6 +887,20 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
                 </div>
               </div>
             )}
+
+            <p className={styles.qualityPrompt}>Your pet&apos;s tail</p>
+            <div className={styles.qualityGrid}>
+              {([["long", "Long tail"], ["short", "Short tail"], ["none", "No tail"]] as const).map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  className={`${styles.qualityCard} ${tail === id ? styles.qualityCardActive : ""}`}
+                  onClick={() => setTail(id)}
+                >
+                  <span className={styles.qualityName}>{label}</span>
+                </button>
+              ))}
+            </div>
 
             <label className={styles.notesLabel}>
               Anything we can&apos;t tell from the photo?
