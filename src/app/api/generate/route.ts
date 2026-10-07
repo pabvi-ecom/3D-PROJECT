@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
         : tail === "short"
           ? ` The pet has a SHORT stubby tail held CLOSE and tucked against the body on one side, not sticking out.`
           : tail === "long"
-            ? ` The pet has a LONG tail, but it CURLS TIGHTLY AROUND the body and rests flat AGAINST its flank/hip on one side, tucked in and touching the body — it must NOT stick out or stand free in the air; it stays within the body silhouette.`
+            ? ` The pet has a LONG tail, but it must WRAP FORWARD and curl around to rest beside/in front of the front paws, lying flat along the ground RIGHT NEXT TO the body and paws, fully WITHIN the figure's footprint. The tail must NOT extend outward, backward or sideways away from the body, must NOT stick out as a thin free strand, and must NOT reach past the paws — it stays tucked close against the body/paws, touching them along its length.`
             : "";
     let customerExtraRefs: string[] = [];
 

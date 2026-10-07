@@ -76,7 +76,7 @@ export async function generateAngled(figureUrl: string, tail?: string): Promise<
       : tail === "short"
         ? "TAIL: this dog has a SHORT stubby tail, held CLOSE and TUCKED against the body on one side — not sticking out. "
         : tail === "long"
-          ? "TAIL: this dog has a LONG tail, but it must CURL TIGHTLY AROUND the body and rest flat AGAINST its flank/hip on ONE side, tucked in and touching the body along its length — it must NOT stick out, extend away, or stand free in the air. The tail stays within the body silhouette, wrapped against the side. "
+          ? "TAIL: this dog has a LONG tail, but it must WRAP FORWARD and curl around to rest beside/in front of the front paws, lying flat along the ground RIGHT NEXT TO the body and paws, fully WITHIN the figure's footprint. It must NOT extend outward, backward or sideways away from the body, must NOT stick out as a thin free strand, and must NOT reach past the paws — tucked close against the body/paws, touching them. "
           : "";
   return generateKie(
     figureUrl,
