@@ -55,7 +55,17 @@ const NO_BASE = "with no display base, standing directly on a clean seamless lig
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { imageBase64, imageUrl, referenceUrl, change, zone = "dogs", poseId, baseId = NO_BASE_ID, petName, notes, view, styleId, accessoryId, extraImages } = body;
+    const { imageBase64, imageUrl, referenceUrl, change, zone = "dogs", poseId, baseId = NO_BASE_ID, petName, notes, view, styleId, accessoryId, extraImages, tail } = body;
+    // Regla de cola (la elige el dueño): SIEMPRE pegada al cuerpo para que no
+    // sobresalga de la base ni quede fina al aire (igual que en el 3D).
+    const tailRule =
+      tail === "none"
+        ? ` The ${zone === "dogs" ? "dog" : "pet"} has NO tail (bobbed/docked): show a clean rounded rear, no tail.`
+        : tail === "short"
+          ? ` The pet has a SHORT stubby tail held CLOSE and tucked against the body on one side, not sticking out.`
+          : tail === "long"
+            ? ` The pet has a LONG tail, but it CURLS TIGHTLY AROUND the body and rests flat AGAINST its flank/hip on one side, tucked in and touching the body — it must NOT stick out or stand free in the air; it stays within the body silhouette.`
+            : "";
     let customerExtraRefs: string[] = [];
 
     const z = getZone(zone);
@@ -69,7 +79,7 @@ export async function POST(req: NextRequest) {
     const basePhrase = base.prompt || NO_BASE;
     const baseRefUrls = base.refImage ? [new URL(base.refImage, req.nextUrl.origin).toString()] : [];
     const baseRefNote = base.refImage
-      ? " The LAST reference image is ONLY the empty round marble base — copy its material, color and shape, but the dog is always OUR pet from the FIRST image; never copy any other animal. The pet and base are ONE fused figurine. Center the pet in the DEAD CENTER of the round top — same marble margin behind the rear as in front of the paws, same on both sides; move the whole dog back if it leans forward. Leave the front of the marble rim smooth and blank."
+      ? " The LAST reference image is ONLY the empty round marble base — copy its material, color and shape, but the dog is always OUR pet from the FIRST image; never copy any other animal. The pet and base are ONE fused figurine. SIZE: make the round marble top clearly BIGGER than the dog's footprint, with a WIDE even margin of empty marble all around the dog. The paws and rear must rest well INSIDE the rim with a comfortable ring of empty marble between them and the edge — the dog must NEVER touch, reach or overhang the edge of the base on any side. Center the pet in the DEAD CENTER of the round top — same marble margin behind the rear as in front of the paws, same on both sides; move the whole dog back if it leans forward. Leave the front of the marble rim smooth and blank."
       : "";
     let src: string | undefined;
     let prompt: string;
@@ -114,10 +124,11 @@ export async function POST(req: NextRequest) {
           `rise taller than the others). Give the letters a MEDIUM-BOLD / SEMIBOLD weight with slightly ` +
           `thicker, sturdier strokes (not thin or hairline), keeping the exact same engraved look and texture. ` +
           `Keep the lettering SMALL and understated — roughly one third of the ` +
-          `height of the marble rim, not oversized. It must read as physically CARVED/RECESSED into the ` +
-          `stone: crisp engraved grooves with subtle inner shadow, in a soft warm brown/taupe tone slightly ` +
-          `darker than the beige marble around it, like a real engraved marble memorial base. The text must be perfectly ` +
-          `horizontally centered on the front of the base and follow its curve. ${STUDIO}`;
+          `height of the marble rim, not oversized. ` +
+          `CRITICAL: each letter must be a SOLID, FULLY FILLED-IN shape of dark pigment — NOT outlined, NOT hollow, ` +
+          `NOT just an engraved contour. The grooves are filled with a solid dark brown/espresso pigment so every ` +
+          `letter reads as a solid dark letter (like filled debossed lettering), clearly readable against the beige ` +
+          `marble. The text must be perfectly horizontally centered on the front of the base and follow its curve. ${STUDIO}`;
       } else if (change === "accessory") {
         // Añadir un accesorio (disfraz/hueso) SOBRE la figura ya generada.
         // La imagen previa (con o sin base) es la verdad: mismo perro, misma
@@ -205,7 +216,7 @@ export async function POST(req: NextRequest) {
         `DO NOT INVENT accessories: if the pet in the photo wears NO collar, NO harness, NO bandana and NO tag, ` +
         `then add NONE — never add a collar or anything the pet is not actually wearing. Only keep an accessory if it is ` +
         `clearly visible in the photo. Show the full body of the ${animal} ${pose.prompt}, ${basePhrase}.` +
-        `${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
+        `${tailRule}${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
     }
 
     // El grabado del nombre y los accesorios editan una imagen YA compuesta
