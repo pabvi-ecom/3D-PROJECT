@@ -24,10 +24,10 @@ export async function createImageToModelTask(imageUrl: string): Promise<string> 
     body: JSON.stringify({
       file: { type: "jpg", url: imageUrl },
       model: MODEL_VERSION,
-      // MÁXIMA CALIDAD: muchos más polígonos (pelo/bordes nítidos) + textura
-      // detallada 8K. quad:false = malla de triángulos (más detalle de
-      // superficie en orgánicos). smart_low_poly:false para no simplificar.
-      face_limit: 300000,
+      // MÁXIMA CALIDAD: P2 topa en 50000 caras (triangle mesh) -> ese es el
+      // techo de polígonos. El detalle fino lo aporta el INPUT nítido + textura
+      // detailed 8K. smart_low_poly:false para no simplificar la malla.
+      face_limit: 50000,
       quad: false,
       smart_low_poly: false,
       texture: true,
