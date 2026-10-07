@@ -244,8 +244,8 @@ function CardView({ card, onZoom }: { card: Card; onZoom: (urls: string[], idx: 
             const acc = card.accessory && card.accessory !== "none" ? card.accessory : "";
             return (
               <>
-                {card.base != null && chip(card.base, card.base ? "Base" : "Sin base")}
-                {card.name != null && chip(card.name, card.name ? "Nombre" : "Sin nombre")}
+                {chip(!!card.base, card.base ? "Base" : "Sin base")}
+                {chip(!!card.name, card.name ? "Nombre" : "Sin nombre")}
                 {chip(!!acc, acc ? `Accesorio: ${acc}` : "Sin accesorio")}
               </>
             );
