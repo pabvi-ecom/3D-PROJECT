@@ -67,13 +67,16 @@ export async function stripBase(figureUrl: string): Promise<string> {
 export async function generateAngled(figureUrl: string, tail?: string): Promise<string> {
   // La cola la dice el dueño en el formulario (desde el frente no se ve, Tripo
   // la inventaría). Se fuerza que el frente muestre la cola correcta.
+  // La cola SIEMPRE pegada al cuerpo (curvada a un lado, apoyada en el
+  // flanco/cadera) para que no sobresalga -> no queda fina al aire, no se
+  // rompe al imprimir y entra dentro de la base.
   const tailRule =
     tail === "none"
       ? "TAIL: this dog has NO tail (naturally bobbed / docked). Show a clean rounded rear with NO tail at all; do NOT add any tail. "
       : tail === "short"
-        ? "TAIL: this dog has a SHORT stubby tail. If any tail shows, it is small and short; do NOT give it a long tail. "
+        ? "TAIL: this dog has a SHORT stubby tail, held CLOSE and TUCKED against the body on one side — not sticking out. "
         : tail === "long"
-          ? "TAIL: this dog has a LONG tail. Make sure its long tail is present (resting/curling to one side, partly visible from the front); do NOT omit it or make it short. "
+          ? "TAIL: this dog has a LONG tail, but it must CURL TIGHTLY AROUND the body and rest flat AGAINST its flank/hip on ONE side, tucked in and touching the body along its length — it must NOT stick out, extend away, or stand free in the air. The tail stays within the body silhouette, wrapped against the side. "
           : "";
   return generateKie(
     figureUrl,
