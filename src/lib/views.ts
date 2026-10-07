@@ -78,8 +78,11 @@ export async function generateAngled(figureUrl: string): Promise<string> {
       "MUZZLE / SNOUT: keep a proper FULL-LENGTH long muzzle — do NOT shorten, flatten or pug-ify it; if anything make it a " +
       "touch longer, a normal elongated dog snout. " +
       "COPY the exact mouth and tongue state from the reference (closed stays closed, tongue out stays out). " +
-      "Render as a SMOOTH PAINTED RESIN COLLECTIBLE FIGURINE: clean smooth sculpted surfaces, crisp defined forms (ears, paws, " +
-      "muzzle, tail well defined), vivid true-to-life colors — NOT a real animal, NO loose/photographic fur, NO noise. " +
+      "Render as a HIGHLY DETAILED hand-sculpted PAINTED COLLECTIBLE FIGURINE / statue: crisp, sharply defined sculpted detail " +
+      "— individually sculpted fur strands and coat texture, well defined ears, muzzle, paws, toes and tail, clean sharp edges " +
+      "and deep crevices. Maximum surface detail (like a premium resin statue), vivid true-to-life colors and markings. It is a " +
+      "solid sculpted object, NOT a live animal and NOT a photo, but keep ALL the fine detail — do NOT blur, smooth away, melt " +
+      "or simplify the fur, face or features; sharp and detailed everywhere. " +
       "Float the pet cleanly on a pure plain WHITE seamless background with BRIGHT FLAT EVEN lighting (well lit, vivid colors, " +
       "NOT dark) and absolutely NO shadow. No base, no ground, no platform, no text.",
   );

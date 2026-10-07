@@ -24,13 +24,15 @@ export async function createImageToModelTask(imageUrl: string): Promise<string> 
     body: JSON.stringify({
       file: { type: "jpg", url: imageUrl },
       model: MODEL_VERSION,
-      // texture_quality "extreme" es el techo. face_limit 50000 = máximo que
-      // acepta P2. texture_size 8192 = textura 8K (la máxima resolución de
-      // color, el "8K" de Tripo Studio).
-      face_limit: 50000,
+      // MÁXIMA CALIDAD: muchos más polígonos (pelo/bordes nítidos) + textura
+      // detallada 8K. quad:false = malla de triángulos (más detalle de
+      // superficie en orgánicos). smart_low_poly:false para no simplificar.
+      face_limit: 300000,
+      quad: false,
+      smart_low_poly: false,
       texture: true,
       pbr: true,
-      texture_quality: "extreme",
+      texture_quality: "detailed",
       texture_size: 8192,
     }),
   });
