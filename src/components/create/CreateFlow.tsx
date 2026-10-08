@@ -378,6 +378,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
         throw new Error((firstError?.reason as Error)?.message ?? "Couldn't generate");
       }
       setStyleFigures(map);
+      Object.values(map).forEach(preload);
       setStyleId(map["realistic"] ? "realistic" : Object.keys(map)[0]);
       setProgress(100);
       setStep("style");
@@ -402,6 +403,16 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     return json.url as string;
   }
 
+  // Descarga los BYTES de la imagen en segundo plano (la URL ya está lista pero
+  // el navegador no baja la imagen hasta mostrarla -> ese era el retraso de 3-5s
+  // al pulsar la base/el nombre). Precargando, el cambio es instantáneo.
+  function preload(url?: string | null) {
+    if (url && typeof window !== "undefined") {
+      const img = new window.Image();
+      img.src = url;
+    }
+  }
+
   async function ensureBase(id: string): Promise<string | null> {
     if (id === NO_BASE_ID) return styleFigures[styleId] ?? null;
     const k = key(poseId, id, "front");
@@ -412,6 +423,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       ? await postCompose(chosen)
       : await postGenerate({ referenceUrl: chosen, change: "base", baseId: id });
     setFigures((m) => ({ ...m, [k]: url }));
+    preload(url);
     return url;
   }
 
@@ -429,6 +441,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     if (!src) return null;
     const url = await postGenerate({ referenceUrl: src, change: "name", baseId: id, petName });
     setNamedFigures((m) => ({ ...m, [id]: url }));
+    preload(url);
     return url;
   }
 
