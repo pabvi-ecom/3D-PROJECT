@@ -64,7 +64,10 @@ export async function stripBase(figureUrl: string): Promise<string> {
  * frente correcto la cara sale bien y Tripo reconstruye la espalda solo
  * (como hizo con FRANKIE). Es la imagen que se ve en el dashboard.
  */
-export async function generateAngled(figureUrl: string, tail?: string): Promise<string> {
+export async function generateAngled(figureUrl: string, tail?: string, breed?: string): Promise<string> {
+  const breedNote = breed && breed.trim()
+    ? `This dog's breed is "${breed.trim()}" — respect that breed's natural body and especially its natural SNOUT LENGTH. `
+    : "";
   // La cola la dice el dueño en el formulario (desde el frente no se ve, Tripo
   // la inventaría). Se fuerza que el frente muestre la cola correcta.
   // La cola SIEMPRE pegada al cuerpo (curvada a un lado, apoyada en el
@@ -82,6 +85,7 @@ export async function generateAngled(figureUrl: string, tail?: string): Promise<
     figureUrl,
     "Show the SAME individual pet from this reference, in a clean FRONT view facing the camera straight-on (the whole face and " +
       "chest clearly visible, sitting upright). " +
+      breedNote +
       tailRule +
       "Remove any display base / pedestal / plinth and any engraved name or nameplate text COMPLETELY — show ONLY the pet, " +
       "nothing under it. Keep the exact same sitting pose, body, proportions, fur colors and markings. " +
@@ -92,8 +96,10 @@ export async function generateAngled(figureUrl: string, tail?: string): Promise<
       "EARS — CRITICAL: keep the ears in the EXACT same position, angle and shape as the reference. If the ears sit close to " +
       "the head / hang down naturally, keep them close and hanging — do NOT spread them out wide, do NOT flare them sideways, " +
       "do NOT make them stick out like wings. Match the reference ears precisely. " +
-      "MUZZLE / SNOUT — CRITICAL: keep a proper FULL-LENGTH long muzzle exactly like the reference — do NOT shorten, flatten, " +
-      "squash or pug-ify it. A long snout stays long. Never make a short flat 'gremlin' face. " +
+      "MUZZLE / SNOUT — CRITICAL: give the dog a PROPER, LONG, FULL-LENGTH snout that matches its breed. Do NOT shorten, " +
+      "flatten, squash, stub or pug-ify the muzzle, and do NOT give it a short puppy/baby face. If the breed naturally has a " +
+      "long nose (dachshund, labrador, shepherd, etc.) the snout MUST be clearly long and extended, projecting well forward " +
+      "from the face — err on the side of a slightly LONGER snout rather than shorter. Never a short flat face. " +
       "COPY the exact mouth and tongue state from the reference (closed stays closed, tongue out stays out). " +
       "Render as a HIGHLY DETAILED hand-sculpted PAINTED COLLECTIBLE FIGURINE / statue: crisp, sharply defined sculpted detail " +
       "— individually sculpted fur strands and coat texture, well defined ears, muzzle, paws, toes and tail, clean sharp edges " +

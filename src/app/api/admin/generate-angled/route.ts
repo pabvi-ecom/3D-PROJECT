@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
     const figureUrl = record.fields["Figure Image URL"] as string | undefined;
     if (!figureUrl) return NextResponse.json({ error: "No figure image on this record" }, { status: 400 });
 
-    const tail = parseImgRefs(record.fields["Views"] as string | undefined).tail;
-    const angledUrl = await generateAngled(figureUrl, tail);
+    const refs = parseImgRefs(record.fields["Views"] as string | undefined);
+    const angledUrl = await generateAngled(figureUrl, refs.tail, refs.breed);
     await mergeImgRefs(table, id, { angled: angledUrl });
     return NextResponse.json({ ok: true, angledUrl });
   } catch (e) {

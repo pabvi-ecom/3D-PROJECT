@@ -12,7 +12,7 @@ export const runtime = "nodejs";
  */
 export async function POST(req: NextRequest) {
   try {
-    const { leadId, figureUrl, petName, originalUrl, base, name, accessory, tail } = await req.json();
+    const { leadId, figureUrl, petName, originalUrl, base, name, accessory, tail, breed } = await req.json();
     if (typeof leadId !== "string" || typeof figureUrl !== "string") {
       return NextResponse.json({ error: "Missing leadId or figureUrl" }, { status: 400 });
     }
@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     if (typeof name === "boolean") patch.name = name;
     if (typeof accessory === "string") patch.accessory = accessory;
     if (typeof tail === "string") patch.tail = tail;
+    if (typeof breed === "string" && breed.trim()) patch.breed = breed.trim();
     if (Object.keys(patch).length) {
       await mergeImgRefs("Leads", leadId, patch).catch((e) =>
         console.error("[lead-figure] no se pudo guardar meta:", (e as Error).message),

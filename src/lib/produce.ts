@@ -18,6 +18,7 @@ export type ImgRefs = {
   name?: boolean; // eligió nombre grabado
   accessory?: string; // etiqueta del accesorio, o "" / "none" si ninguno
   tail?: string; // "long" | "short" | "none" -> la cola la dice el dueño
+  breed?: string; // raza (la dice el dueño) -> proporciones/morro correctos
 };
 
 export function parseImgRefs(raw?: string): ImgRefs {
@@ -27,7 +28,7 @@ export function parseImgRefs(raw?: string): ImgRefs {
     try {
       const j = JSON.parse(s) as {
         a?: string; o?: string; angled?: string; original?: string;
-        base?: boolean; name?: boolean; accessory?: string; tail?: string;
+        base?: boolean; name?: boolean; accessory?: string; tail?: string; breed?: string;
       };
       return {
         angled: j.a ?? j.angled ?? undefined,
@@ -36,6 +37,7 @@ export function parseImgRefs(raw?: string): ImgRefs {
         name: j.name,
         accessory: j.accessory,
         tail: j.tail,
+        breed: j.breed,
       };
     } catch {
       return {};
@@ -51,6 +53,7 @@ export function serializeImgRefs(r: ImgRefs): string {
   if (r.name !== undefined) out.name = r.name;
   if (r.accessory !== undefined) out.accessory = r.accessory;
   if (r.tail !== undefined) out.tail = r.tail;
+  if (r.breed !== undefined) out.breed = r.breed;
   return JSON.stringify(out);
 }
 
@@ -77,7 +80,7 @@ export async function launchTripo(table: "Leads" | "OrderItems", id: string): Pr
   const refs = parseImgRefs(record.fields["Views"] as string | undefined);
   let angledUrl = refs.angled;
   if (!angledUrl) {
-    angledUrl = await generateAngled(figureUrl, refs.tail);
+    angledUrl = await generateAngled(figureUrl, refs.tail, refs.breed);
     await updateRecord(table, id, { Views: serializeImgRefs({ ...refs, angled: angledUrl }) });
   }
 

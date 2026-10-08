@@ -745,6 +745,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
           name: wantsBase && addName,
           accessory: hasAccessory ? accessory.label : "none",
           tail,
+          breed: breed.trim() || undefined,
         }),
       }).catch(() => {});
     }
@@ -753,7 +754,7 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       clearTimeout(t1);
       clearTimeout(t2);
     };
-  }, [step, leadId, figure, plainFigure, petName, originalUrl, wantsBase, addName, hasAccessory, accessory.label, tail]);
+  }, [step, leadId, figure, plainFigure, petName, originalUrl, wantsBase, addName, hasAccessory, accessory.label, tail, breed]);
 
   function copyCode(code: string) {
     navigator.clipboard?.writeText(code).catch(() => {});
