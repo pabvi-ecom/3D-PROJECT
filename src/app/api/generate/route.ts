@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
         : tail === "short"
           ? ` The pet has a SHORT stubby tail held CLOSE and tucked against the body on one side, not sticking out.`
           : tail === "long"
-            ? ` The pet has a LONG tail, but it must WRAP FORWARD and curl around to rest beside/in front of the front paws, lying flat along the ground RIGHT NEXT TO the body and paws, fully WITHIN the figure's footprint. The tail must NOT extend outward, backward or sideways away from the body, must NOT stick out as a thin free strand, and must NOT reach past the paws — it stays tucked close against the body/paws, touching them along its length.`
+            ? ` The pet has a LONG but SLIM tail (normal thickness — NOT thick, bushy, overly fluffy or oversized; do not exaggerate its volume or fur). It must WRAP FORWARD and curl around to rest beside/in front of the front paws, lying flat along the ground RIGHT NEXT TO the body and paws, fully WITHIN the figure's footprint. The tail must NOT extend outward, backward or sideways away from the body, must NOT stick out as a free strand, and must NOT reach past the paws — it stays tucked close against the body/paws, touching them along its length.`
             : "";
     let customerExtraRefs: string[] = [];
 
@@ -119,12 +119,12 @@ export async function POST(req: NextRequest) {
           `This is a full-color 3D printed figurine of a ${animal} on a polished beige marble pedestal base. ` +
           `Keep the ${animal} figurine, its pose, the base and the camera angle EXACTLY the same. ` +
           `Change ONLY the front face of the marble rim: engrave the name "${engraved}" directly into the ` +
-          `stone. Render ALL letters in UPPERCASE. Use a clean, OPEN, evenly-spaced sans-serif or humanist ` +
-          `capital typeface with generous letter-spacing and letters of uniform height (no letter should ` +
-          `rise taller than the others). Give the letters a MEDIUM-BOLD / SEMIBOLD weight with slightly ` +
-          `thicker, sturdier strokes (not thin or hairline), keeping the exact same engraved look and texture. ` +
-          `Keep the lettering SMALL and understated — roughly one third of the ` +
-          `height of the marble rim, not oversized. ` +
+          `stone. Render ALL letters in UPPERCASE. Use a clean BOLD HEAVY sans-serif typeface with WIDE, ` +
+          `EXTENDED, thick sturdy letterforms (think bold condensed-to-wide gothic), uniform height. ` +
+          `SIZE — very important: the text is SMALL and discreet, only about ONE QUARTER (25%) of the marble ` +
+          `rim height, and the whole word spans only the CENTER of the front, roughly the middle 40-50% of the ` +
+          `width, with clearly EMPTY blank marble margins on the left and right. Do NOT make the letters tall, ` +
+          `do NOT stretch the word across the whole front, do NOT make it oversized — keep it small, wide and bold. ` +
           `CRITICAL: each letter must be a SOLID, FULLY FILLED-IN shape of dark pigment — NOT outlined, NOT hollow, ` +
           `NOT just an engraved contour. The grooves are filled with a solid dark brown/espresso pigment so every ` +
           `letter reads as a solid dark letter (like filled debossed lettering), clearly readable against the beige ` +
