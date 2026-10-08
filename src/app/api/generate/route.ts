@@ -119,16 +119,17 @@ export async function POST(req: NextRequest) {
           `This is a full-color 3D printed figurine of a ${animal} on a polished beige marble pedestal base. ` +
           `Keep the ${animal} figurine, its pose, the base and the camera angle EXACTLY the same. ` +
           `Change ONLY the front face of the marble rim: engrave the name "${engraved}" directly into the ` +
-          `stone. Render ALL letters in UPPERCASE. Use a clean BOLD HEAVY sans-serif typeface with WIDE, ` +
-          `EXTENDED, thick sturdy letterforms (think bold condensed-to-wide gothic), uniform height. ` +
-          `SIZE — very important: the text is SMALL and discreet, only about ONE QUARTER (25%) of the marble ` +
-          `rim height, and the whole word spans only the CENTER of the front, roughly the middle 40-50% of the ` +
-          `width, with clearly EMPTY blank marble margins on the left and right. Do NOT make the letters tall, ` +
-          `do NOT stretch the word across the whole front, do NOT make it oversized — keep it small, wide and bold. ` +
-          `CRITICAL: each letter must be a SOLID, FULLY FILLED-IN shape of dark pigment — NOT outlined, NOT hollow, ` +
-          `NOT just an engraved contour. The grooves are filled with a solid dark brown/espresso pigment so every ` +
-          `letter reads as a solid dark letter (like filled debossed lettering), clearly readable against the beige ` +
-          `marble. The text must be perfectly horizontally centered on the front of the base and follow its curve. ${STUDIO}`;
+          `stone, exactly in the refined style of an engraved marble memorial/trophy base. ` +
+          `Render ALL letters in UPPERCASE in a CLASSIC ELEGANT SERIF typeface (like Trajan / classic Roman ` +
+          `inscription capitals), with THIN-TO-MEDIUM refined strokes and small serifs — NOT bold, NOT heavy, ` +
+          `NOT gothic, NOT a thick sans-serif. Elegant and understated. ` +
+          `SIZE — very important: the text is SMALL and delicate, only about ONE FIFTH (20%) of the marble rim ` +
+          `height, and the whole word sits in the CENTER of the front spanning only the middle ~35-45% of the ` +
+          `width, with clearly EMPTY blank marble margins on the left and right. Do NOT make the letters tall or ` +
+          `chunky, do NOT stretch the word across the whole front, do NOT make it oversized — small, slim, elegant. ` +
+          `Each letter is a SOLID, FULLY FILLED-IN shape of dark warm brown engraved pigment (not outlined, not ` +
+          `hollow), clearly readable against the beige marble. The text is perfectly horizontally centered on the ` +
+          `front, low on the rim, and follows its curve. ${STUDIO}`;
       } else if (change === "accessory") {
         // Añadir un accesorio (disfraz/hueso) SOBRE la figura ya generada.
         // La imagen previa (con o sin base) es la verdad: mismo perro, misma
