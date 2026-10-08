@@ -55,7 +55,12 @@ const NO_BASE = "with no display base, standing directly on a clean seamless lig
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { imageBase64, imageUrl, referenceUrl, change, zone = "dogs", poseId, baseId = NO_BASE_ID, petName, notes, view, styleId, accessoryId, extraImages, tail } = body;
+    const { imageBase64, imageUrl, referenceUrl, change, zone = "dogs", poseId, baseId = NO_BASE_ID, petName, notes, view, styleId, accessoryId, extraImages, tail, breed } = body;
+    // La raza (la dice el dueño) ayuda a clavar proporciones/tamaño correctos.
+    const breedNote =
+      typeof breed === "string" && breed.trim()
+        ? ` The owner says the breed is "${breed.trim()}" — use the correct body size, build and proportions typical of that breed (e.g. a small breed stays small and compact, a large breed stays large), while keeping THIS individual pet's exact face, colors and markings.`
+        : "";
     // Regla de cola (la elige el dueño): SIEMPRE pegada al cuerpo para que no
     // sobresalga de la base ni quede fina al aire (igual que en el 3D).
     const tailRule =
@@ -221,7 +226,7 @@ export async function POST(req: NextRequest) {
         `DO NOT INVENT accessories: if the pet in the photo wears NO collar, NO harness, NO bandana and NO tag, ` +
         `then add NONE — never add a collar or anything the pet is not actually wearing. Only keep an accessory if it is ` +
         `clearly visible in the photo. Show the full body of the ${animal} ${pose.prompt}, ${basePhrase}.` +
-        `${tailRule}${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
+        `${tailRule}${breedNote}${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
     }
 
     // El grabado del nombre usa la referencia VISUAL del estilo (FRANKIE) para

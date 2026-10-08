@@ -115,7 +115,16 @@
 .notesInput:focus{border-color:var(--accent)}
 
 /* Prompt de calidad dentro del paso foto */
-.qualityPrompt{margin:22px 0 10px; text-align:center; font-weight:800; color:var(--ink)}
+.qualityPrompt{margin:16px 0 8px; text-align:center; font-weight:800; font-size:.95rem; color:var(--ink)}
+/* Opciones compactas (cola, calidad) — 3 en fila, cuadraditos pequeños */
+.optGrid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:6px}
+.optCard{position:relative; display:flex; flex-direction:column; align-items:center; gap:2px; padding:12px 8px; border:2px solid var(--line); border-radius:12px; background:var(--surface); cursor:pointer; transition:border-color .15s ease, box-shadow .15s ease}
+.optCard:hover{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+.optCardActive{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
+.optName{font-family:var(--font-display); font-weight:800; font-size:.95rem; text-align:center}
+.optMeta{color:var(--ink-soft); font-size:.72rem; font-weight:600; text-align:center}
+.breedInput{width:100%; box-sizing:border-box; padding:11px 14px; border:2px solid var(--line); border-radius:12px; background:var(--surface); font-size:.95rem; font-weight:600; color:var(--ink)}
+.breedInput:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft)}
 
 /* Fotos extra opcionales */
 .extraPhotos{margin-top:14px}

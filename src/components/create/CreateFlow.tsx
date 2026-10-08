@@ -150,9 +150,8 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const [photo, setPhoto] = useState<string | null>(null);
   // Fotos extra OPCIONALES — más ángulos = más fidelidad del perro. Se mandan
   // como referencias adicionales a la generación.
-  const [photo2, setPhoto2] = useState<string | null>(null);
-  const [photo3, setPhoto3] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
+  const [breed, setBreed] = useState("");
   const [tail, setTail] = useState<"long" | "short" | "none">("long");
   const [readingFile, setReadingFile] = useState(false);
   const [figures, setFigures] = useState<Record<string, string>>({});
@@ -212,8 +211,6 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   const [reviewIdx, setReviewIdx] = useState(0);
 
   const fileRef = useRef<HTMLInputElement>(null);
-  const fileRef2 = useRef<HTMLInputElement>(null);
-  const fileRef3 = useRef<HTMLInputElement>(null);
 
   const pose = poses.find((p) => p.id === poseId) ?? poses[0];
   const base = bases.find((b) => b.id === baseId) ?? bases[0];
@@ -345,12 +342,11 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
       // allSettled: si un estilo falla (ej. el filtro de seguridad de Gemini
       // marca esa generación en concreto), no tira abajo los demás — el
       // usuario aún puede elegir entre los que sí salieron bien.
-      const extraImages = [photo2, photo3].filter((p): p is string => !!p);
       // Reintento por estilo: nano-banana a veces falla un estilo suelto (filtro
       // de seguridad o timeout). Reintentamos ese estilo una vez para que NO se
       // quede sin mostrar (antes se perdía, p. ej. faltaba el realista).
       const genStyle = async (sid: string): Promise<readonly [string, string]> => {
-        const body = { imageBase64: dataUri, extraImages, poseId: poses[0].id, baseId: NO_BASE_ID, notes: notes.trim() || undefined, styleId: sid, tail };
+        const body = { imageBase64: dataUri, poseId: poses[0].id, baseId: NO_BASE_ID, notes: notes.trim() || undefined, styleId: sid, tail, breed: breed.trim() || undefined };
         // Hasta 3 intentos: nano-banana a veces tumba un estilo suelto (filtro
         // de seguridad / timeout). Con 3 casi nunca se queda sin mostrar.
         let lastErr: unknown;
@@ -695,9 +691,8 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
     setPetName("");
     setNameDraft("");
     setPhoto(null);
-    setPhoto2(null);
-    setPhoto3(null);
     setNotes("");
+    setBreed("");
     setFigures({});
     setNamedFigures({});
     setStyleFigures({});
@@ -809,8 +804,6 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
   return (
     <div className={styles.page}>
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={onFile} />
-      <input ref={fileRef2} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) readInto(f, setPhoto2); }} />
-      <input ref={fileRef3} type="file" accept="image/*" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) readInto(f, setPhoto3); }} />
 
       <AnnouncementBar />
       <header className={styles.header}>
@@ -888,35 +881,26 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
               </button>
             )}
 
-            {photo && (
-              <div className={styles.extraPhotos}>
-                <p className={styles.extraNote}>
-                  📸 Add 1–2 more photos from other angles (side, back) — the more we see of {petName}, the more accurate the figure.
-                </p>
-                <div className={styles.extraSlots}>
-                  {[{ p: photo2, set: setPhoto2, ref: fileRef2 }, { p: photo3, set: setPhoto3, ref: fileRef3 }].map((slot, i) => (
-                    <button key={i} type="button" className={styles.extraSlot} onClick={() => slot.ref.current?.click()}>
-                      {slot.p ? (
-                        <img src={slot.p} alt="" />
-                      ) : (
-                        <span className={styles.extraPlus}>+ Photo {i + 2}<small>optional</small></span>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+            <p className={styles.qualityPrompt}>What breed is {petName}?</p>
+            <input
+              className={styles.breedInput}
+              type="text"
+              placeholder="e.g. Dalmatian, Labrador, mixed…"
+              maxLength={60}
+              value={breed}
+              onChange={(e) => setBreed(e.target.value)}
+            />
 
             <p className={styles.qualityPrompt}>Your pet&apos;s tail</p>
-            <div className={styles.qualityGrid}>
+            <div className={styles.optGrid}>
               {([["long", "Long tail"], ["short", "Short tail"], ["none", "No tail"]] as const).map(([id, label]) => (
                 <button
                   key={id}
                   type="button"
-                  className={`${styles.qualityCard} ${tail === id ? styles.qualityCardActive : ""}`}
+                  className={`${styles.optCard} ${tail === id ? styles.optCardActive : ""}`}
                   onClick={() => setTail(id)}
                 >
-                  <span className={styles.qualityName}>{label}</span>
+                  <span className={styles.optName}>{label}</span>
                 </button>
               ))}
             </div>
@@ -938,21 +922,21 @@ export function CreateFlow({ zone, initialName }: { zone: Zone; initialName?: st
             {photo && (
               <>
                 <p className={styles.qualityPrompt}>Choose your quality</p>
-                <div className={styles.qualityGrid}>
+                <div className={styles.optGrid} style={{ gridTemplateColumns: "1fr 1fr" }}>
                   <button
-                    className={`${styles.qualityCard} ${quality === "hd" ? styles.qualityCardActive : ""}`}
+                    className={`${styles.optCard} ${quality === "hd" ? styles.optCardActive : ""}`}
                     onClick={() => setQuality("hd")}
                   >
-                    <span className={styles.qualityName}>HD</span>
-                    <span className={styles.qualityMeta}>Ready in ~45 seconds</span>
+                    <span className={styles.optName}>HD</span>
+                    <span className={styles.optMeta}>Ready in ~45 seconds</span>
                   </button>
                   <button
-                    className={`${styles.qualityCard} ${quality === "4k" ? styles.qualityCardActive : ""}`}
+                    className={`${styles.optCard} ${quality === "4k" ? styles.optCardActive : ""}`}
                     onClick={() => setQuality("4k")}
                   >
                     <span className={styles.popBadge}>Best quality</span>
-                    <span className={styles.qualityName}>Full HD 4K</span>
-                    <span className={styles.qualityMeta}>Ready in ~90 seconds</span>
+                    <span className={styles.optName}>Full HD 4K</span>
+                    <span className={styles.optMeta}>Ready in ~90 seconds</span>
                   </button>
                 </div>
                 <button className={styles.cta} onClick={() => generatePreviews(photo)}>
