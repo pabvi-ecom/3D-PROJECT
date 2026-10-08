@@ -30,6 +30,11 @@ export async function createImageToModelTask(imageUrl: string): Promise<string> 
       face_limit: 50000,
       quad: false,
       smart_low_poly: false,
+      // Geometria al maximo (mejor forma, p.ej. la espalda de perros largos)
+      // + autofix de la imagen + orientar el modelo con la imagen.
+      geometry_quality: "detailed",
+      enable_image_autofix: true,
+      orientation: "align_image",
       texture: true,
       pbr: true,
       texture_quality: "detailed",
