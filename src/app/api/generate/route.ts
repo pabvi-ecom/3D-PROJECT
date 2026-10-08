@@ -129,7 +129,11 @@ export async function POST(req: NextRequest) {
           `chunky, do NOT stretch the word across the whole front, do NOT make it oversized — small, slim, elegant. ` +
           `Each letter is a SOLID, FULLY FILLED-IN shape of dark warm brown engraved pigment (not outlined, not ` +
           `hollow), clearly readable against the beige marble. The text is perfectly horizontally centered on the ` +
-          `front, low on the rim, and follows its curve. ${STUDIO}`;
+          `front, low on the rim, and follows its curve. ` +
+          `STYLE REFERENCE: the LAST image shows the EXACT engraving style you must copy for the name — same ` +
+          `elegant serif typeface, same small discreet size relative to the rim, same thin refined weight, same ` +
+          `dark brown color, same centered low placement. Match that lettering style precisely; use the LAST image ` +
+          `ONLY as the style guide for the text, nothing else from it. ${STUDIO}`;
       } else if (change === "accessory") {
         // Añadir un accesorio (disfraz/hueso) SOBRE la figura ya generada.
         // La imagen previa (con o sin base) es la verdad: mismo perro, misma
@@ -220,10 +224,12 @@ export async function POST(req: NextRequest) {
         `${tailRule}${baseRefNote}${notesNote}${viewNote} ${STUDIO}`;
     }
 
-    // El grabado del nombre y los accesorios editan una imagen YA compuesta
-    // (perro + base) — no necesitan la referencia de base, que además pediría
-    // dejar el canto en blanco y borraría el nombre.
-    const extraRefUrls = change === "name" || change === "accessory" ? [] : [...baseRefUrls, ...customerExtraRefs];
+    // El grabado del nombre usa la referencia VISUAL del estilo (FRANKIE) para
+    // que la IA copie el tipo de letra/tamano/color exacto, no se lo invente.
+    // Los accesorios editan una imagen ya compuesta y no necesitan referencia.
+    const nameRefUrl = new URL("/bases/name-ref.png", req.nextUrl.origin).toString();
+    const extraRefUrls =
+      change === "name" ? [nameRefUrl] : change === "accessory" ? [] : [...baseRefUrls, ...customerExtraRefs];
     // El filtro de seguridad de Gemini a veces marca una imagen como
     // "sensible" en un falso positivo (foto normal, nada raro) — un segundo
     // intento con el mismo input suele pasar sin problema, así que
